@@ -1874,6 +1874,12 @@ function switchTab(id, el) {
 
   moveTabIndicator(el);
   playTabSound();
+
+  // Cargar contenido dinámico del tab
+  if(id === 'tab-secciones') renderSectionsMenu();
+  if(id === 'tab-config')    { loadTextosForm(); loadContactoForm(); }
+  if(id === 'tab-tools')     loadMultimediaForm();
+  if(id === 'tab-stats')     loadStats();
 }
 
 // Inicializar indicador al abrir el panel
