@@ -1152,3 +1152,18 @@ body[data-admin="true"] .admin-wrap {
   background: rgba(255,255,255,0.15);
   border-radius: 10px;
 }
+
+#admin-login,
+#admin-panel {
+  transition: opacity .25s ease, transform .25s ease;
+}
+
+#admin-panel {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+body[data-admin="true"] #admin-panel[style*="block"] {
+  opacity: 1;
+  transform: translateY(0);
+}

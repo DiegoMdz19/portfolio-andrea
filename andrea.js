@@ -1745,8 +1745,15 @@ function openAdmin(){
 function askAdminPass(){ openAdmin(); }
 
 function closeAdmin() {
-  document.body.removeAttribute('data-admin');
-  document.body.style.overflow = '';
+  const overlay = document.getElementById('admin-overlay');
+
+  overlay.style.opacity = '0';
+
+  setTimeout(() => {
+    document.body.removeAttribute('data-admin');
+    overlay.style.opacity = '';
+    document.body.style.overflow = '';
+  }, 300);
 }
 
 async function checkPass(){
