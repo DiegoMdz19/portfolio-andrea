@@ -1041,10 +1041,18 @@ a:focus-visible{
   outline-offset:2px;
 }
 
-#admin-panel { display: none !important; }
-.admin-overlay { display: none !important; }
-body[data-admin="true"] #admin-panel,
-body[data-admin="true"] .admin-overlay {
-  display: flex !important;
-  z-index: 9999 !important;
+/* Overlay oculto por defecto */
+#admin-overlay {
+  display: none;
+}
+
+/* Cuando el admin está activo */
+body[data-admin="true"] #admin-overlay {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
 }

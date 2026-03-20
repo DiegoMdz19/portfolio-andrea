@@ -1722,18 +1722,24 @@ let adminBuffer = '';
 let _tapCount = 0, _tapTimer = null;
 
 function openAdmin(){
-  document.getElementById('admin-overlay').style.display = 'block';
+  document.body.setAttribute('data-admin', 'true');
+
   document.getElementById('admin-login').style.display = 'block';
   document.getElementById('admin-panel').style.display = 'none';
+
   document.getElementById('admin-pass').value = '';
   document.getElementById('admin-error').style.display = 'none';
+
   document.body.style.overflow = 'hidden';
-  setTimeout(() => document.getElementById('admin-pass').focus(), 100);
+
+  setTimeout(() => {
+    document.getElementById('admin-pass').focus();
+  }, 100);
 }
 function askAdminPass(){ openAdmin(); }
 
 function closeAdmin() {
-  document.getElementById('admin-overlay').style.display = 'none';
+  document.body.removeAttribute('data-admin');
   document.body.style.overflow = '';
 }
 
@@ -1758,19 +1764,26 @@ async function checkPass(){
   }
 }
 
-// Móvil + PC (igual)
 document.addEventListener('DOMContentLoaded', () => {
   const logo = document.querySelector('.nav-logo');
-  if(logo) {
-    logo.addEventListener('touchend', () => {
-      _tapCount++;
-      clearTimeout(_tapTimer);
-      _tapTimer = setTimeout(() => {
-        if(_tapCount >= 3) askAdminPass();
-        _tapCount = 0;
-      }, 400);
-    });
+
+  if(!logo) return;
+
+  function handleTap() {
+    _tapCount++;
+    clearTimeout(_tapTimer);
+
+    _tapTimer = setTimeout(() => {
+      if(_tapCount >= 3) askAdminPass();
+      _tapCount = 0;
+    }, 400);
   }
+
+  // 👉 Móvil
+  logo.addEventListener('touchend', handleTap);
+
+  // 👉 PC
+  logo.addEventListener('click', handleTap);
 });
 
 document.addEventListener('keydown', e => {
