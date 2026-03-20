@@ -1724,6 +1724,12 @@ let _tapCount = 0, _tapTimer = null;
 function openAdmin(){
   document.body.setAttribute('data-admin', 'true');
 
+  const overlay = document.getElementById('admin-overlay');
+
+  // Forzar reflow para animación suave
+  overlay.style.display = 'flex';
+  overlay.offsetHeight;
+
   document.getElementById('admin-login').style.display = 'block';
   document.getElementById('admin-panel').style.display = 'none';
 
@@ -1734,7 +1740,7 @@ function openAdmin(){
 
   setTimeout(() => {
     document.getElementById('admin-pass').focus();
-  }, 100);
+  }, 150);
 }
 function askAdminPass(){ openAdmin(); }
 
