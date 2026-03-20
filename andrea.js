@@ -1716,42 +1716,91 @@ function renderTestimonios(data){
 (function(){ const d = loadTestimonios(); if(localStorage.getItem('alr_testimonios')) renderTestimonios(d); })();
 
 // ── ADMIN ORIGINAL (FUNCIONANDO) ────────────────────────────────────────────
-let _adminPass = localStorage.getItem('alr_pass') || '';
+// Hash SHA-256 de la contraseña por defecto (andrea2025)
+const ADMIN_HASH = '074c1cbd817a1e4a5754d93409a9a6fb340f457fd933d4602114149c311adea6';
+
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+const adminSeq = 'andrea';
+let adminBuffer = '';
+let _tapCount = 0, _tapTimer = null;
+
+// Móvil: triple tap en el logo del nav abre el admin
+document.addEventListener('DOMContentLoaded', () => {
+  const logo = document.querySelector('.nav-logo');
+  if(logo) {
+    logo.addEventListener('touchend', () => {
+      _tapCount++;
+      clearTimeout(_tapTimer);
+      _tapTimer = setTimeout(() => {
+        if(_tapCount >= 3) openAdmin();
+        _tapCount = 0;
+      }, 400);
+    });
+  }
+});
+
+// Secuencia de teclas para PC (andrea)
+document.addEventListener('keydown', e => {
+  const tag = document.activeElement.tagName;
+  if(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  
+  if(e.key === 'Escape') {
+    if(document.getElementById('lightbox')?.classList.contains('open')) closeLightbox();
+    else closeAdmin();
+    return;
+  }
+  
+  adminBuffer += e.key.toLowerCase();
+  if(adminBuffer.length > adminSeq.length) adminBuffer = adminBuffer.slice(-adminSeq.length);
+  if(adminBuffer === adminSeq) { adminBuffer = ''; openAdmin(); }
+});
 
 function openAdmin() {
-  if (_adminPass) {
-    document.getElementById('admin-panel').style.display = 'flex';
-    document.getElementById('admin-overlay').style.pointerEvents = 'none';
-  } else {
-    askAdminPass();
-  }
-}
-
-function askAdminPass() {
   document.getElementById('admin-overlay').style.display = 'block';
   document.getElementById('admin-login').style.display = 'block';
-  document.getElementById('admin-pass').focus();
-}
-
-async function checkPass() {
-  const input = document.getElementById('admin-pass').value;
-  const hash = await sha256(input);
-  
-  if (hash === 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855') { // 'admin'
-    localStorage.setItem('alr_pass', input);
-    _adminPass = input;
-    document.getElementById('admin-login').style.display = 'none';
-    document.getElementById('admin-panel').style.display = 'flex';
-    document.getElementById('admin-overlay').style.pointerEvents = 'none';
-  } else {
-    document.getElementById('admin-error').style.display = 'block';
-  }
+  document.getElementById('admin-panel').style.display = 'none';
+  document.getElementById('admin-pass').value = '';
+  document.getElementById('admin-error').style.display = 'none';
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('admin-pass').focus(), 100);
 }
 
 function closeAdmin() {
   document.getElementById('admin-overlay').style.display = 'none';
-  document.getElementById('admin-panel').style.display = 'none';
   document.getElementById('admin-login').style.display = 'none';
+  document.getElementById('admin-panel').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+async function checkPass() {
+  const input = document.getElementById('admin-pass').value;
+  const storedPlain = localStorage.getItem('alr_pass');
+  let ok = false;
+  
+  if(storedPlain) {
+    // Contraseña personalizada guardada en localStorage
+    ok = input === storedPlain;
+  } else {
+    // Comparar con hash por defecto (andrea2025)
+    const h = await sha256(input);
+    ok = h === ADMIN_HASH;
+  }
+  
+  if(ok) {
+    localStorage.setItem('alr_pass', input);
+    document.getElementById('admin-login').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    document.getElementById('admin-overlay').style.pointerEvents = 'none';
+    loadStats();
+  } else {
+    document.getElementById('admin-error').style.display = 'block';
+    document.getElementById('admin-pass').value = '';
+    document.getElementById('admin-pass').focus();
+  }
 }
 
 
