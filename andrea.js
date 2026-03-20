@@ -1729,7 +1729,7 @@ function askAdminPass() {
   document.getElementById('admin-panel').style.display = 'none';
   document.getElementById('admin-pass').value = '';
   document.getElementById('admin-error').style.display = 'none';
-  document.body.style.overflow = 'hidden';
+  document.body.style.overflow = 'auto';
   setTimeout(() => document.getElementById('admin-pass').focus(), 100);
 }
 
