@@ -1739,7 +1739,7 @@ function closeAdmin() {
 
 async function checkPass(){
   const input = document.getElementById('admin-pass').value;
-  const storedPlain = localStorage.getElementById('alr_pass');
+  const storedPlain = localStorage.getItem('alr_pass');
   let ok = false;
   
   if(storedPlain) {
