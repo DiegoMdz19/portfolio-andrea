@@ -548,7 +548,7 @@ window.addEventListener('load', _applySections);
             <button onclick="previewMode()" class="admin-btn">👁 Vista previa</button>
             <button onclick="exportConfig()" class="admin-btn">⬇ Exportar config</button>
             <button onclick="document.getElementById('importFile').click()" class="admin-btn">⬆ Importar config</button>
-            <input id="importFile" type="file" accept=".json" style="display:none;" onchange="importConfig(event)">
+            <input id="importFile" type="file" accept=".json" onchange="importConfig(event)">
           </div>
           <p id="stats-msg" style="font-size:.72rem;color:#c8b89a;margin-top:14px;display:none;"></p>
         </div>
@@ -572,7 +572,7 @@ window.addEventListener('load', _applySections);
   </div>
 
       <!-- ════ TAB CONFIGURACIÓN ════ -->
-      <div id="tab-config" class="admin-tab-content" style="display:none;">
+      <div id="tab-config" class="admin-tab-content">
         <div style="display:flex;gap:0;height:100%;">
 
           <!-- Menú lateral config -->
@@ -633,7 +633,7 @@ window.addEventListener('load', _applySections);
       </div>
 
       <!-- ════ TAB HERRAMIENTAS ════ -->
-      <div id="tab-tools" class="admin-tab-content" style="display:none;">
+      <div id="tab-tools" class="admin-tab-content">
         <div style="display:flex;gap:0;height:100%;">
           <div style="width:140px;flex-shrink:0;border-right:1px solid rgba(245,242,237,.08);padding-right:20px;margin-right:28px;display:flex;flex-direction:column;gap:4px;">
             <button class="sec-menu-btn active" onclick="switchConfig('tool-titulos',this)">Títulos</button>
