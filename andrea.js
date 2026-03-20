@@ -1754,7 +1754,7 @@ async function checkPass(){
     localStorage.setItem('alr_pass', input);
     window._adminPass = input;
     document.getElementById('admin-login').style.display = 'none';
-    document.getElementById('admin-panel').style.setProperty('display', 'flex', 'important');
+    document.getElementById('admin-panel').style.setProperty('display', 'block', 'important');
     document.getElementById('admin-overlay').style.pointerEvents = 'none';
     loadStats();
   } else {
