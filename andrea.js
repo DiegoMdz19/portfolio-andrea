@@ -1715,7 +1715,7 @@ function renderTestimonios(data){
 // Aplicar testimonios guardados al cargar
 (function(){ const d = loadTestimonios(); if(localStorage.getItem('alr_testimonios')) renderTestimonios(d); })();
 
-// ── ADMIN ORIGINAL (FUNCIONANDO) ────────────────────────────────────────────
+// ── ADMIN (SOLO CAMBIA ESTE BLOQUE) ──────────────────────────────────────────
 // Hash SHA-256 de la contraseña por defecto (andrea2025)
 const ADMIN_HASH = '074c1cbd817a1e4a5754d93409a9a6fb340f457fd933d4602114149c311adea6';
 
@@ -1728,7 +1728,7 @@ const adminSeq = 'andrea';
 let adminBuffer = '';
 let _tapCount = 0, _tapTimer = null;
 
-// Móvil: triple tap en el logo del nav abre el admin
+// Triple tap logo (móvil)
 document.addEventListener('DOMContentLoaded', () => {
   const logo = document.querySelector('.nav-logo');
   if(logo) {
@@ -1743,7 +1743,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Secuencia de teclas para PC (andrea)
+// Secuencia teclas PC
 document.addEventListener('keydown', e => {
   const tag = document.activeElement.tagName;
   if(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
@@ -1782,10 +1782,8 @@ async function checkPass() {
   let ok = false;
   
   if(storedPlain) {
-    // Contraseña personalizada guardada en localStorage
     ok = input === storedPlain;
   } else {
-    // Comparar con hash por defecto (andrea2025)
     const h = await sha256(input);
     ok = h === ADMIN_HASH;
   }
@@ -1794,8 +1792,7 @@ async function checkPass() {
     localStorage.setItem('alr_pass', input);
     document.getElementById('admin-login').style.display = 'none';
     document.getElementById('admin-panel').style.display = 'block';
-    document.getElementById('admin-overlay').style.pointerEvents = 'none';
-    loadStats();
+    loadStats();  // ← Tu función original
   } else {
     document.getElementById('admin-error').style.display = 'block';
     document.getElementById('admin-pass').value = '';
