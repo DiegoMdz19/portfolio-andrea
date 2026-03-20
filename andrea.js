@@ -1822,6 +1822,48 @@ document.addEventListener('keydown', e => {
   }
 });
 
+// ── INDICADOR Y TABS ─────────────────────────────────────
+function moveTabIndicator(el) {
+  const indicator = document.querySelector('.admin-tabs-indicator');
+  if(!indicator) return;
+  const parent = el.parentElement;
+  const rect = el.getBoundingClientRect();
+  const parentRect = parent.getBoundingClientRect();
+  indicator.style.width = rect.width + 'px';
+  indicator.style.transform = `translateX(${rect.left - parentRect.left}px)`;
+}
+
+function switchTab(id, el) {
+  const contents = document.querySelectorAll('.admin-tab-content');
+  const buttons = document.querySelectorAll('.admin-tab');
+
+  contents.forEach(tab => {
+    if(tab.id === id) {
+      tab.classList.add('active');
+      playTabSound();
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+
+  buttons.forEach(btn => btn.classList.remove('active'));
+  el.classList.add('active');
+
+  moveTabIndicator(el);
+}
+
+// Inicializar indicador al abrir el panel
+document.addEventListener('DOMContentLoaded', () => {
+  const active = document.querySelector('.admin-tab.active');
+  if(active) moveTabIndicator(active);
+});
+
+// Sonido sutil al cambiar tab
+function playTabSound() {
+  const audio = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
+  audio.volume = 0.15;
+  audio.play();
+}
 
 // ── CLOUDINARY ────────────────────────────────────────────────────────────────
 const CLOUDINARY_CLOUD  = 'dnof8srry';

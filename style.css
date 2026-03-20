@@ -1040,58 +1040,115 @@ a:focus-visible{
   outline:2px solid var(--warm);
   outline-offset:2px;
 }
-/* ── OVERLAY ───────────────── */
+/* ── OVERLAY ── */
 #admin-overlay {
   display: none;
   position: fixed;
   inset: 0;
   z-index: 9999;
-
   background: rgba(10,10,10,0.55);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-
   align-items: center;
   justify-content: center;
-
   opacity: 0;
   transition: opacity .35s ease;
 }
 
-/* Estado activo */
 body[data-admin="true"] #admin-overlay {
   display: flex;
   opacity: 1;
 }
 
-/* ── PANEL ───────────────── */
+/* ── PANEL ── */
 .admin-wrap {
   position: relative;
-  z-index: 10; /* 🔥 CLAVE para clicks */
-
+  z-index: 10;
   background: rgba(20,20,20,0.6);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 18px;
-
-  box-shadow:
-    0 20px 60px rgba(0,0,0,0.6),
-    inset 0 0 0 1px rgba(255,255,255,0.03);
-
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.03);
   padding: 40px;
   width: min(1100px, 92vw);
   max-height: 90vh;
   overflow-y: auto;
-
   transform: translateY(30px) scale(.96);
   opacity: 0;
-
-  transition:
-    transform .4s cubic-bezier(.2,.8,.2,1),
-    opacity .3s ease;
+  transition: transform .4s cubic-bezier(.2,.8,.2,1), opacity .3s ease;
 }
 
-/* Animación entrada */
 body[data-admin="true"] .admin-wrap {
   transform: translateY(0) scale(1);
   opacity: 1;
+}
+
+/* ── TABS ── */
+.admin-tabs {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 36px;
+}
+
+.admin-tab {
+  position: relative;
+  background: none;
+  border: none;
+  color: rgba(245,242,237,0.5);
+  padding: 12px 18px;
+  font-size: 0.7rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .25s ease;
+}
+
+.admin-tab:hover {
+  color: rgba(245,242,237,0.85);
+  transform: translateY(-2px);
+}
+
+.admin-tab.active {
+  color: #f5f2ed;
+}
+
+/* Indicador deslizante */
+.admin-tabs-indicator {
+  position: absolute;
+  bottom: -1px;
+  height: 2px;
+  background: var(--warm);
+  border-radius: 2px;
+  transition: transform .35s cubic-bezier(.2,.8,.2,1), width .35s cubic-bezier(.2,.8,.2,1);
+}
+
+/* Contenido de tabs */
+.admin-tab-content {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .35s ease, transform .35s ease;
+  display: none;
+}
+
+.admin-tab-content.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* BOTONES MICROINTERACCIONES */
+.admin-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #f5f2ed;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all .25s ease;
+}
+
+.admin-btn:hover {
+  border-color: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.05);
 }

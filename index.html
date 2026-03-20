@@ -502,63 +502,74 @@ window.addEventListener('load', _applySections);
   </div>
 </div>
 
-<!-- ADMIN PANEL -->
 <div id="admin-overlay">
-  <div class="admin-wrap">
-    <div id="admin-login">
-      <p class="admin-heading">Panel de administración</p>
-      <p class="admin-sub">Andrea López · Portfolio</p>
-      <label class="admin-label">Contraseña</label>
-      <input id="admin-pass" type="password" placeholder="••••••••" class="admin-input" style="max-width:300px;display:block;margin-bottom:20px;" onkeydown="if(event.key==='Enter')checkPass()">
-      <div style="display:flex;gap:12px;margin-top:4px;">
-        <button onclick="checkPass()" class="admin-btn">Entrar</button>
-        <button onclick="closeAdmin()" class="admin-btn" style="border-color:rgba(245,242,237,.1);color:#7a7068;">Cancelar</button>
+    <div class="admin-wrap">
+      
+      <!-- LOGIN -->
+      <div id="admin-login">
+        <p class="admin-heading">Panel de administración</p>
+        <p class="admin-sub">Andrea López · Portfolio</p>
+        <label class="admin-label">Contraseña</label>
+        <input id="admin-pass" type="password" placeholder="••••••••" class="admin-input" style="max-width:300px;display:block;margin-bottom:20px;" onkeydown="if(event.key==='Enter')checkPass()">
+        <div style="display:flex;gap:12px;margin-top:4px;">
+          <button onclick="checkPass()" class="admin-btn">Entrar</button>
+          <button onclick="closeAdmin()" class="admin-btn" style="border-color:rgba(245,242,237,.1);color:#7a7068;">Cancelar</button>
+        </div>
+        <p id="admin-error" style="color:#c87a6a;font-size:.75rem;margin-top:14px;display:none;">Contraseña incorrecta</p>
       </div>
-      <p id="admin-error" style="color:#c87a6a;font-size:.75rem;margin-top:14px;display:none;">Contraseña incorrecta</p>
+  
+      <!-- PANEL PRINCIPAL -->
+      <div id="admin-panel" style="display:none;">
+  
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px;">
+          <div>
+            <p class="admin-heading">Panel de administración</p>
+            <p class="admin-sub">Los cambios se guardan automáticamente</p>
+          </div>
+          <button onclick="closeAdmin()" style="background:none;border:none;color:#7a7068;font-size:1.1rem;cursor:pointer;">✕</button>
+        </div>
+  
+        <!-- TABS -->
+        <div class="admin-tabs">
+          <div class="admin-tabs-indicator"></div>
+          <button class="admin-tab active" onclick="switchTab('tab-stats', this)">Estadísticas</button>
+          <button class="admin-tab" onclick="switchTab('tab-secciones', this)">Secciones</button>
+          <button class="admin-tab" onclick="switchTab('tab-config', this)">Configuración</button>
+          <button class="admin-tab" onclick="switchTab('tab-tools', this)">Herramientas</button>
+        </div>
+  
+        <!-- CONTENIDO DE TABS -->
+        <div id="tab-stats" class="admin-tab-content active">
+          <div id="admin-stats-wrap" style="margin-bottom:28px;"></div>
+          <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:16px;display:flex;align-items:center;gap:14px;">
+            <span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Acciones rápidas
+          </p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <button onclick="previewMode()" class="admin-btn">👁 Vista previa</button>
+            <button onclick="exportConfig()" class="admin-btn">⬇ Exportar config</button>
+            <button onclick="document.getElementById('importFile').click()" class="admin-btn">⬆ Importar config</button>
+            <input id="importFile" type="file" accept=".json" style="display:none;" onchange="importConfig(event)">
+          </div>
+          <p id="stats-msg" style="font-size:.72rem;color:#c8b89a;margin-top:14px;display:none;"></p>
+        </div>
+  
+        <div id="tab-secciones" class="admin-tab-content">
+          <div style="display:flex;gap:0;height:100%;">
+            <div id="sec-sidebar" style="width:160px;flex-shrink:0;border-right:1px solid rgba(245,242,237,.08);padding-right:20px;margin-right:28px;display:flex;flex-direction:column;gap:4px;">
+              <!-- Se genera por JS -->
+            </div>
+            <div id="sec-content" style="flex:1;min-width:0;">
+              <!-- Se genera por JS -->
+            </div>
+          </div>
+        </div>
+  
+        <div id="tab-config" class="admin-tab-content"></div>
+        <div id="tab-tools" class="admin-tab-content"></div>
+  
+      </div>
     </div>
-
-    <div id="admin-panel" style="display:none;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px;">
-        <div><p class="admin-heading">Panel de administración</p><p class="admin-sub">Los cambios se guardan automáticamente</p></div>
-        <button onclick="closeAdmin()" style="background:none;border:none;color:#7a7068;font-size:1.1rem;cursor:pointer;">✕</button>
-      </div>
-
-      <!-- PESTAÑAS PRINCIPALES -->
-      <div style="display:flex;gap:0;margin-bottom:36px;border-bottom:1px solid rgba(245,242,237,.08);">
-        <button class="admin-tab active" onclick="switchTab('tab-stats',this)">Estadísticas</button>
-        <button class="admin-tab" onclick="switchTab('tab-secciones',this)">Secciones</button>
-        <button class="admin-tab" onclick="switchTab('tab-config',this)">Configuración</button>
-        <button class="admin-tab" onclick="switchTab('tab-tools',this)">Herramientas</button>
-      </div>
-
-      <!-- ════ TAB ESTADÍSTICAS ════ -->
-      <div id="tab-stats" class="admin-tab-content">
-        <div id="admin-stats-wrap" style="margin-bottom:28px;"></div>
-        <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:16px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Acciones rápidas</p>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <button onclick="previewMode()" class="admin-btn">👁 Vista previa</button>
-          <button onclick="exportConfig()" class="admin-btn">⬇ Exportar config</button>
-          <button onclick="document.getElementById('importFile').click()" class="admin-btn">⬆ Importar config</button>
-          <input id="importFile" type="file" accept=".json" style="display:none;" onchange="importConfig(event)">
-        </div>
-        <p id="stats-msg" style="font-size:.72rem;color:#c8b89a;margin-top:14px;display:none;"></p>
-      </div>
-
-      <!-- ════ TAB SECCIONES ════ -->
-      <div id="tab-secciones" class="admin-tab-content" style="display:none;">
-        <div style="display:flex;gap:0;height:100%;">
-
-          <!-- Menú lateral de secciones -->
-          <div id="sec-sidebar" style="width:160px;flex-shrink:0;border-right:1px solid rgba(245,242,237,.08);padding-right:20px;margin-right:28px;display:flex;flex-direction:column;gap:4px;">
-            <!-- Se genera por JS -->
-          </div>
-
-          <!-- Contenido de la sección seleccionada -->
-          <div id="sec-content" style="flex:1;min-width:0;">
-            <!-- Se genera por JS -->
-          </div>
-        </div>
-      </div>
+  </div>
 
       <!-- ════ TAB CONFIGURACIÓN ════ -->
       <div id="tab-config" class="admin-tab-content" style="display:none;">
