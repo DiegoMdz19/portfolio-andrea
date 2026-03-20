@@ -46,6 +46,32 @@ function esc(s){
   return d.innerHTML;
 }
 
+// ── SHA-256 (Web Crypto API) ──────────────────────────────────────────────────
+async function sha256(text){
+  const data = new TextEncoder().encode(text);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── SWITCH CONFIG (sub-paneles dentro de tabs) ────────────────────────────────
+function switchConfig(id, btn){
+  const el = document.getElementById(id);
+  if(!el) return;
+  const parent = el.parentElement;
+  Array.from(parent.children).forEach(child => {
+    if(child !== el && child.id) child.style.display = 'none';
+  });
+  el.style.display = '';
+  const sidebar = btn.closest('div');
+  if(sidebar) sidebar.querySelectorAll('.sec-menu-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if(id === 'cfg-textos')        loadTextosForm();
+  if(id === 'cfg-contacto')      loadContactoForm();
+  if(id === 'tool-titulos')      loadMultimediaForm();
+  if(id === 'tool-galeria')      { renderAdminGallery(); setTimeout(initDragDrop, 50); }
+  if(id === 'tool-videos-admin') loadVideoAdmin();
+}
+
 // ── MODAL PERSONALIZADO
 function showModal({ icon='⚠', title, msg, btns }){
   const m = document.getElementById('custom-modal');
@@ -557,8 +583,10 @@ function saveTextos(){
   localStorage.setItem('alr_textos', JSON.stringify(t));
   applyTextos(t);
   // Feedback visual en el botón
-  event.target.textContent = 'Guardado ✓';
-  setTimeout(() => event.target.textContent = 'Guardar cambios ✓', 2000);
+  try {
+    const btn = document.querySelector('button[onclick*="saveTextos"]');
+    if(btn){ btn.textContent = 'Guardado ✓'; setTimeout(() => btn.textContent = 'Guardar cambios ✓', 2000); }
+  } catch(e){}
 }
 function resetTextos(){
   localStorage.removeItem('alr_textos');

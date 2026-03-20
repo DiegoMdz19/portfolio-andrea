@@ -503,85 +503,56 @@ window.addEventListener('load', _applySections);
 </div>
 
 <div id="admin-overlay">
-    <div class="admin-wrap">
-      
-      <!-- LOGIN -->
-      <div id="admin-login">
-        <p class="admin-heading">Panel de administración</p>
-        <p class="admin-sub">Andrea López · Portfolio</p>
-        <label class="admin-label">Contraseña</label>
-        <input id="admin-pass" type="password" placeholder="••••••••" class="admin-input" style="max-width:300px;display:block;margin-bottom:20px;" onkeydown="if(event.key==='Enter')checkPass()">
-        <div style="display:flex;gap:12px;margin-top:4px;">
-          <button onclick="checkPass()" class="admin-btn">Entrar</button>
-          <button onclick="closeAdmin()" class="admin-btn" style="border-color:rgba(245,242,237,.1);color:#7a7068;">Cancelar</button>
-        </div>
-        <p id="admin-error" style="color:#c87a6a;font-size:.75rem;margin-top:14px;display:none;">Contraseña incorrecta</p>
+  <div class="admin-wrap">
+    <div id="admin-login">
+      <p class="admin-heading" style="text-align:center;">Panel de administración</p>
+      <p class="admin-sub" style="text-align:center;margin-bottom:28px;">Introduce la contraseña para acceder</p>
+      <input id="admin-pass" type="password" class="admin-input" placeholder="Contraseña" style="max-width:300px;display:block;margin:0 auto 16px;text-align:center;" onkeydown="if(event.key==='Enter')checkPass()">
+      <div style="text-align:center;">
+        <button onclick="checkPass()" class="admin-btn">Acceder</button>
       </div>
-  
-      <!-- PANEL PRINCIPAL -->
-      <div id="admin-panel" style="display:none;">
-  
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px;">
-          <div>
-            <p class="admin-heading">Panel de administración</p>
-            <p class="admin-sub">Los cambios se guardan automáticamente</p>
-          </div>
-          <button onclick="closeAdmin()" style="background:none;border:none;color:#7a7068;font-size:1.1rem;cursor:pointer;">✕</button>
-        </div>
-  
-        <!-- TABS -->
-        <div class="admin-tabs">
-          <div class="admin-tabs-indicator"></div>
-          <button class="admin-tab active" onclick="switchTab('tab-stats', this)">Estadísticas</button>
-          <button class="admin-tab" onclick="switchTab('tab-secciones', this)">Secciones</button>
-          <button class="admin-tab" onclick="switchTab('tab-config', this)">Configuración</button>
-          <button class="admin-tab" onclick="switchTab('tab-tools', this)">Herramientas</button>
-        </div>
-  
-        <!-- CONTENIDO DE TABS -->
-        <div id="tab-stats" class="admin-tab-content active">
-          <div id="admin-stats-wrap" style="margin-bottom:28px;"></div>
-          <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:16px;display:flex;align-items:center;gap:14px;">
-            <span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Acciones rápidas
-          </p>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;">
-            <button onclick="previewMode()" class="admin-btn">👁 Vista previa</button>
-            <button onclick="exportConfig()" class="admin-btn">⬇ Exportar config</button>
-            <button onclick="document.getElementById('importFile').click()" class="admin-btn">⬆ Importar config</button>
-            <input id="importFile" type="file" accept=".json" onchange="importConfig(event)">
-          </div>
-          <p id="stats-msg" style="font-size:.72rem;color:#c8b89a;margin-top:14px;display:none;"></p>
-        </div>
-  
-        <div id="tab-secciones" class="admin-tab-content">
-          <div style="display:flex;gap:0;height:100%;">
-            <div id="sec-sidebar" style="width:160px;flex-shrink:0;border-right:1px solid rgba(245,242,237,.08);padding-right:20px;margin-right:28px;display:flex;flex-direction:column;gap:4px;">
-              <!-- Se genera por JS -->
-            </div>
-            <div id="sec-content" style="flex:1;min-width:0;">
-              <!-- Se genera por JS -->
-            </div>
-          </div>
-        </div>
-  
-        <div id="tab-config" class="admin-tab-content"></div>
-        <div id="tab-tools" class="admin-tab-content"></div>
-  
-      </div>
+      <p id="admin-error" style="display:none;font-size:.72rem;color:#c87a6a;margin-top:14px;text-align:center;">Contraseña incorrecta</p>
     </div>
-  </div>
-
-      <!-- ════ TAB CONFIGURACIÓN ════ -->
+    <div id="admin-panel" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px;">
+        <div>
+          <p class="admin-heading">Panel de administración</p>
+          <p class="admin-sub">Los cambios se guardan automáticamente</p>
+        </div>
+        <button onclick="closeAdmin()" style="background:none;border:none;color:#7a7068;font-size:1.1rem;cursor:pointer;">✕</button>
+      </div>
+      <div class="admin-tabs">
+        <div class="admin-tabs-indicator"></div>
+        <button class="admin-tab active" onclick="switchTab('tab-stats', this)">Estadísticas</button>
+        <button class="admin-tab" onclick="switchTab('tab-secciones', this)">Secciones</button>
+        <button class="admin-tab" onclick="switchTab('tab-config', this)">Configuración</button>
+        <button class="admin-tab" onclick="switchTab('tab-tools', this)">Herramientas</button>
+      </div>
+      <div id="tab-stats" class="admin-tab-content active">
+        <div id="admin-stats-wrap" style="margin-bottom:28px;"></div>
+        <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:16px;display:flex;align-items:center;gap:14px;">
+          <span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Acciones rápidas
+        </p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button onclick="previewMode()" class="admin-btn">👁 Vista previa</button>
+          <button onclick="exportConfig()" class="admin-btn">⬇ Exportar config</button>
+          <button onclick="document.getElementById('importFile').click()" class="admin-btn">⬆ Importar config</button>
+          <input id="importFile" type="file" accept=".json" onchange="importConfig(event)" style="display:none;">
+        </div>
+        <p id="stats-msg" style="font-size:.72rem;color:#c8b89a;margin-top:14px;display:none;"></p>
+      </div>
+      <div id="tab-secciones" class="admin-tab-content">
+        <div style="display:flex;gap:0;height:100%;">
+          <div id="sec-sidebar" style="width:160px;flex-shrink:0;border-right:1px solid rgba(245,242,237,.08);padding-right:20px;margin-right:28px;display:flex;flex-direction:column;gap:4px;"></div>
+          <div id="sec-content" style="flex:1;min-width:0;"></div>
+        </div>
+      </div>
       <div id="tab-config" class="admin-tab-content">
         <div style="display:flex;gap:0;height:100%;">
-
-          <!-- Menú lateral config -->
           <div style="width:140px;flex-shrink:0;border-right:1px solid rgba(245,242,237,.08);padding-right:20px;margin-right:28px;display:flex;flex-direction:column;gap:4px;">
             <button class="sec-menu-btn active" onclick="switchConfig('cfg-textos',this)">Textos</button>
             <button class="sec-menu-btn" onclick="switchConfig('cfg-contacto',this)">Contacto</button>
           </div>
-
-          <!-- Textos -->
           <div id="cfg-textos" style="flex:1;min-width:0;">
             <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:20px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Hero</p>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
@@ -601,8 +572,6 @@ window.addEventListener('load', _applySections);
               <button onclick="resetTextos()" class="admin-btn" style="border-color:rgba(245,242,237,.1);color:#7a7068;">Restaurar por defecto</button>
             </div>
           </div>
-
-          <!-- Contacto -->
           <div id="cfg-contacto" style="flex:1;min-width:0;display:none;">
             <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:20px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Email de recepción</p>
             <div style="margin-bottom:20px;">
@@ -631,8 +600,6 @@ window.addEventListener('load', _applySections);
           </div>
         </div>
       </div>
-
-      <!-- ════ TAB HERRAMIENTAS ════ -->
       <div id="tab-tools" class="admin-tab-content">
         <div style="display:flex;gap:0;height:100%;">
           <div style="width:140px;flex-shrink:0;border-right:1px solid rgba(245,242,237,.08);padding-right:20px;margin-right:28px;display:flex;flex-direction:column;gap:4px;">
@@ -640,8 +607,6 @@ window.addEventListener('load', _applySections);
             <button class="sec-menu-btn" onclick="switchConfig('tool-galeria',this)">Galería</button>
             <button class="sec-menu-btn" onclick="switchConfig('tool-videos-admin',this)">Vídeos</button>
           </div>
-
-          <!-- Títulos -->
           <div id="tool-titulos" style="flex:1;min-width:0;">
             <div style="position:relative;margin-bottom:20px;">
               <input id="multimedia-search" type="text" class="admin-input" placeholder="Buscar por título..." oninput="filtrarMultimedia(this.value)" style="padding-left:28px;">
@@ -655,8 +620,6 @@ window.addEventListener('load', _applySections);
             <button onclick="saveMultimedia()" class="admin-btn">Guardar cambios ✓</button>
             <p id="multimedia-msg" style="font-size:.72rem;color:#c8b89a;margin-top:14px;display:none;"></p>
           </div>
-
-          <!-- Galería admin -->
           <div id="tool-galeria" style="flex:1;min-width:0;display:none;">
             <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:16px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Añadir foto</p>
             <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
@@ -677,8 +640,6 @@ window.addEventListener('load', _applySections);
             <div class="admin-grid" id="adminGallery"></div>
             <p id="noPhotosMsg" style="font-size:.78rem;font-weight:200;color:#7a7068;text-align:center;padding:36px 0;">Aún no has añadido fotos. ¡Sube la primera!</p>
           </div>
-
-          <!-- Vídeos admin -->
           <div id="tool-videos-admin" style="flex:1;min-width:0;display:none;">
             <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:16px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Añadir vídeo</p>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px;">
@@ -696,7 +657,6 @@ window.addEventListener('load', _applySections);
           </div>
         </div>
       </div>
-
       <hr class="admin-divider">
       <button onclick="closeAdmin()" class="admin-btn">Cerrar panel</button>
     </div>
