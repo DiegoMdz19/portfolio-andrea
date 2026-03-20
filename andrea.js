@@ -1735,7 +1735,7 @@ function askAdminPass() {
 
 function closeAdmin() {
   document.getElementById('admin-overlay').style.display = 'none';
-  document.body.style.overflow = '';
+  document.body.style.overflow = 'hidden';
 }
 
 async function checkPass(){
@@ -1753,7 +1753,7 @@ async function checkPass(){
     localStorage.setItem('alr_pass', input);
     window._adminPass = input;
     document.getElementById('admin-login').style.display = 'none';
-    document.getElementById('admin-panel').style.setProperty('display', 'block', 'important');  // ← ESTO
+    document.getElementById('admin-panel').style.setProperty('display', 'block', 'important');
     loadStats();
     showAlert('✅ Admin activado');
   } else {
