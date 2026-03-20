@@ -1280,9 +1280,10 @@ async function syncGalleryOrder(){
 // ── TOGGLE SECCIÓN VISIBLE ────────────────────────────────────────────────────
 // ── CONTROL DE SECCIONES ─────────────────────────────────────────────────────
 const SECTIONS_CONFIG = [
+  { id:'hero',        label:'Hero',         icon:'🎬', required:true  },
   { id:'sobre',       label:'Sobre mí',     icon:'👤', required:false },
   { id:'galeria',     label:'Galería',      icon:'🖼', required:false },
-  { id:'videos',      label:'Vídeos',       icon:'🎬', required:false },
+  { id:'videos',      label:'Vídeos',       icon:'🎥', required:false },
   { id:'servicios',   label:'Servicios',    icon:'💼', required:false },
   { id:'proceso',     label:'Proceso',      icon:'⚡', required:false },
   { id:'testimonios', label:'Testimonios',  icon:'💬', required:false },
@@ -1362,13 +1363,36 @@ function applySectionVisibility(){
 
 // Contenido de cada sección en el submenú
 const SECTION_CONTENT = {
+  hero: () => `
+    <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:20px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Fondo del Hero</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+      <div><label class="admin-label">Tipo de fondo</label><select id="hero-type" class="admin-input"><option value="video">Vídeo</option><option value="image">Imagen</option></select></div>
+      <div><label class="admin-label">URL / ruta</label><input id="hero-src" type="text" class="admin-input" placeholder="videos/hero.mp4"></div>
+    </div>
+    <p style="font-size:.55rem;color:rgba(245,242,237,.25);margin-bottom:16px;">Vídeo local: videos/nombre.mp4 · Imagen: sube a Cloudinary o usa ruta local</p>
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;">
+      <button onclick="saveHeroConfig()" class="admin-btn">Guardar ✓</button>
+      <button onclick="document.getElementById('heroFileInput').click()" class="admin-btn" style="border-color:rgba(245,242,237,.1);color:#7a7068;">Subir imagen</button>
+      <input id="heroFileInput" type="file" accept="image/*,video/mp4" style="display:none;" onchange="uploadHeroFile(this.files[0])">
+    </div>
+    <p id="hero-msg" style="font-size:.72rem;color:#c8b89a;margin-top:14px;display:none;"></p>`,
+
   sobre: () => `
     <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:20px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Textos — Sobre mí</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
       <div><label class="admin-label">Párrafo 1</label><textarea id="txt-sobre1" class="admin-input" rows="5"></textarea></div>
       <div><label class="admin-label">Párrafo 2</label><textarea id="txt-sobre2" class="admin-input" rows="5"></textarea></div>
     </div>
-    <button onclick="saveTextos()" class="admin-btn">Guardar ✓</button>`,
+    <button onclick="saveTextos()" class="admin-btn" style="margin-bottom:28px;">Guardar textos ✓</button>
+    <hr class="admin-divider">
+    <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:16px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Carrusel de fotos</p>
+    <div class="drop-zone" onclick="document.getElementById('sobreFileInput').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleSobreDrop(event)" style="margin-bottom:16px;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c8b89a" stroke-width="1" style="opacity:.4;display:block;margin:0 auto 10px;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <p style="font-size:.72rem;font-weight:200;color:#7a7068;">Arrastra fotos aquí o haz clic</p>
+      <input id="sobreFileInput" type="file" accept="image/*" style="display:none;" onchange="uploadSobrePhoto(this.files[0])">
+    </div>
+    <p id="sobre-upload-status" style="font-size:.72rem;color:#c8b89a;margin-bottom:12px;display:none;"></p>
+    <div id="admin-sobre-photos" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>`,
 
   galeria: () => `
     <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:16px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Fotos de la galería</p>
@@ -1484,11 +1508,207 @@ function renderSectionContent(id){
   if(id === 'servicios')   loadServiciosAdmin();
   if(id === 'testimonios') loadTestimoniosAdmin();
   if(id === 'proceso')     loadProcesoAdmin();
-  if(id === 'sobre')       loadTextosForm();
+  if(id === 'sobre')       { loadTextosForm(); renderAdminSobrePhotos(); }
+  if(id === 'hero')        loadHeroForm();
   if(id === 'galeria')     { const fi=document.getElementById('fileInput2'); if(fi) fi.addEventListener('change',e=>handleFiles(e.target.files)); }
 }
 
-// ── PROCESO — EDICIÓN DE PASOS ────────────────────────────────────────────────
+// ── SOBRE CARRUSEL ─────────────────────────────────────────────────────────
+let _sobreIdx = 0;
+let _sobreCount = 1;
+const SOBRE_SLIDE_W = 82; // % width of each slide
+
+async function renderSobreCarousel(){
+  const track = document.getElementById('sobreTrack');
+  const dots  = document.getElementById('sobreDots');
+  const wrap  = document.getElementById('sobreCarousel');
+  if(!track) return;
+
+  try {
+    const snap = await db.collection('sobre_photos').orderBy('created').get();
+    const photos = [];
+    snap.forEach(doc => photos.push({ id:doc.id, ...doc.data() }));
+
+    // Fallback: si no hay fotos, usar la imagen por defecto
+    if(!photos.length) photos.push({ src:'fotos/retrato.jpeg', fallback:true });
+
+    _sobreCount = photos.length;
+    _sobreIdx = 0;
+
+    track.innerHTML = '';
+    photos.forEach(p => {
+      const slide = document.createElement('div');
+      slide.className = 'sobre-carousel-slide';
+      slide.innerHTML = `<img src="${esc(p.src)}" alt="Andrea López">`;
+      track.appendChild(slide);
+    });
+
+    // Dots
+    if(dots){
+      dots.innerHTML = '';
+      photos.forEach((_, i) => {
+        const d = document.createElement('button');
+        d.className = 'sobre-dot' + (i===0?' active':'');
+        d.addEventListener('click', () => goSobre(i));
+        dots.appendChild(d);
+      });
+    }
+
+    // Single mode (hide buttons/dots)
+    if(wrap) wrap.classList.toggle('single', photos.length <= 1);
+
+    goSobre(0, true);
+  } catch(e){
+    console.warn('Error cargando sobre carousel:', e);
+  }
+}
+
+function goSobre(idx, instant){
+  _sobreIdx = ((idx % _sobreCount) + _sobreCount) % _sobreCount;
+  const track = document.getElementById('sobreTrack');
+  if(!track) return;
+  const offset = -(_sobreIdx * SOBRE_SLIDE_W) + (100 - SOBRE_SLIDE_W) / 2;
+  track.style.transition = instant ? 'none' : '';
+  track.style.transform = `translateX(${offset}%)`;
+
+  track.querySelectorAll('.sobre-carousel-slide').forEach((s,i) => {
+    s.classList.toggle('active', i === _sobreIdx);
+  });
+  document.querySelectorAll('.sobre-dot').forEach((d,i) => {
+    d.classList.toggle('active', i === _sobreIdx);
+  });
+}
+
+// Navigation
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('sobrePrev')?.addEventListener('click', () => goSobre(_sobreIdx - 1));
+  document.getElementById('sobreNext')?.addEventListener('click', () => goSobre(_sobreIdx + 1));
+
+  // Swipe support
+  let sx = 0;
+  const car = document.getElementById('sobreCarousel');
+  if(car){
+    car.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, {passive:true});
+    car.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - sx;
+      if(Math.abs(dx) > 40) dx < 0 ? goSobre(_sobreIdx+1) : goSobre(_sobreIdx-1);
+    });
+  }
+});
+
+// ── SOBRE PHOTOS ADMIN (Firestore CRUD) ─────────────────────────────────────
+function handleSobreDrop(e){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag');
+  if(e.dataTransfer.files.length) uploadSobrePhoto(e.dataTransfer.files[0]);
+}
+
+function uploadSobrePhoto(file){
+  if(!file) return;
+  const status = document.getElementById('sobre-upload-status');
+  if(status){ status.textContent = 'Subiendo… 0%'; status.style.display = 'block'; }
+
+  uploadToCloudinary(file, pct => {
+    if(status) status.textContent = `Subiendo… ${pct}%`;
+  }).then(async url => {
+    await db.collection('sobre_photos').add({ src: url, created: Date.now() });
+    if(status){ status.textContent = '✓ Foto añadida'; setTimeout(()=> status.style.display='none', 2000); }
+    renderAdminSobrePhotos();
+    renderSobreCarousel();
+  }).catch(() => {
+    if(status) status.textContent = 'Error al subir';
+  });
+}
+
+async function renderAdminSobrePhotos(){
+  const grid = document.getElementById('admin-sobre-photos');
+  if(!grid) return;
+  grid.innerHTML = '';
+  try {
+    const snap = await db.collection('sobre_photos').orderBy('created').get();
+    snap.forEach(doc => {
+      const p = doc.data();
+      const div = document.createElement('div');
+      div.style.cssText = 'position:relative;aspect-ratio:4/5;overflow:hidden;border:1px solid rgba(245,242,237,.08);border-radius:2px;';
+      div.innerHTML = `
+        <img src="${esc(p.src)}" style="width:100%;height:100%;object-fit:cover;">
+        <button onclick="deleteSobrePhoto('${doc.id}')" style="position:absolute;top:4px;right:4px;background:rgba(180,60,40,.7);border:none;color:#fff;width:20px;height:20px;font-size:.55rem;cursor:pointer;border-radius:2px;">✕</button>`;
+      grid.appendChild(div);
+    });
+  } catch(e){ console.warn('Error cargando sobre photos admin:', e); }
+}
+
+function deleteSobrePhoto(docId){
+  showConfirm('Esta foto se eliminará del carrusel.', async () => {
+    try {
+      await db.collection('sobre_photos').doc(docId).delete();
+      renderAdminSobrePhotos();
+      renderSobreCarousel();
+    } catch(e){ showAlert('Error al eliminar.', {title:'Error',icon:'✗'}); }
+  }, { title:'Eliminar foto', icon:'🗑' });
+}
+
+// ── HERO ADMIN ───────────────────────────────────────────────────────────────
+function loadHeroForm(){
+  const cfg = JSON.parse(localStorage.getItem('alr_hero')||'{}');
+  const typeEl = document.getElementById('hero-type');
+  const srcEl  = document.getElementById('hero-src');
+  if(typeEl) typeEl.value = cfg.type || 'video';
+  if(srcEl)  srcEl.value  = cfg.src  || 'videos/hero-prueba.mp4';
+}
+
+function saveHeroConfig(){
+  const type = document.getElementById('hero-type')?.value || 'video';
+  const src  = document.getElementById('hero-src')?.value.trim() || '';
+  if(!src){ showAlert('Indica la URL del vídeo o imagen.', {title:'Falta URL', icon:'📎'}); return; }
+  const cfg = { type, src };
+  localStorage.setItem('alr_hero', JSON.stringify(cfg));
+  applyHeroMedia(cfg);
+  saveConfigToFirebase('hero', cfg);
+  const msg = document.getElementById('hero-msg');
+  if(msg){ msg.textContent='Guardado ✓'; msg.style.display='block'; setTimeout(()=>msg.style.display='none',2500); }
+}
+
+function uploadHeroFile(file){
+  if(!file) return;
+  const msg = document.getElementById('hero-msg');
+  if(msg){ msg.textContent='Subiendo…'; msg.style.display='block'; }
+  uploadToCloudinary(file, pct => {
+    if(msg) msg.textContent = `Subiendo… ${pct}%`;
+  }).then(url => {
+    const srcEl = document.getElementById('hero-src');
+    if(srcEl) srcEl.value = url;
+    // Auto-detect type
+    const typeEl = document.getElementById('hero-type');
+    if(typeEl) typeEl.value = file.type.startsWith('video') ? 'video' : 'image';
+    if(msg){ msg.textContent='✓ Subido. Pulsa Guardar.'; setTimeout(()=>msg.style.display='none',3000); }
+  }).catch(() => {
+    if(msg) msg.textContent = 'Error al subir';
+  });
+}
+
+function applyHeroMedia(cfg){
+  if(!cfg || !cfg.src) return;
+  const wrap = document.querySelector('.hero-video-wrap');
+  if(!wrap) return;
+
+  if(cfg.type === 'image'){
+    wrap.innerHTML = `<img src="${esc(cfg.src)}" style="width:100%;height:100%;object-fit:cover;">`;
+  } else {
+    wrap.innerHTML = `<video autoplay muted loop playsinline><source src="${esc(cfg.src)}" type="video/mp4"></video>`;
+  }
+}
+
+// Aplicar hero guardado al cargar
+(function(){
+  const cfg = JSON.parse(localStorage.getItem('alr_hero')||'{}');
+  if(cfg.src) applyHeroMedia(cfg);
+})();
+
+// Init: cargar carrusel sobre desde Firestore
+renderSobreCarousel();
+
+// ── PROCESO — EDICIÓN DE PASOS ────────────────────────────────────────────
 const PROCESO_DEFAULT = [
   {num:'01', titulo:'Me escribes',  desc:'Cuéntame tu proyecto, la fecha y lo que tienes en mente. Te respondo en menos de 24h.'},
   {num:'02', titulo:'Hablamos',     desc:'Una llamada o reunión rápida para entender exactamente lo que necesitas y preparar todo.'},
@@ -1798,6 +2018,11 @@ async function checkPass(){
     document.getElementById('admin-login').style.display = 'none';
     document.getElementById('admin-panel').style.display = 'block';
     loadStats();
+    // Posicionar indicador de tabs (necesita un frame para calcular layout)
+    setTimeout(() => {
+      const activeTab = document.querySelector('.admin-tab.active');
+      if(activeTab) moveTabIndicator(activeTab);
+    }, 60);
   } else {
     document.getElementById('admin-error').style.display = 'block';
     document.getElementById('admin-pass').value = '';
@@ -2600,27 +2825,12 @@ document.getElementById('themeBtn').addEventListener('click', () => {
 // Añadir campo marca de agua en saveContacto
 // [applyWatermark integrado en saveContacto]
 
-/* ── WHATSAPP POPUP 30s ────────────────────────────────────────────────────────
-let waPopupShown = sessionStorage.getItem('wa_popup_shown');
+// ── WHATSAPP POPUP ────────────────────────────────────────────────────────
 function closeWaPopup(){
-  document.getElementById('whatsappPopup').classList.remove('show');
+  const popup = document.getElementById('whatsappPopup');
+  if(popup) popup.classList.remove('show');
   sessionStorage.setItem('wa_popup_shown', '1');
 }
-if(!waPopupShown){
-  setTimeout(() => {
-    const popup = document.getElementById('whatsappPopup');
-    if(popup){
-      popup.classList.add('show');
-      // Sincronizar link con el número guardado
-      const d = JSON.parse(localStorage.getItem('alr_contacto')||'{}');
-      if(d.whatsapp){
-        const link = document.getElementById('whatsappPopupLink');
-        if(link) link.href = `https://wa.me/${d.whatsapp.replace(/\D/g,'')}?text=Hola%20Andrea%2C%20me%20gustar%C3%ADa%20hablar%20sobre%20un%20proyecto`;
-      }
-    }
-  }, 30000);
-}
-*/
 
 // ── TRANSICIÓN SECCIONES MÁS PRONUNCIADA ─────────────────────────────────────
 // Reemplazar el observer de secciones por uno con efecto más pronunciado

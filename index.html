@@ -157,8 +157,10 @@ window.addEventListener('load', _applySections);
   <ul class="nav-links">
     <li><a href="#sobre">Sobre mí</a></li>
     <li><a href="#galeria">Galería</a></li>
-    <li><a href="#servicios">Servicios</a></li>
     <li><a href="#videos">Vídeos</a></li>
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="#proceso">Proceso</a></li>
+    <li><a href="#testimonios">Testimonios</a></li>
     <li><a href="#contacto">Contacto</a></li>
   </ul>
   <div class="nav-actions">
@@ -176,9 +178,9 @@ window.addEventListener('load', _applySections);
 <div class="mobile-menu" id="mobileMenu">
   <a href="#sobre"       class="mobile-link">Sobre mí</a>
   <a href="#galeria"     class="mobile-link">Galería</a>
+  <a href="#videos"      class="mobile-link">Vídeos</a>
   <a href="#servicios"   class="mobile-link">Servicios</a>
   <a href="#proceso"     class="mobile-link">Proceso</a>
-  <a href="#videos"      class="mobile-link">Vídeos</a>
   <a href="#testimonios" class="mobile-link">Testimonios</a>
   <a href="#contacto"    class="mobile-link">Contacto</a>
   <a href="https://instagram.com/andrealopz___" target="_blank" class="mobile-menu-social">@andrealopz___</a>
@@ -213,8 +215,13 @@ window.addEventListener('load', _applySections);
 <!-- SOBRE MÍ -->
 <section id="sobre">
   <div class="sobre-img-col reveal">
-    <div class="sobre-img-frame">
-      <img src="fotos/retrato.jpeg" alt="Retrato profesional de Andrea López, fotógrafa y piloto de dron">
+    <div class="sobre-carousel" id="sobreCarousel">
+      <div class="sobre-carousel-track" id="sobreTrack">
+        <div class="sobre-carousel-slide active"><img src="fotos/retrato.jpeg" alt="Andrea López"></div>
+      </div>
+      <button class="sobre-carousel-btn sobre-prev" id="sobrePrev" aria-label="Anterior">&#8592;</button>
+      <button class="sobre-carousel-btn sobre-next" id="sobreNext" aria-label="Siguiente">&#8594;</button>
+      <div class="sobre-carousel-dots" id="sobreDots"></div>
     </div>
     <div class="sobre-accent-box"></div>
   </div>
