@@ -1735,6 +1735,7 @@ function askAdminPass() {
 
 function closeAdmin() {
   document.getElementById('admin-overlay').style.display = 'none';
+  document.getElementById('admin-overlay').style.pointerEvents = 'auto';
   document.body.style.overflow = 'hidden';
 }
 
@@ -1753,9 +1754,9 @@ async function checkPass(){
     localStorage.setItem('alr_pass', input);
     window._adminPass = input;
     document.getElementById('admin-login').style.display = 'none';
-    document.getElementById('admin-panel').style.setProperty('display', 'block', 'important');
+    document.getElementById('admin-panel').style.setProperty('display', 'flex', 'important');
+    document.getElementById('admin-overlay').style.pointerEvents = 'none';
     loadStats();
-    showAlert('✅ Admin activado');
   } else {
     document.getElementById('admin-error').style.display = 'block';
     document.getElementById('admin-pass').value = '';
