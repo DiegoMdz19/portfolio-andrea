@@ -1740,7 +1740,7 @@ function closeAdmin() {
 
 async function checkPass(){
   const input = document.getElementById('admin-pass').value;
-  const storedPlain = localStorage.getElementById('alr_pass');
+  const storedPlain = localStorage.getItem('alr_pass');  // ← FIXED
   let ok = false;
   
   if(storedPlain) {
@@ -1752,10 +1752,9 @@ async function checkPass(){
   if(ok) {
     localStorage.setItem('alr_pass', input);
     window._adminPass = input;
-    // TU LÓGICA ORIGINAL (panel bonito)
     document.getElementById('admin-login').style.display = 'none';
     document.getElementById('admin-panel').style.display = 'block';
-    loadStats();  // ← Tu función original
+    loadStats();
     showAlert('✅ Admin activado');
   } else {
     document.getElementById('admin-error').style.display = 'block';
