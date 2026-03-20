@@ -1040,24 +1040,7 @@ a:focus-visible{
   outline:2px solid var(--warm);
   outline-offset:2px;
 }
-
-/* Overlay oculto por defecto */
-#admin-overlay {
-  display: none;
-}
-
-/* Cuando el admin está activo */
-body[data-admin="true"] #admin-overlay {
-  display: flex;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.85);
-  z-index: 9999;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ── OVERLAY PREMIUM ───────────────────────── */
+/* ── OVERLAY ───────────────── */
 #admin-overlay {
   display: none;
   position: fixed;
@@ -1081,8 +1064,11 @@ body[data-admin="true"] #admin-overlay {
   opacity: 1;
 }
 
-/* ── PANEL (glass + animación) ───────────────── */
+/* ── PANEL ───────────────── */
 .admin-wrap {
+  position: relative;
+  z-index: 10; /* 🔥 CLAVE para clicks */
+
   background: rgba(20,20,20,0.6);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 18px;
@@ -1108,62 +1094,4 @@ body[data-admin="true"] #admin-overlay {
 body[data-admin="true"] .admin-wrap {
   transform: translateY(0) scale(1);
   opacity: 1;
-}
-
-/* ── BOTONES ───────────────── */
-.admin-btn {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #f5f2ed;
-  padding: 10px 18px;
-  border-radius: 10px;
-  cursor: pointer;
-
-  transition: all .25s ease;
-}
-
-.admin-btn:hover {
-  border-color: rgba(255,255,255,0.25);
-  background: rgba(255,255,255,0.05);
-}
-
-/* ── INPUTS ───────────────── */
-.admin-input {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: #f5f2ed;
-  padding: 10px 12px;
-  border-radius: 8px;
-  width: 100%;
-
-  transition: all .2s ease;
-}
-
-.admin-input:focus {
-  border-color: var(--warm);
-  background: rgba(255,255,255,0.06);
-}
-
-/* ── SCROLL BONITO ───────────────── */
-.admin-wrap::-webkit-scrollbar {
-  width: 6px;
-}
-.admin-wrap::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
-  border-radius: 10px;
-}
-
-#admin-login,
-#admin-panel {
-  transition: opacity .25s ease, transform .25s ease;
-}
-
-#admin-panel {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-body[data-admin="true"] #admin-panel[style*="block"] {
-  opacity: 1;
-  transform: translateY(0);
 }
