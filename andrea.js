@@ -1721,8 +1721,7 @@ const adminSeq = 'andrea';
 let adminBuffer = '';
 let _tapCount = 0, _tapTimer = null;
 
-function askAdminPass() {
-  // TU PANEL HTML ORIGINAL (siempre bonito)
+function openAdmin(){
   document.getElementById('admin-overlay').style.display = 'block';
   document.getElementById('admin-login').style.display = 'block';
   document.getElementById('admin-panel').style.display = 'none';
@@ -1731,6 +1730,7 @@ function askAdminPass() {
   document.body.style.overflow = 'hidden';
   setTimeout(() => document.getElementById('admin-pass').focus(), 100);
 }
+function askAdminPass(){ openAdmin(); }
 
 function closeAdmin() {
   document.getElementById('admin-overlay').style.display = 'none';
@@ -1741,21 +1741,16 @@ async function checkPass(){
   const input = document.getElementById('admin-pass').value;
   const storedPlain = localStorage.getItem('alr_pass');
   let ok = false;
-  
-  if(storedPlain) {
+  if(storedPlain){
     ok = input === storedPlain;
   } else {
-    ok = input === 'andrea2025';
+    const h = await sha256(input);
+    ok = h === ADMIN_HASH;
   }
-  
-  if(ok) {
-    localStorage.setItem('alr_pass', input);
-    window._adminPass = input;
-    // TU LÓGICA ORIGINAL (panel bonito)
+  if(ok){
     document.getElementById('admin-login').style.display = 'none';
     document.getElementById('admin-panel').style.display = 'block';
-    loadStats();  // ← Tu función original
-    showAlert('✅ Admin activado');
+    loadStats();
   } else {
     document.getElementById('admin-error').style.display = 'block';
     document.getElementById('admin-pass').value = '';
