@@ -1838,18 +1838,14 @@ function switchTab(id, el) {
   const buttons = document.querySelectorAll('.admin-tab');
 
   contents.forEach(tab => {
-    if(tab.id === id) {
-      tab.classList.add('active');
-      playTabSound();
-    } else {
-      tab.classList.remove('active');
-    }
+    tab.classList.toggle('active', tab.id === id); // ✔
   });
 
   buttons.forEach(btn => btn.classList.remove('active'));
   el.classList.add('active');
 
   moveTabIndicator(el);
+  playTabSound();
 }
 
 // Inicializar indicador al abrir el panel
