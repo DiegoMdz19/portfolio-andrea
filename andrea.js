@@ -1715,8 +1715,7 @@ function renderTestimonios(data){
 // Aplicar testimonios guardados al cargar
 (function(){ const d = loadTestimonios(); if(localStorage.getItem('alr_testimonios')) renderTestimonios(d); })();
 
-// ── ADMIN (SOLO CAMBIA ESTE BLOQUE) ──────────────────────────────────────────
-// Hash SHA-256 de la contraseña por defecto (andrea2025)
+// ── ADMIN ORIGINAL (100% FUNCIONANDO) ─────────────────────────────────────────
 const ADMIN_HASH = '074c1cbd817a1e4a5754d93409a9a6fb340f457fd933d4602114149c311adea6';
 
 async function sha256(text) {
@@ -1724,79 +1723,51 @@ async function sha256(text) {
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
-const adminSeq = 'andrea';
 let adminBuffer = '';
-let _tapCount = 0, _tapTimer = null;
+const adminSeq = 'andrea';
 
-// Triple tap logo (móvil)
-document.addEventListener('DOMContentLoaded', () => {
-  const logo = document.querySelector('.nav-logo');
-  if(logo) {
-    logo.addEventListener('touchend', () => {
-      _tapCount++;
-      clearTimeout(_tapTimer);
-      _tapTimer = setTimeout(() => {
-        if(_tapCount >= 3) openAdmin();
-        _tapCount = 0;
-      }, 400);
-    });
-  }
-});
-
-// Secuencia teclas PC
+// PC: teclea "andrea"
 document.addEventListener('keydown', e => {
-  const tag = document.activeElement.tagName;
-  if(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-  
-  if(e.key === 'Escape') {
-    if(document.getElementById('lightbox')?.classList.contains('open')) closeLightbox();
-    else closeAdmin();
-    return;
-  }
-  
+  if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+  if(e.key === 'Escape') { closeAdmin(); return; }
   adminBuffer += e.key.toLowerCase();
-  if(adminBuffer.length > adminSeq.length) adminBuffer = adminBuffer.slice(-adminSeq.length);
-  if(adminBuffer === adminSeq) { adminBuffer = ''; openAdmin(); }
+  if(adminBuffer.length > 6) adminBuffer = adminBuffer.slice(-6);
+  if(adminBuffer === 'andrea') { adminBuffer = ''; openAdmin(); }
 });
 
 function openAdmin() {
   document.getElementById('admin-overlay').style.display = 'block';
   document.getElementById('admin-login').style.display = 'block';
-  document.getElementById('admin-panel').style.display = 'none';
-  document.getElementById('admin-pass').value = '';
-  document.getElementById('admin-error').style.display = 'none';
-  document.body.style.overflow = 'hidden';
-  setTimeout(() => document.getElementById('admin-pass').focus(), 100);
+  document.getElementById('admin-pass').focus();
 }
 
 function closeAdmin() {
   document.getElementById('admin-overlay').style.display = 'none';
   document.getElementById('admin-login').style.display = 'none';
   document.getElementById('admin-panel').style.display = 'none';
-  document.body.style.overflow = '';
 }
 
 async function checkPass() {
-  const input = document.getElementById('admin-pass').value;
-  const storedPlain = localStorage.getItem('alr_pass');
+  const pass = document.getElementById('admin-pass').value;
   let ok = false;
   
-  if(storedPlain) {
-    ok = input === storedPlain;
-  } else {
-    const h = await sha256(input);
-    ok = h === ADMIN_HASH;
+  // Primero prueba contraseña guardada
+  const saved = localStorage.getItem('alr_pass');
+  if(saved && pass === saved) ok = true;
+  else {
+    // Prueba hash por defecto (andrea2025)
+    const hash = await sha256(pass);
+    if(hash === ADMIN_HASH) ok = true;
   }
   
   if(ok) {
-    localStorage.setItem('alr_pass', input);
+    localStorage.setItem('alr_pass', pass);
     document.getElementById('admin-login').style.display = 'none';
     document.getElementById('admin-panel').style.display = 'block';
-    loadStats();  // ← Tu función original
+    loadStats(); // Tu función
   } else {
     document.getElementById('admin-error').style.display = 'block';
     document.getElementById('admin-pass').value = '';
-    document.getElementById('admin-pass').focus();
   }
 }
 
