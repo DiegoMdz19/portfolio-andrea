@@ -2497,19 +2497,9 @@ function applyWatermark(){
 applyWatermark();
 
 // ── CONTACTO — LOAD Y SAVE ────────────────────────────────────────────────────
-let contactoCargado = false;
-
 function loadContactoForm(){
-  if(contactoCargado) return; // 🚫 evita múltiples ejecuciones
-  contactoCargado = true;
-
-  // 🔥 limpia posibles duplicados en pantalla
-  const contenedor = document.querySelector('.contacto-info');
-  if(contenedor) contenedor.innerHTML = '';
-
   const d = JSON.parse(localStorage.getItem('alr_contacto')||'{}');
   const get = id => document.getElementById(id);
-
   if(get('txt-email-recepcion')) get('txt-email-recepcion').value = d.emailRecepcion || 'diegomdz19@hotmail.com';
   if(get('txt-instagram'))  get('txt-instagram').value  = d.instagram || 'andrealopz___';
   if(get('txt-email'))      get('txt-email').value      = d.email     || '';
