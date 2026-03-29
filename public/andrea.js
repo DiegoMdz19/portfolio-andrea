@@ -625,19 +625,23 @@ function resetTextos(){
   applyTextos(TEXTOS_DEFAULT);
 }
 function applyTextos(t){
+  const lang = document.documentElement.lang || 'es';
+  // Solo aplicar si estamos en el idioma por defecto (ES) o si hay versión EN
+  // Si queremos que el admin controle ambos, necesitaríamos campos dobles en el config
+  if(lang !== 'es') return; 
+
   // Hero tagline
   const tl = document.querySelector('.hero-tagline');
-  if(tl) tl.innerHTML = t.tagline.replace(/\n/g,'<br>');
+  if(tl && t.tagline) tl.innerHTML = t.tagline.replace(/\n/g,'<br>');
   // Hero eyebrow
   const ey = document.querySelector('.hero-eyebrow');
-  if(ey) ey.textContent = t.eyebrow;
-  // Sobre mí
-  const sb = document.querySelectorAll('.sobre-body');
-  if(sb[0]) sb[0].textContent = t.sobre1;
-  if(sb[1]) sb[1].textContent = t.sobre2;
+  if(ey && t.eyebrow) ey.textContent = t.eyebrow;
+  
   // Disponibilidad en contacto
   document.querySelectorAll('.contacto-info-item span').forEach(s => {
-    if(s.textContent.includes('Disponible')) s.textContent = t.disponibilidad;
+    if(s.textContent.includes('Disponible') || s.textContent.includes('Available')) {
+      if(t.disponibilidad) s.textContent = t.disponibilidad;
+    }
   });
 }
 // Aplicar al cargar
@@ -947,25 +951,25 @@ function handleSubmit(e){
   params.email   = params.reply_to  || '';
   params.title   = params.proyecto  || 'Contacto web';
 
-  btn.textContent = 'Enviando...';
+  btn.textContent = btn.dataset.tSending || 'Enviando...';
   btn.style.opacity = '.6';
 
   if(EMAILJS_KEY){
     console.log('Enviando con:', EMAILJS_SERVICE, EMAILJS_TEMPLATE, EMAILJS_KEY, params);
     emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, params)
       .then(() => {
-        btn.textContent = 'Mensaje enviado ✓';
+        btn.textContent = btn.dataset.tSuccess || 'Mensaje enviado ✓';
         btn.style.borderColor = 'var(--warm)'; btn.style.color = 'var(--warm)'; btn.style.opacity = '1';
         setTimeout(() => {
-          btn.innerHTML = 'Enviar mensaje <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+          btn.innerHTML = `${btn.dataset.tDefault || 'Enviar mensaje'} <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
           btn.style.borderColor = ''; btn.style.color = ''; form.reset();
         }, 3000);
       })
       .catch(() => {
-        btn.textContent = 'Error al enviar. Inténtalo de nuevo.';
+        btn.textContent = btn.dataset.tError || 'Error al enviar. Inténtalo de nuevo.';
         btn.style.color = '#c87a6a'; btn.style.opacity = '1';
         setTimeout(() => {
-          btn.innerHTML = 'Enviar mensaje <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+          btn.innerHTML = `${btn.dataset.tDefault || 'Enviar mensaje'} <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
           btn.style.color = '';
         }, 3000);
       });
@@ -1105,59 +1109,51 @@ function closePrivacy(){
 document.getElementById('privacy-modal').addEventListener('click', e => {
   if(e.target === e.currentTarget) closePrivacy();
 });
-initCookieBanner();
 
-// ── VISTA PREVIA ───────────────────────────────────────────────────────────────
-function previewMode(){
-  closeAdmin();
+function showAlert(text, options = {}){
   const msg = document.createElement('div');
-  msg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(200,184,154,.15);border:1px solid rgba(200,184,154,.3);color:#c8b89a;font-family:Outfit,sans-serif;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;padding:10px 24px;z-index:9999;backdrop-filter:blur(8px);';
-  msg.textContent = 'Modo vista previa · Escribe "andrea" para volver al panel';
+  msg.className = 'custom-alert';
+  msg.innerHTML = `<span>${options.icon || '✨'}</span> ${text}`;
   document.body.appendChild(msg);
-  setTimeout(() => msg.remove(), 5000);
+  setTimeout(() => msg.classList.add('show'), 10);
+  setTimeout(() => {
+    msg.classList.remove('show');
+    setTimeout(() => msg.remove(), 500);
+  }, options.timeout || 3000);
 }
 
-// ── EXPORTAR / IMPORTAR CONFIG ─────────────────────────────────────────────────
 function exportConfig(){
   const cfg = {
-    textos:     JSON.parse(localStorage.getItem('alr_textos')     || '{}'),
-    contacto:   JSON.parse(localStorage.getItem('alr_contacto')   || '{}'),
+    textos: JSON.parse(localStorage.getItem('alr_textos') || '{}'),
+    contacto: JSON.parse(localStorage.getItem('alr_contacto') || '{}'),
     multimedia: JSON.parse(localStorage.getItem('alr_multimedia') || '{}'),
-    // fotos se exportan desde Firestore (no localStorage)
-    timestamp:  new Date().toISOString(),
+    timestamp: new Date().toISOString(),
   };
   const blob = new Blob([JSON.stringify(cfg, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `andrea-portfolio-backup-${Date.now()}.json`;
   a.click();
-  localStorage.setItem('alr_ultimo_cambio', new Date().toLocaleDateString('es-ES'));
 }
+
 function importConfig(e){
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
-    try{
+    try {
       const cfg = JSON.parse(ev.target.result);
-      if(cfg.textos)     { localStorage.setItem('alr_textos',     JSON.stringify(cfg.textos));     applyTextos(loadTextos());   saveConfigToFirebase('textos',     cfg.textos);     }
-      if(cfg.contacto)   { localStorage.setItem('alr_contacto',   JSON.stringify(cfg.contacto));   applyContacto(cfg.contacto); saveConfigToFirebase('contacto',   cfg.contacto);   }
-      if(cfg.multimedia) { localStorage.setItem('alr_multimedia', JSON.stringify(cfg.multimedia)); applyMultimedia();           saveConfigToFirebase('multimedia', cfg.multimedia); }
-      // Fotos ahora viven en Firestore, no en localStorage
-      const msg = document.getElementById('stats-msg');
-      msg.textContent = 'Configuración importada correctamente ✓';
-      msg.style.display = 'block';
-      setTimeout(() => msg.style.display = 'none', 3000);
-      loadStats();
-    } catch(err){
-      showAlert('El archivo no es válido o está corrupto.', { title:'Error al importar', icon:'✗' });
+      if(cfg.textos) { localStorage.setItem('alr_textos', JSON.stringify(cfg.textos)); applyTextos(loadTextos()); saveConfigToFirebase('textos', cfg.textos); }
+      if(cfg.contacto) { localStorage.setItem('alr_contacto', JSON.stringify(cfg.contacto)); applyContacto(cfg.contacto); saveConfigToFirebase('contacto', cfg.contacto); }
+      if(cfg.multimedia) { localStorage.setItem('alr_multimedia', JSON.stringify(cfg.multimedia)); applyMultimedia(); saveConfigToFirebase('multimedia', cfg.multimedia); }
+      showAlert('Configuración importada ✓', { icon:'✅' });
+    } catch(err) {
+      showAlert('Error al importar.', { icon:'✗' });
     }
   };
   reader.readAsText(file);
-  e.target.value = '';
 }
 
-// ── GESTIÓN VÍDEOS ADMIN ─────────────────────────────────────────────────
 async function loadVideoAdmin(){
   const list = document.getElementById('admin-video-list');
   if(!list) return;
@@ -1171,14 +1167,33 @@ async function loadVideoAdmin(){
       div.className = 'admin-video-row';
       div.style.cssText = 'background:rgba(245,242,237,.03);border:1px solid rgba(245,242,237,.08);padding:14px;border-radius:2px;display:flex;align-items:center;justify-content:space-between;gap:16px;transition:opacity .2s,border-color .2s;';
       div.innerHTML = `
-        <div style="display:flex;align-items:center;gap:14px;">
-          <div>
-            <p style="font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:#c8b89a;">${esc((v.src||'').split('/').pop())}</p>
-            <p style="font-size:.78rem;color:#f0ece4;font-weight:200;margin-top:4px;">${esc(v.titulo) || '—'}</p>
-            <p style="font-size:.65rem;color:#7a7068;margin-top:2px;">${esc(v.desc) || '—'}</p>
+        <div style="flex:1;">
+          <p style="font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(200,184,154,.4);margin-bottom:8px;">${esc((v.src||'').split('/').pop())}</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label style="font-size:.45rem;color:rgba(200,184,154,.4);text-transform:uppercase;">Título (ES)</label>
+              <div style="display:flex;gap:6px;">
+                <input type="text" value="${esc(v.titulo)||''}" onchange="updateVideoField('${doc.id}','titulo',this.value)" style="flex:1;background:rgba(245,242,237,.05);border:none;border-bottom:1px solid rgba(245,242,237,.1);color:#f0ece4;font-size:.65rem;padding:4px 0;outline:none;">
+                <button onclick="autoTranslateVideo('${doc.id}',this)" style="background:rgba(200,184,154,.1);border:none;color:var(--warm);padding:0 8px;cursor:pointer;border-radius:2px;font-size:10px;">✨</button>
+              </div>
+            </div>
+            <div>
+              <label style="font-size:.45rem;color:rgba(200,184,154,.4);text-transform:uppercase;">Título (EN)</label>
+              <input type="text" value="${esc(v.titulo_en)||''}" onchange="updateVideoField('${doc.id}','titulo_en',this.value)" style="width:100%;background:rgba(245,242,237,.05);border:none;border-bottom:1px solid rgba(245,242,237,.1);color:#f0ece4;font-size:.65rem;padding:4px 0;outline:none;">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
+            <div>
+              <label style="font-size:.45rem;color:rgba(200,184,154,.4);text-transform:uppercase;">Descripción (ES)</label>
+              <input type="text" value="${esc(v.desc)||''}" onchange="updateVideoField('${doc.id}','desc',this.value)" style="width:100%;background:rgba(245,242,237,.05);border:none;border-bottom:1px solid rgba(245,242,237,.1);color:#f0ece4;font-size:.62rem;padding:4px 0;outline:none;">
+            </div>
+            <div>
+              <label style="font-size:.45rem;color:rgba(200,184,154,.4);text-transform:uppercase;">Descripción (EN)</label>
+              <input type="text" value="${esc(v.desc_en)||''}" onchange="updateVideoField('${doc.id}','desc_en',this.value)" style="width:100%;background:rgba(245,242,237,.05);border:none;border-bottom:1px solid rgba(245,242,237,.1);color:#f0ece4;font-size:.62rem;padding:4px 0;outline:none;">
+            </div>
           </div>
         </div>
-        <button onclick="removeVideo('${doc.id}')" style="background:rgba(180,60,40,.5);border:none;color:#fff;padding:6px 14px;font-family:Outfit,sans-serif;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;flex-shrink:0;">Eliminar</button>
+        <button onclick="removeVideo('${doc.id}')" style="background:rgba(180,60,40,.3);border:none;color:#fff;padding:6px 12px;font-family:Outfit,sans-serif;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">Eliminar</button>
       `;
       list.appendChild(div);
     });
@@ -1242,22 +1257,28 @@ function removeVideo(docId){
 async function renderPublicVideos(){
   const grid = document.querySelector('.video-grid');
   if(!grid) return;
-  grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;font-size:.72rem;color:#7a7068;font-weight:200;padding:40px 0;">Cargando vídeos…</p>';
+  const loadingT = grid.parentElement.dataset.tLoading || 'Cargando vídeos…';
+  grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;font-size:.72rem;color:#7a7068;font-weight:200;padding:40px 0;">${loadingT}</p>`;
+
 
   try {
     const snapshot = await db.collection('videos').orderBy('created').get();
     grid.innerHTML = '';
 
+    const lang = document.documentElement.lang || 'es';
     snapshot.forEach((doc, i) => {
       const v = doc.data();
+      const title = (lang === 'en' && v.titulo_en) ? v.titulo_en : (v.titulo || esc((v.src||'').split('/').pop()));
+      const desc  = (lang === 'en' && v.desc_en) ? v.desc_en : (v.desc || '');
+      
       const card = document.createElement('div');
       card.className = 'video-card reveal' + (i === 1 ? ' reveal-delay-1' : i === 2 ? ' reveal-delay-2' : '');
       card.dataset.src   = v.src;
-      card.dataset.title = v.titulo || '';
-      card.dataset.desc  = v.desc || '';
+      card.dataset.title = title;
+      card.dataset.desc  = desc;
       card.innerHTML = `
-        <div class="video-thumb" style="background:#111;">
-          <video muted loop playsinline preload="metadata" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.8;"
+        <div class="video-thumb" style="background:#000;">
+          <video muted loop playsinline preload="none" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.8;"
             onmouseenter="this.play()" onmouseleave="this.pause()" ontouchstart="this.play()" ontouchend="this.pause()">
             <source src="${esc(v.src)}" type="video/mp4">
           </video>
@@ -1265,9 +1286,10 @@ async function renderPublicVideos(){
         </div>
         <div class="video-info">
           <span class="video-category">${esc(v.cat) || 'Dron'}</span>
-          <h3 class="video-title">${esc(v.titulo) || esc((v.src||'').split('/').pop())}</h3>
-          <p class="video-desc">${esc(v.desc)}</p>
+          <h3 class="video-title">${esc(title)}</h3>
+          <p class="video-desc">${esc(desc)}</p>
         </div>`;
+
 
       card.addEventListener('click', () => {
         buildVlbItems();
@@ -2067,6 +2089,7 @@ function openAdmin(){
   document.getElementById('admin-error').style.display = 'none';
 
   document.body.style.overflow = 'hidden';
+  if(window.lenis) window.lenis.stop();
 
   setTimeout(() => {
     document.getElementById('admin-pass').focus();
@@ -2081,7 +2104,9 @@ function closeAdmin() {
   setTimeout(() => {
     document.body.removeAttribute('data-admin');
     overlay.style.opacity = '';
+    overlay.style.display = 'none';
     document.body.style.overflow = '';
+    if(window.lenis) window.lenis.start();
   }, 300);
 }
 
@@ -2340,7 +2365,6 @@ async function addPhoto(){
     await db.collection('photos').add({
       src:         pendingFileUrl,
       titulo:      document.getElementById('newTitulo')?.value || '',
-      cat:         document.getElementById('newCat')?.value || 'fotografia',
       folderId:    folderId || null,
       isPermanent: false,
       created:     Date.now()
@@ -2355,6 +2379,7 @@ async function addPhoto(){
     document.getElementById('newPhotoFields').style.display = 'none';
     renderAdminGallery();
     renderPublicGallery();
+    loadPublicFolderFilters(); // Render new public filters
   } catch(e) {
     showAlert('Error al guardar la foto.', { title:'Error', icon:'✗' });
     console.error(e);
@@ -2388,35 +2413,44 @@ async function renderAdminGallery(){
     snapshot.forEach(doc => {
       const p = doc.data();
       const div = document.createElement('div');
-      div.className = 'admin-photo';
+      div.className = 'admin-photo-card';
       div.draggable = true;
-      div.style.cssText = 'position:relative;overflow:hidden;border:1px solid rgba(245,242,237,.08);border-radius:2px;';
       div.innerHTML = `
-        <div style="position:relative;aspect-ratio:1;">
-          <img src="${esc(p.src)}" alt="${esc(p.titulo)}" style="width:100%;height:100%;object-fit:cover;">
-          <div style="position:absolute;bottom:0;left:0;right:0;padding:8px;background:linear-gradient(transparent,rgba(0,0,0,.75));">
-            <p style="font-size:.58rem;color:#f0ece4;font-weight:200;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(p.titulo) || 'Sin título'}</p>
-            <p style="font-size:.48rem;color:rgba(200,184,154,.5);text-transform:uppercase;letter-spacing:.12em;">${esc(p.cat)}</p>
+        <div class="apc-image" style="background:#000;">
+          <img src="${esc(p.src.includes('cloudinary.com') ? p.src.replace('/upload/','/upload/w_400,q_auto,f_auto/') : p.src)}" alt="${esc(p.titulo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
+          <div class="apc-actions">
+            <button onclick="deletePhoto('${doc.id}')" class="apc-del" title="Eliminar">✕</button>
+            <div class="apc-likes">❤️ ${p.likes?.length || 0}</div>
           </div>
-          <button onclick="deletePhoto('${doc.id}')" style="position:absolute;top:6px;right:6px;background:rgba(180,60,40,.7);border:none;color:#fff;width:24px;height:24px;font-size:.6rem;cursor:pointer;border-radius:2px;">✕</button>
         </div>
-        <div style="padding:6px 8px 8px;background:rgba(0,0,0,.25);display:flex;flex-direction:column;gap:5px;">
-          <select
-            onchange="assignPhotoToFolder('${doc.id}',this.value)"
-            style="width:100%;background:rgba(245,242,237,.06);border:none;border-bottom:1px solid rgba(245,242,237,.12);color:#f0ece4;font-family:'Outfit',sans-serif;font-size:.55rem;font-weight:200;padding:4px 0;outline:none;">
-            ${folderOpts}
-          </select>
-          <label style="display:flex;align-items:center;gap:5px;font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(200,184,154,.4);cursor:pointer;">
-            <input type="checkbox" ${p.isPermanent?'checked':''} style="accent-color:var(--warm);width:11px;height:11px;"
-              onchange="setPhotoPermanent('${doc.id}',this.checked)">
-            Permanente
-          </label>
+        <div class="apc-content">
+          <div class="apc-field">
+            <label>Título (ES)</label>
+            <div class="apc-input-wrap">
+              <input type="text" value="${esc(p.titulo) || ''}" onchange="updatePhotoTitle('${doc.id}', this.value, 'es')" placeholder="Sin título">
+              <button onclick="autoTranslateTitle('${doc.id}', this)" class="apc-translate-btn" title="Traducir al Inglés">✨</button>
+            </div>
+          </div>
+          <div class="apc-field">
+            <label>Título (EN)</label>
+            <input type="text" value="${esc(p.titulo_en) || ''}" onchange="updatePhotoTitle('${doc.id}', this.value, 'en')" placeholder="Untitled">
+          </div>
+          <div class="apc-field">
+            <label>Carpeta</label>
+            <select onchange="assignPhotoToFolder('${doc.id}',this.value)">
+              ${folderOpts}
+            </select>
+          </div>
+          <div class="apc-footer">
+            <label class="apc-check">
+              <input type="checkbox" ${p.isPermanent?'checked':''} onchange="setPhotoPermanent('${doc.id}',this.checked)">
+              <span>Permanente</span>
+            </label>
+          </div>
         </div>`;
 
-      // Marcar la carpeta actual en el select
       const sel = div.querySelector('select');
       if(sel && p.folderId) sel.value = p.folderId;
-
       grid.appendChild(div);
     });
   } catch(e) {
@@ -2425,16 +2459,20 @@ async function renderAdminGallery(){
 }
 
 async function assignPhotoToFolder(photoId, folderId){
+  if(!photoId) return;
   try {
     await db.collection('photos').doc(photoId).update({ folderId: folderId || null });
-    // Actualizar caché y galería pública sin re-renderizar el admin (para no perder los selects)
+    // Actualizar caché
     invalidateFoldersCache();
     _allGalleryPhotos = [];
+    // Actualizar vista pública en segundo plano
     renderPublicGallery();
     loadPublicFolderFilters();
+    // Feedback visual pequeño para confirmar que se ha guardado
+    showAlert('Carpeta actualizada', { title:'Info', icon:'📁', timeout: 1000 });
   } catch(e){
     console.error('Error asignando carpeta:', e);
-    showAlert('Error al asignar carpeta. Asegúrate de haber iniciado sesión en el panel y de que el inicio de sesión anónimo esté activo en Firebase.', { title:'Error', icon:'✗' });
+    showAlert('Error al asignar carpeta.', { title:'Error', icon:'✗' });
   }
 }
 
@@ -2461,50 +2499,6 @@ function deletePhoto(docId){
 }
 
 // ── GALERÍA PÚBLICA ───────────────────────────────────────────────────────────
-async function renderPublicGallery(){
-  const grid = document.getElementById('galleryGrid');
-  if(!grid) return;
-  grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;font-size:.72rem;color:#7a7068;font-weight:200;padding:40px 0;">Cargando galería…</p>';
-
-  try {
-    const snapshot = await db.collection("photos")
-                             .orderBy("created", "desc")
-                             .get();
-    grid.innerHTML = '';
-
-    snapshot.forEach((doc, i) => {
-      const p = doc.data();
-      const div = document.createElement('div');
-      div.className = 'gallery-item';
-      div.dataset.cat    = p.cat || 'fotografia';
-      div.dataset.index  = i;
-      div.dataset.titulo = p.titulo || '';
-      div.dataset.desc   = '';
-
-      div.innerHTML = `
-        <img src="${esc(p.src)}" alt="${esc(p.titulo)}">
-        <div class="gallery-item-overlay"><span class="gallery-item-label">${esc(p.titulo)}</span></div>
-      `;
-
-      // Click para abrir lightbox
-      div.addEventListener('click', () => {
-        buildLightboxItems();
-        const idx = lightboxItems.indexOf(div);
-        if(idx >= 0) openLightbox(idx);
-      });
-      div.addEventListener('mouseenter', () => setCursorView('Ver'));
-      div.addEventListener('mouseleave', () => setCursorView(null));
-
-      grid.appendChild(div);
-    });
-
-    // Re-aplicar filtro activo
-    if(typeof activeFilter !== 'undefined') applyFilter(activeFilter);
-  } catch(e) {
-    console.error('Error cargando galería pública:', e);
-  }
-}
-
 // ── INIT ──────────────────────────────────────────────────────────────────────────────
 renderAdminGallery();
 renderPublicGallery();
@@ -2515,7 +2509,16 @@ loadConfigFromFirebase();
 // MÓDULO: CARPETAS, GALERÍA AVANZADA, VISTA ÁLBUM, ZIP, AUTO-BORRADO
 // ──────────────────────────────────────────────────────────────────────────────
 
-// ── CARPETAS ─────────────────────────────────────────────────────────────────────
+// ── CARPETAS ───────────────────────────────────────────────────────────
+function closeFolderQR(){
+  const m = document.getElementById('folder-qr-modal');
+  if(!m) return;
+  m.style.opacity = '0';
+  setTimeout(() => {
+    m.style.display = 'none';
+  }, 250);
+}
+
 let _foldersCache = null;
 
 function genToken(){
@@ -2601,24 +2604,26 @@ async function loadFoldersAdmin(){
     row.className = 'folder-row';
     row.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
-          <input type="text" value="${esc(f.name)}" class="admin-input" style="flex:1;max-width:180px;"
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
+          <input type="text" value="${esc(f.name)}" class="admin-input" style="flex:1;max-width:200px;font-weight:400;color:var(--warm);"
             onblur="renameFolder('${f.id}',this.value)">
-          <span style="font-size:.55rem;color:#7a7068;letter-spacing:.1em;white-space:nowrap;">${counts[f.id]||0} fotos</span>
+          <span style="font-size:.58rem;color:#7a7068;letter-spacing:.05em;background:rgba(245,242,237,.05);padding:3px 8px;border-radius:10px;white-space:nowrap;">${counts[f.id]||0} fotos</span>
         </div>
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-          <label class="folder-toggle">
-            <input type="checkbox" ${f.isPublic?'checked':''}
-              onchange="toggleFolderPublic('${f.id}',this.checked)">
-            Pública
-          </label>
-          <label class="folder-toggle">
-            <input type="checkbox" ${f.allowDownload?'checked':''}
-              onchange="toggleFolderDownload('${f.id}',this.checked)">
-            Descarga
-          </label>
-          <button class="admin-btn" onclick="showFolderQRFromBtn(this)" data-id="${f.id}" data-token="${f.token}" style="font-size:.52rem;padding:6px 12px;" title="${esc(f.name)}">QR</button>
-          <button onclick="deleteFolder('${f.id}')" style="background:rgba(180,60,40,.4);border:none;color:#fff;padding:6px 12px;font-size:.55rem;cursor:pointer;">✕</button>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="display:flex;gap:12px;">
+            <label class="apc-check">
+              <input type="checkbox" ${f.isPublic?'checked':''} onchange="toggleFolderPublic('${f.id}',this.checked)">
+              <span>Pública</span>
+            </label>
+            <label class="apc-check">
+              <input type="checkbox" ${f.allowDownload?'checked':''} onchange="toggleFolderDownload('${f.id}',this.checked)">
+              <span>Descarga</span>
+            </label>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="admin-btn" onclick="showFolderQRFromBtn(this)" data-id="${f.id}" data-token="${f.token}" style="font-size:.55rem;padding:7px 14px;" title="${esc(f.name)}">QR</button>
+            <button onclick="deleteFolder('${f.id}')" class="admin-btn" style="border-color:rgba(180,60,40,.3);color:rgba(200,100,80,.8);font-size:.55rem;padding:7px 12px;">✕</button>
+          </div>
         </div>
       </div>`;
     list.appendChild(row);
@@ -2721,7 +2726,7 @@ function getFilteredPhotos(){
       if(activeFilter.startsWith('folder:')){
         if(p.folderId !== activeFilter.replace('folder:','')) return false;
       } else {
-        if(p.cat !== activeFilter) return false;
+        return false; // Old cat filter ignores unmatched
       }
     }
     if(_gallerySearch){
@@ -2742,21 +2747,28 @@ function renderGalleryPage(){
 
   grid.innerHTML = '';
   if(!slice.length){
-    grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;font-size:.75rem;color:#7a7068;font-weight:200;padding:40px 0;">No hay fotos en esta categoría.</p>';
+    const emptyT = grid.dataset.tEmpty || 'No hay fotos en esta carpeta.';
+    grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;font-size:.75rem;color:#7a7068;font-weight:200;padding:40px 0;">${emptyT}</p>`;
+
     updateGalleryFooter(0, 0);
     return;
   }
 
+  const lang = document.documentElement.lang || 'es';
   slice.forEach((p, i) => {
+    const title = (lang === 'en' && p.titulo_en) ? p.titulo_en : (p.titulo || '');
     const div = document.createElement('div');
     div.className      = 'gallery-item';
-    div.dataset.cat    = p.cat || 'fotografia';
     div.dataset.folder = p.folderId || '';
     div.dataset.index  = i;
-    div.dataset.titulo = p.titulo || '';
+    div.dataset.titulo = title;
+    const optSrc = (p.src && p.src.includes('cloudinary.com') && p.src.includes('/upload/')) ? p.src.replace('/upload/', '/upload/w_800,f_auto,q_auto/') : p.src;
     div.innerHTML = `
-      <img src="${esc(p.src)}" alt="${esc(p.titulo||'')}">
-      <div class="gallery-item-overlay"><span class="gallery-item-label">${esc(p.titulo||'')}</span></div>`;
+      <picture>
+        <source srcset="${esc(optSrc)}" type="image/webp">
+        <img src="${esc(p.src)}" alt="${esc(title)}" loading="lazy" class="gl-image">
+      </picture>
+      <div class="gallery-item-overlay"><span class="gallery-item-label">${esc(title)}</span></div>`;
     div.addEventListener('click', () => {
       buildLightboxItems();
       const idx = lightboxItems.indexOf(div);
@@ -2778,8 +2790,11 @@ function updateGalleryFooter(showing, total){
   if(!footer) return;
   if(!total){ footer.style.display = 'none'; return; }
   footer.style.display = 'flex';
-  if(counter) counter.textContent = `${showing} de ${total} fotos`;
-  if(btn)     btn.style.display   = showing < total ? 'inline-block' : 'none';
+  if(counter) {
+    const pattern = counter.dataset.tShowing || '{showing} de {total} fotos';
+    counter.textContent = pattern.replace('{showing}', showing).replace('{total}', total);
+  }
+  if(btn) btn.style.display = showing < total ? 'inline-block' : 'none';
 }
 
 function loadMorePhotos(){
@@ -2797,7 +2812,9 @@ function onGallerySearch(val){
 async function renderPublicGallery(){
   const grid = document.getElementById('galleryGrid');
   if(!grid) return;
-  grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;font-size:.72rem;color:#7a7068;font-weight:200;padding:40px 0;">Cargando galería…</p>';
+  const loadingT = grid.dataset.tLoading || 'Cargando galería…';
+  grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;font-size:.72rem;color:#7a7068;font-weight:200;padding:40px 0;">${loadingT}</p>`;
+
   try {
     const snap = await db.collection('photos').orderBy('created','desc').get();
     _allGalleryPhotos = [];
@@ -2808,20 +2825,65 @@ async function renderPublicGallery(){
   } catch(e){ console.error('Error galería:', e); }
 }
 
-// Actualizar applyFilter para que funcione con carpetas
-const _origApplyFilter = applyFilter;
+// applyFilter con soporte de carpetas
 function applyFilter(filter){
   activeFilter = filter;
   document.querySelectorAll('.gallery-filter button').forEach(b => {
     b.classList.toggle('active', b.dataset.filter === filter);
   });
   _galleryPage = 0;
-  renderGalleryPage();
+  if(filter.startsWith('folder:')){
+    // Para filtros de carpeta: siempre refrescar Firestore para garantizar que las
+    // asignaciones recientes se reflejen. renderPublicGallery llama renderGalleryPage al final.
+    renderPublicGallery();
+  } else {
+    renderGalleryPage();
+  }
 }
 
 // ── VISTA ÁLBUM CLIENTE ──────────────────────────────────────────────────────────────
 let _albumPhotos = [];
 let _albumFolder = null;
+
+function getClientId() {
+  let id = localStorage.getItem('alr_clientId');
+  if(!id) {
+    id = genToken();
+    localStorage.setItem('alr_clientId', id);
+  }
+  return id;
+}
+
+async function toggleFavorite(photoId, btn) {
+  if(!photoId) return;
+  const clientId = getClientId();
+  const isActive = btn.classList.contains('active');
+  
+  btn.classList.toggle('active');
+  const svg = btn.querySelector('svg');
+  if(isActive) {
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+  } else {
+    svg.setAttribute('fill', '#c87a6a');
+    svg.setAttribute('stroke', '#c87a6a');
+  }
+
+  try {
+    const ref = db.collection('photos').doc(photoId);
+    if(isActive) {
+      await ref.update({ likes: firebase.firestore.FieldValue.arrayRemove(clientId) });
+    } else {
+      await ref.update({ likes: firebase.firestore.FieldValue.arrayUnion(clientId) });
+    }
+  } catch(e) {
+    console.error('Error toggle fav:', e);
+    btn.classList.toggle('active');
+    svg.setAttribute('fill', isActive ? '#c87a6a' : 'none');
+    svg.setAttribute('stroke', isActive ? '#c87a6a' : 'currentColor');
+    showAlert(window.t('error.fav') || 'Error de conexión o permisos al guardar favorito.', {title: 'Error', icon: '✗'});
+  }
+}
 
 async function checkAlbumMode(){
   const token = new URLSearchParams(location.search).get('album');
@@ -2871,13 +2933,27 @@ async function openAlbumView(token){
     const div = document.createElement('div');
     div.className = 'gallery-item album-item';
     const dlHtml = _albumFolder.allowDownload
-      ? `<a href="${esc(p.src.replace('/upload/', '/upload/fl_attachment/'))}" download class="album-photo-dl" onclick="event.stopPropagation()" title="Descargar">⬇</a>`
+      ? `<a href="${esc(p.src.replace('/upload/', '/upload/fl_attachment/'))}" download class="album-photo-dl" onclick="event.stopPropagation()" title="Descargar" style="text-decoration:none; color:#f0ece4; font-size:1.1rem; background:rgba(0,0,0,.5); border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);">⬇</a>`
       : '';
+    const clientId = getClientId();
+    const isLiked = Array.isArray(p.likes) && p.likes.includes(clientId);
+    const likeHtml = `<button class="album-photo-like ${isLiked ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${p.id}', this)" title="Marcar Favorito" style="background:rgba(0,0,0,.5); border:none; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#f0ece4; backdrop-filter:blur(4px); transition:transform 0.2s;">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="${isLiked ? '#c87a6a' : 'currentColor'}" fill="${isLiked ? '#c87a6a' : 'none'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+        </svg>
+      </button>`;
+    const optSrc = (p.src && p.src.includes('cloudinary.com') && p.src.includes('/upload/')) ? p.src.replace('/upload/', '/upload/w_800,f_auto,q_auto/') : p.src;
     div.innerHTML = `
-      <img src="${esc(p.src)}" alt="${esc(p.titulo||'')}">
-      <div class="gallery-item-overlay">
+      <picture>
+        <source srcset="${esc(optSrc)}" type="image/webp">
+        <img src="${esc(p.src)}" alt="${esc(p.titulo||'')}" loading="lazy" class="gl-image">
+      </picture>
+      <div class="gallery-item-overlay" style="display:flex; justify-content:space-between; align-items:flex-end;">
         <span class="gallery-item-label">${esc(p.titulo||'')}</span>
-        ${dlHtml}
+        <div style="display:flex; gap:8px;">
+          ${likeHtml}
+          ${dlHtml}
+        </div>
       </div>`;
     grid.appendChild(div);
   });
@@ -2977,18 +3053,14 @@ async function manualCleanExpired(){
 }
 
 // Actualizar addPhoto para guardar folderId (reemplaza la función original por hoisting)
+// Hoisting fallback (can be ignored now but kept for structural purity without 'cat')
 async function addPhoto(){
   const folderId = document.getElementById('newFolder')?.value || null;
-  // Temporalmente parchear db.collection para inyectar folderId
-  const _orig = db.collection.bind(db);
-  const _addFn = window._pendingAddPhoto;
-  // Delegar al original pero añadir folderId al documento
   if(!pendingFileUrl){ showAlert('La imagen aún se está subiendo. Espera un momento.', { title:'Espera', icon:'⏳' }); return; }
   try {
     await db.collection('photos').add({
       src:      pendingFileUrl,
       titulo:   document.getElementById('newTitulo')?.value || '',
-      cat:      document.getElementById('newCat')?.value || 'fotografia',
       folderId: folderId || null,
       isPermanent: false,
       created:  Date.now()
@@ -3007,6 +3079,7 @@ async function addPhoto(){
     document.getElementById('newPhotoFields').style.display = 'none';
     renderAdminGallery();
     renderPublicGallery();
+    loadPublicFolderFilters();
   } catch(e) {
     showAlert('Error al guardar la foto.', { title:'Error', icon:'✗' });
     console.error(e);
@@ -3844,3 +3917,76 @@ setTimeout(() => {
   _barReady = true;
   _checkReadyToEnter();
 }, 3600);
+
+// ── TRADUCCIÓN AUTO ──────────────────────────────────────────────────────────────────
+async function autoTranslateTitle(photoId, btn){
+  const card = btn.closest('.admin-photo-card');
+  const esInput = card.querySelector('input[placeholder="Sin título"]');
+  const enInput = card.querySelector('input[placeholder="Untitled"]');
+  const text = esInput.value;
+  if(!text) return;
+
+  btn.classList.add('loading');
+  const oldTxt = btn.textContent;
+  btn.textContent = '...';
+
+  try {
+    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=es|en`);
+    const data = await res.json();
+    const translated = data.responseData.translatedText;
+    if(translated){
+      enInput.value = translated;
+      await updatePhotoTitle(photoId, translated, 'en');
+      showAlert('Traducción aplicada ✨', { icon:'✅', timeout: 1500 });
+    }
+  } catch(e){
+    console.error('Error traduciendo:', e);
+    showAlert('Error al traducir', { title:'Error', icon:'✗' });
+  } finally {
+    btn.classList.remove('loading');
+    btn.textContent = oldTxt;
+  }
+}
+
+async function updatePhotoTitle(photoId, val, lang){
+  const field = lang === 'en' ? 'titulo_en' : 'titulo';
+  try {
+    await db.collection('photos').doc(photoId).update({ [field]: val });
+  } catch(e){
+    console.error('Error actualizando título:', e);
+  }
+}
+
+// ── OPTIMIZACIONES FINAL Y VIDEO I18N ───────────────────────────────────────────
+async function autoTranslateVideo(videoId, btn){
+  const card = btn.closest('.admin-video-row');
+  const esInput = card.querySelector('input[onchange*="\'titulo\'"]');
+  const enInput = card.querySelector('input[onchange*="\'titulo_en\'"]');
+  const text = esInput.value;
+  if(!text) return;
+
+  btn.style.opacity = '0.5';
+  btn.textContent = '...';
+
+  try {
+    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=es|en`);
+    const data = await res.json();
+    const translated = data.responseData.translatedText;
+    if(translated){
+      enInput.value = translated;
+      await db.collection('videos').doc(videoId).update({ titulo_en: translated });
+      showAlert('Traducción de vídeo lista ✨', { icon:'✅', timeout: 1500 });
+    }
+  } catch(e){
+    console.error(e);
+  } finally {
+    btn.style.opacity = '1';
+    btn.textContent = '✨';
+  }
+}
+
+async function updateVideoField(videoId, field, val){
+  try {
+    await db.collection('videos').doc(videoId).update({ [field]: val });
+  } catch(e){ console.error(e); }
+}

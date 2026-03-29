@@ -1,0 +1,33 @@
+---
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+<!-- NAV -->
+<nav id="navbar">
+  <a href={lang === 'en' ? '/en' : '/'} class="nav-logo">Andrea López</a>
+  <ul class="nav-links">
+    <li><a href="#sobre">{t('nav.sobre')}</a></li>
+    <li><a href="#galeria">{t('nav.galeria')}</a></li>
+    <li><a href="#videos">{t('nav.videos')}</a></li>
+    <li><a href="#servicios">{t('nav.servicios')}</a></li>
+    <li><a href="#proceso">{t('nav.proceso')}</a></li>
+    <li><a href="#testimonios">{t('nav.testimonios')}</a></li>
+    <li><a href="#contacto">{t('nav.contacto')}</a></li>
+  </ul>
+  <div class="nav-actions">
+    <div style="font-size: 0.65rem; display: flex; gap: 8px; color: var(--mid);">
+      <a href="/" style={`text-decoration:none; color: ${lang === 'es' ? 'var(--ink)' : 'inherit'}; font-weight: ${lang === 'es' ? 400 : 300};`}>ES</a>
+      <span>|</span>
+      <a href="/en" style={`text-decoration:none; color: ${lang === 'en' ? 'var(--ink)' : 'inherit'}; font-weight: ${lang === 'en' ? 400 : 300};`}>EN</a>
+    </div>
+    <button class="theme-btn" id="themeBtn" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro">
+      <span class="icon-light">☀</span>
+      <span class="icon-dark">☾</span>
+    </button>
+    <button class="hamburger" id="hamburger" aria-label="Menú">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
