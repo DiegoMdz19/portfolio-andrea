@@ -1206,3 +1206,81 @@ body[data-admin="true"] .admin-wrap {
 .folder-row:hover{border-color:rgba(200,184,154,.15);}
 .folder-toggle{display:flex;align-items:center;gap:6px;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(200,184,154,.4);white-space:nowrap;}
 .folder-toggle input{accent-color:var(--warm);width:13px;height:13px;cursor:pointer;}
+
+/* ── HERO: soporte dvh para iPhones con barra de dirección ──────────────────── */
+@supports(height:100dvh){#hero{height:100dvh;}}
+
+/* ── SAFE AREA (iPhone X / notch / Dynamic Island) ────────────────────── */
+#navbar{padding-top:max(32px,env(safe-area-inset-top));}
+#navbar.scrolled{padding-top:max(18px,env(safe-area-inset-top));}
+footer .footer-bottom{padding-bottom:max(20px,env(safe-area-inset-bottom));}
+.whatsapp-btn,.sound-btn{bottom:max(28px,calc(env(safe-area-inset-bottom)+8px));}
+
+/* ── TOUCH: overlay siempre visible en dispositivos sin hover ────────────── */
+@media(hover:none){
+  .gallery-item-overlay{opacity:.85;}
+  .gallery-item:hover img{transform:none;filter:grayscale(20%);}
+  .servicio-card:hover{transform:none;}
+  .servicio-card:hover::before{transform:scaleX(0);}
+}
+
+/* ── RESPONSIVE 900px: secciones sin padding reducido ──────────────────── */
+@media(max-width:900px){
+  #servicios,#testimonios,#proceso{padding:80px 28px;}
+  .gallery-controls{flex-direction:column;align-items:flex-start;gap:14px;}
+  .gallery-search-wrap{width:100%;}
+  .gallery-search-wrap input{flex:1;width:auto;}
+  .gallery-footer{padding:32px 28px 16px;}
+}
+
+/* ── RESPONSIVE 480px: ajuste fino móvil ─────────────────────────────── */
+@media(max-width:480px){
+  /* Paddings generales */
+  #galeria,#videos{padding:60px 18px;}
+  #servicios,#testimonios{padding:60px 18px;}
+  #proceso{padding:60px 18px;}
+  #contacto{padding:72px 18px;}
+  #sobre{padding:60px 18px;gap:36px;}
+  .section-label{margin-bottom:24px;}
+
+  /* ⚠️ CRITICAL: evita zoom automático en iOS (mínimo 16px) */
+  .form-group input,
+  .form-group textarea,
+  .form-group select,
+  .admin-input,
+  .gallery-search-wrap input,
+  #qr-url{font-size:16px !important;}
+
+  /* Touch targets mínimo 44px */
+  .gallery-filter button{padding:12px 6px;min-height:44px;}
+  .lightbox-btn{width:44px;height:44px;}
+  .sobre-carousel-btn{width:40px;height:40px;}
+
+  /* Lightbox simplificado en móvil */
+  .lightbox-slideshow-btn{display:none;}
+  .lightbox-slide{padding:0 2vw;}
+  .lightbox-slide img{max-width:96vw;max-height:72vh;}
+  .lightbox-thumb-strip{display:none;}
+  .lightbox-close,.vlb-close{top:16px;right:16px;font-size:1.4rem;}
+
+  /* Cookie banner */
+  #cookie-banner{padding:16px 18px;flex-direction:column;gap:12px;}
+  .cookie-btns{width:100%;}
+  .cookie-btn{flex:1;text-align:center;padding:12px;}
+
+  /* Galería footer */
+  .gallery-footer{padding:24px 18px 12px;gap:12px;flex-direction:column;align-items:center;}
+  .gallery-counter{order:2;}
+  .gallery-load-more{order:1;width:100%;text-align:center;padding:14px;}
+
+  /* Album view móvil */
+  .album-nav{flex-wrap:wrap;padding:18px;gap:10px;}
+  .album-title-text{font-size:1rem;order:-1;width:100%;text-align:left;}
+  .album-zip-btn{font-size:.52rem;padding:9px 16px;}
+  #album-grid{padding:16px;}
+  #album-zip-progress{padding:14px 18px;}
+
+  /* Hero content */
+  .hero-content{padding:0 18px 60px;}
+  .hero-scroll{bottom:20px;}
+}
