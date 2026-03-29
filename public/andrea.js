@@ -74,6 +74,12 @@ document.addEventListener('astro:page-load', () => {
   renderPublicGallery();
   renderPublicVideos();
   initTrackMouse(); // Volver a activar la estela dorada
+  
+  // Re-activar observadores de revelado para nuevos elementos
+  document.querySelectorAll('.reveal').forEach(el => {
+    if(typeof revealObs !== 'undefined') revealObs.observe(el);
+  });
+
   if(window.lenis && typeof window.lenis.scrollTo === 'function') {
       window.lenis.scrollTo(0, { immediate: true });
   }
@@ -246,11 +252,10 @@ function showAlert(msg, { title='Aviso', icon='ℹ' } = {}){
           animationFrame = requestAnimationFrame(tickPct);
         } else {
           pct.textContent = '100%';
-          // ✅ ACTIVAR BOTÓN cuando llega al 100%
           activateEnterBtn();
         }
       }
-      requestAnimationFrame(tickPct);
+      animationFrame = requestAnimationFrame(tickPct);
     }
 
     // Botón Entrar - CORREGIDO
@@ -2847,8 +2852,12 @@ function renderGalleryPage(){
     const optSrc = (p.src && p.src.includes('cloudinary.com') && p.src.includes('/upload/')) ? p.src.replace('/upload/', '/upload/w_1000,f_auto,q_auto/') : p.src;
     
     div.innerHTML = `
-      <img src="${esc(optSrc)}" alt="${esc(title)}" loading="lazy" class="gl-image" onload="this.classList.add('loaded')">
+      <img src="${esc(optSrc)}" alt="${esc(title)}" loading="lazy" class="gl-image" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
       <div class="gallery-item-overlay"><span class="gallery-item-label">${esc(title)}</span></div>`;
+    
+    // Fail-safe para imágenes cacheadas
+    const img = div.querySelector('img');
+    if(img && img.complete) img.classList.add('loaded');
     
     div.addEventListener('click', () => {
       buildLightboxItems();
