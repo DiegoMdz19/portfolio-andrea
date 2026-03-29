@@ -9,7 +9,7 @@ import { getLangFromUrl, useTranslations } from '../i18n/utils';
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 ---
-<Layout title="Andrea López — Fotografía & Vídeo con Dron">
+<Layout title="Andrea López — Fotografía & Vídeo con Dron" lang={lang}>
 <div id="loader">
   <canvas id="loaderCanvas" style="position:absolute;inset:0;pointer-events:none;z-index:0;"></canvas>
 

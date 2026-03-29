@@ -38,8 +38,18 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db   = firebase.firestore();
 const auth = firebase.auth();
-// IMPORTANTE: habilita "Inicio de sesión anónimo" en Firebase Console
-// Authentication → Sign-in method → Anónimo → Activar
+const CONFIG_DOC    = 'site';
+
+// ── GLOBAL STATE & CONSTANTS (Fix ReferenceErrors) ───────────────────────────
+// ── CONTROL DE SECCIONES ─────────────────────────────────────────────────────
+let _foldersCache   = null;
+// ── GESTIÓN DE CARPETAS ──────────────────────────────────────────────────────
+let introPlayed     = false;
+let soundOn         = false;
+let activeFilter    = 'all';
+let lightboxItems   = [];
+let vlbItems        = [];
+
 
 // ── FIREBASE CONFIG SYNC ──────────────────────────────────────────────────────
 async function saveConfigToFirebase(key, value){
@@ -737,7 +747,8 @@ const savedPass = localStorage.getItem('alr_pass');
 if(savedPass) window._adminPass = savedPass;
 
 
-let activeFilter = 'all';
+// activeFilter ya está definido globalmente arriba
+
 function applyFilter(filter){
   activeFilter = filter;
   document.querySelectorAll('.gallery-filter button').forEach(b => {
@@ -756,7 +767,8 @@ document.querySelectorAll('.gallery-filter button').forEach(btn => {
 });
 
 // ── CARRUSEL FOTOS ────────────────────────────────────────────────────────────
-let lightboxItems = [];
+// lightboxItems ya está definido globalmente arriba
+
 let lightboxIndex = 0;
 let isAnimating   = false;
 
@@ -856,7 +868,8 @@ document.getElementById('lightbox').addEventListener('click', e => { if(e.target
 // Click listeners para gallery-item se asignan dinámicamente en renderPublicGallery()
 
 // ── CARRUSEL VÍDEOS ───────────────────────────────────────────────────────────
-let vlbItems    = [];
+// vlbItems ya está definido globalmente arriba
+
 let vlbIndex    = 0;
 let vlbAnimating = false;
 
@@ -1060,8 +1073,8 @@ setTimeout(initTypewriter, 2900);
 const soundBtn = document.getElementById('soundBtn');
 let ambientCtx  = null;
 let ambientGain = null;
-let soundOn     = false;
-let introPlayed = false;
+// soundOn y introPlayed ya están definidos arriba
+
 
 function getAudioCtx(){
   if(!ambientCtx){
@@ -1322,7 +1335,7 @@ async function renderPublicVideos(){
       card.dataset.desc  = desc;
       card.innerHTML = `
         <div class="video-thumb" style="background:#000;">
-          <video muted loop playsinline preload="none" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.8;"
+          <video muted loop playsinline preload="metadata" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.8;"
             onmouseenter="this.play()" onmouseleave="this.pause()" ontouchstart="this.play()" ontouchend="this.pause()">
             <source src="${esc(v.src)}" type="video/mp4">
           </video>
@@ -2599,7 +2612,8 @@ function closeFolderQR(){
   }, 250);
 }
 
-let _foldersCache = null;
+// _foldersCache ya está definido globalmente arriba
+
 
 function genToken(){
   if(crypto.randomUUID) return crypto.randomUUID();
@@ -3143,40 +3157,6 @@ async function manualCleanExpired(){
   }
 }
 
-// Actualizar addPhoto para guardar folderId (reemplaza la función original por hoisting)
-// Hoisting fallback (can be ignored now but kept for structural purity without 'cat')
-async function addPhoto(){
-  const folderId = document.getElementById('newFolder')?.value || null;
-  if(!pendingFileUrl){ showAlert('La imagen aún se está subiendo. Espera un momento.', { title:'Espera', icon:'⏳' }); return; }
-  try {
-    await db.collection('photos').add({
-      src:      pendingFileUrl,
-      titulo:   document.getElementById('newTitulo')?.value || '',
-      folderId: folderId || null,
-      isPermanent: false,
-      created:  Date.now()
-    });
-    showAlert('Foto añadida correctamente.', { title:'¡Hecho!', icon:'🔥' });
-    pendingFile = null;
-    pendingFileUrl = null;
-    const preview = document.getElementById('previewImg');
-    if(preview) preview.src = '';
-    const titulo = document.getElementById('newTitulo');
-    if(titulo) titulo.value = '';
-    const folderSel = document.getElementById('newFolder');
-    if(folderSel) folderSel.value = '';
-    const status = document.getElementById('upload-status');
-    if(status) status.remove();
-    document.getElementById('newPhotoFields').style.display = 'none';
-    renderAdminGallery();
-    renderPublicGallery();
-    loadPublicFolderFilters();
-  } catch(e) {
-    showAlert('Error al guardar la foto.', { title:'Error', icon:'✗' });
-    console.error(e);
-  }
-}
-
 // Inicializar modo álbum si procede
 checkAlbumMode();
 
@@ -3393,7 +3373,22 @@ function saveContacto(){
   applyContacto(d);
   applyWatermark();
   localStorage.setItem('alr_ultimo_cambio', new Date().toLocaleDateString('es-ES'));
-  if(msg){ msg.textContent='Guardado correctamente ✓'; msg.style.color='#c8b89a'; msg.style.display='block'; setTimeout(()=>msg.style.display='none',3000); }
+  if(msg){ 
+    msg.textContent='Guardado correctamente ✓'; msg.style.color='#c8b89a'; msg.style.display='block'; 
+    const lang = document.documentElement.lang || 'es';
+    const slots = (lang === 'en') ? [
+      [8,  11, 'portrait',   'Natural light · Field session'],
+      [12, 15, 'wedding',    'Emotional moments · Pre-wedding'],
+      [16, 19, 'commercial', 'Architecture · Interior spaces'],
+      [20, 24, 'drone',      'Artificial light · City at night'],
+    ] : [
+      [8,  11, 'retrato',    'Luz natural · Sesión en campo'],
+      [12, 15, 'boda',       'Momentos emotivos · Pre-boda'],
+      [16, 19, 'comercial',  'Arquitectura · Espacios interiores'],
+      [20, 24, 'dron',       'Luz artificial · La ciudad de noche'],
+    ];
+    setTimeout(()=>msg.style.display='none',3000); 
+  }
 } 
 
 // ── SONIDO OBTURADOR ─────────────────────────────────────────────────────────
@@ -3450,7 +3445,14 @@ function playFocusBeep(){
   // 10-15: mediodía → fotografia (luz dura, producto/detalles)
   // 15-20: tarde/hora dorada → retrato (luz cálida)
   // 20-6: noche → dron (luces artificiales)
-  const hourMap = [
+  const lang = document.documentElement.lang || 'es';
+  const hourMap = (lang === 'en') ? [
+    [6,  10, 'drone',       'Morning light · Aerial clarity'],
+    [10, 15, 'photography', 'Midday light · Detail and precision'],
+    [15, 20, 'portrait',    'Golden hour · The best light of the day'],
+    [20, 24, 'drone',       'Artificial light · The city at night'],
+    [0,  6,  'drone',       'Midnight · Silence and long exposure'],
+  ] : [
     [6,  10, 'dron',       'Luz de mañana · Claridad aérea'],
     [10, 15, 'fotografia', 'Luz de mediodía · Detalle y precisión'],
     [15, 20, 'retrato',    'Hora dorada · La mejor luz del día'],
@@ -3480,7 +3482,14 @@ function playFocusBeep(){
 
 // ── FRASE INSPIRACIONAL BAJO LA GALERÍA ────────────────────────────────────
 (function(){ try {
-  const frases = [
+  const lang = document.documentElement.lang || 'es';
+  const frases = (lang === 'en') ? [
+    '"Every frame is a decision."',
+    '"The light doesn\'t wait — the photographer does."',
+    '"Seeing is easy. Looking is an art."',
+    '"The moment before the moment."',
+    '"The best photo is the one you haven\'t taken yet."',
+  ] : [
     '"Cada encuadre es una decisión."',
     '"La luz no espera — el fotógrafo sí."',
     '"Ver es fácil. Mirar es un arte."',
@@ -3534,6 +3543,7 @@ function playFocusBeep(){
     { exp:'f/1.8', vel:'1/1000s',mm:'35mm', iso:'ISO 640' },
     { exp:'f/4',   vel:'1/250s', mm:'70mm', iso:'ISO 800' },
   ];
+  const lang = document.documentElement.lang || 'es';
   const d = datos[new Date().getDate() % datos.length];
 
   // Insertar en el hero junto a los controles
@@ -3556,6 +3566,7 @@ function playFocusBeep(){
     'display:flex',
     'gap:16px',
     'align-items:center',
+    'z-index: 5',
   ].join(';');
   tag.innerHTML = `
     <span style="color:rgba(200,184,154,.5)">${d.exp}</span>
@@ -3566,7 +3577,7 @@ function playFocusBeep(){
     <span style="width:1px;height:10px;background:rgba(200,184,154,.2);display:inline-block;"></span>
     <span>${d.iso}</span>
   `;
-  tag.title = 'Parámetros de la sesión del día — cambia cada 24h';
+  tag.title = (lang === 'en') ? 'Daily session parameters — changes every 24h' : 'Parámetros de la sesión del día — cambia cada 24h';
   document.querySelector('#hero') && document.querySelector('#hero').appendChild(tag);
   } catch(e){ console.warn('dato f error:', e); }
 })();
@@ -3799,12 +3810,10 @@ document.getElementById('slideshowBtn')?.addEventListener('click', () => {
 // Añadir al final de andrea.js
 // ══════════════════════════════════════════════════════════════════════════════
 
-const CONFIG_DOC = db.collection('config').doc('site');
-
 // ── GUARDAR TODA LA CONFIG EN FIREBASE ───────────────────────────────────────
 async function saveConfigToFirebase(key, value){
   try {
-    await CONFIG_DOC.set({ [key]: value }, { merge: true });
+    await db.collection('config').doc(CONFIG_DOC).set({ [key]: value }, { merge: true });
     console.log('Firebase sync:', key);
   } catch(e){
     console.warn('Firebase sync error:', e);
