@@ -2539,11 +2539,16 @@ async function createFolder(){
   const input = document.getElementById('new-folder-name');
   const name  = input?.value.trim();
   if(!name){ showAlert('Pon un nombre a la carpeta.', {title:'Nombre requerido', icon:'📁'}); return; }
-  await db.collection('folders').add({ name, token: genToken(), isPublic: false, allowDownload: false, created: Date.now() });
-  invalidateFoldersCache();
-  if(input) input.value = '';
-  await loadFoldersAdmin();
-  await loadPublicFolderFilters();
+  try{
+    await db.collection('folders').add({ name, token: genToken(), isPublic: false, allowDownload: false, created: Date.now() });
+    invalidateFoldersCache();
+    if(input) input.value = '';
+    await loadFoldersAdmin();
+    await loadPublicFolderFilters();
+  } catch(e){
+    console.error('Error creando carpeta:', e);
+    showAlert('Error al crear la carpeta. Asegúrate de estar conectado y haber iniciado sesión en el panel.', {title:'Error', icon:'✗'});
+  }
 }
 
 async function deleteFolder(id){
@@ -2588,6 +2593,7 @@ async function loadFoldersAdmin(){
   snap.forEach(doc => { const fid = doc.data().folderId; if(fid) counts[fid] = (counts[fid]||0)+1; });
 
   list.innerHTML = '';
+
   if(!folders.length){
     list.innerHTML = '<p style="font-size:.75rem;color:#7a7068;text-align:center;padding:20px 0;">¡Crea tu primera carpeta!</p>';
     return;
@@ -2614,12 +2620,17 @@ async function loadFoldersAdmin(){
               onchange="toggleFolderDownload('${f.id}',this.checked)">
             Descarga
           </label>
-          <button onclick="showFolderQR('${f.id}','${esc(f.name)}','${f.token}')" class="admin-btn" style="font-size:.52rem;padding:6px 12px;">QR</button>
+          <button class="admin-btn" onclick="showFolderQRFromBtn(this)" data-id="${f.id}" data-token="${f.token}" style="font-size:.52rem;padding:6px 12px;" title="${esc(f.name)}">QR</button>
           <button onclick="deleteFolder('${f.id}')" style="background:rgba(180,60,40,.4);border:none;color:#fff;padding:6px 12px;font-size:.55rem;cursor:pointer;">✕</button>
         </div>
       </div>`;
     list.appendChild(row);
   });
+}
+
+// Llamado desde onclick del botón QR en carpetas (usa title como nombre para evitar problemas de encoding)
+function showFolderQRFromBtn(btn){
+  showFolderQR(btn.dataset.id, btn.title, btn.dataset.token);
 }
 
 function showFolderQR(id, name, token){
@@ -2632,8 +2643,9 @@ function showFolderQR(id, name, token){
   document.getElementById('qr-url').value = url;
   const dl = document.getElementById('qr-download-link');
   if(dl) dl.href = qrSrc;
+  // Mostrar modal (el estilo inline opacity:0 tiene que sobreescribirse)
   m.style.display = 'flex';
-  requestAnimationFrame(() => m.classList.add('open'));
+  m.style.opacity = '1';
 }
 
 function closeFolderQR(){
