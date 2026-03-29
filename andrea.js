@@ -1460,9 +1460,10 @@ const SECTION_CONTENT = {
       <input id="fileInput2" type="file" accept="image/*" multiple style="display:none;" onchange="handleFiles(this.files)">
     </div>
     <div id="newPhotoFields" style="display:none;margin-bottom:16px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:flex-end;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:flex-end;">
         <div><label class="admin-label">Título</label><input id="newTitulo" type="text" class="admin-input" placeholder="Ej: Atardecer"></div>
         <div><label class="admin-label">Categoría</label><select id="newCat" class="admin-input"><option value="fotografia">Fotografía</option><option value="dron">Dron</option><option value="retrato">Retrato</option></select></div>
+        <div><label class="admin-label">Carpeta</label><select id="newFolder" class="admin-input"><option value="">Sin carpeta</option></select></div>
         <button onclick="addPhoto()" class="admin-btn">Añadir ✓</button>
       </div>
       <img id="previewImg" style="max-height:120px;object-fit:contain;margin-top:10px;display:block;">
@@ -1567,7 +1568,7 @@ function renderSectionContent(id){
   content.innerHTML = fn ? fn() : '';
 
   // Triggers post-render
-  if(id === 'galeria')     { renderAdminGallery(); setTimeout(initDragDrop,50); }
+  if(id === 'galeria')     { renderAdminGallery(); setTimeout(initDragDrop,50); setTimeout(()=>populateFolderSelector('newFolder'),100); }
   if(id === 'videos')      loadVideoAdmin();
   if(id === 'servicios')   loadServiciosAdmin();
   if(id === 'testimonios') loadTestimoniosAdmin();
@@ -2364,7 +2365,7 @@ async function addPhoto(){
   }
 }
 
-// ── ADMIN GALLERY ─────────────────────────────────────────────────────────────
+// ── ADMIN GALLERY ───────────────────────────────────────────────────────────────────
 async function renderAdminGallery(){
   const grid = document.getElementById('adminGallery');
   const noMsg = document.getElementById('noPhotosMsg');
@@ -2373,9 +2374,10 @@ async function renderAdminGallery(){
   grid.innerHTML = '';
 
   try {
-    const snapshot = await db.collection("photos")
-                             .orderBy("created", "desc")
-                             .get();
+    const [snapshot, folders] = await Promise.all([
+      db.collection('photos').orderBy('created','desc').get(),
+      loadFolders()
+    ]);
 
     if(snapshot.empty){
       if(noMsg) noMsg.style.display = 'block';
@@ -2383,24 +2385,67 @@ async function renderAdminGallery(){
     }
     if(noMsg) noMsg.style.display = 'none';
 
+    // Opciones de carpetas para el select
+    const folderOpts = `<option value="">Sin carpeta</option>` +
+      folders.map(f => `<option value="${f.id}">${esc(f.name)}</option>`).join('');
+
     snapshot.forEach(doc => {
       const p = doc.data();
       const div = document.createElement('div');
       div.className = 'admin-photo';
       div.draggable = true;
-      div.style.cssText = 'position:relative;aspect-ratio:1;overflow:hidden;border:1px solid rgba(245,242,237,.08);border-radius:2px;';
+      div.style.cssText = 'position:relative;overflow:hidden;border:1px solid rgba(245,242,237,.08);border-radius:2px;';
       div.innerHTML = `
-        <img src="${esc(p.src)}" alt="${esc(p.titulo)}" style="width:100%;height:100%;object-fit:cover;">
-        <div style="position:absolute;bottom:0;left:0;right:0;padding:8px;background:linear-gradient(transparent,rgba(0,0,0,.7));">
-          <p style="font-size:.6rem;color:#f0ece4;font-weight:200;">${esc(p.titulo) || 'Sin título'}</p>
-          <p style="font-size:.5rem;color:rgba(200,184,154,.5);text-transform:uppercase;letter-spacing:.15em;">${esc(p.cat)}</p>
+        <div style="position:relative;aspect-ratio:1;">
+          <img src="${esc(p.src)}" alt="${esc(p.titulo)}" style="width:100%;height:100%;object-fit:cover;">
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:8px;background:linear-gradient(transparent,rgba(0,0,0,.75));">
+            <p style="font-size:.58rem;color:#f0ece4;font-weight:200;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(p.titulo) || 'Sin título'}</p>
+            <p style="font-size:.48rem;color:rgba(200,184,154,.5);text-transform:uppercase;letter-spacing:.12em;">${esc(p.cat)}</p>
+          </div>
+          <button onclick="deletePhoto('${doc.id}')" style="position:absolute;top:6px;right:6px;background:rgba(180,60,40,.7);border:none;color:#fff;width:24px;height:24px;font-size:.6rem;cursor:pointer;border-radius:2px;">✕</button>
         </div>
-        <button onclick="deletePhoto('${doc.id}')" style="position:absolute;top:6px;right:6px;background:rgba(180,60,40,.7);border:none;color:#fff;width:24px;height:24px;font-size:.6rem;cursor:pointer;border-radius:2px;">✕</button>
-      `;
+        <div style="padding:6px 8px 8px;background:rgba(0,0,0,.25);display:flex;flex-direction:column;gap:5px;">
+          <select
+            onchange="assignPhotoToFolder('${doc.id}',this.value)"
+            style="width:100%;background:rgba(245,242,237,.06);border:none;border-bottom:1px solid rgba(245,242,237,.12);color:#f0ece4;font-family:'Outfit',sans-serif;font-size:.55rem;font-weight:200;padding:4px 0;outline:none;">
+            ${folderOpts}
+          </select>
+          <label style="display:flex;align-items:center;gap:5px;font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(200,184,154,.4);cursor:pointer;">
+            <input type="checkbox" ${p.isPermanent?'checked':''} style="accent-color:var(--warm);width:11px;height:11px;"
+              onchange="setPhotoPermanent('${doc.id}',this.checked)">
+            Permanente
+          </label>
+        </div>`;
+
+      // Marcar la carpeta actual en el select
+      const sel = div.querySelector('select');
+      if(sel && p.folderId) sel.value = p.folderId;
+
       grid.appendChild(div);
     });
   } catch(e) {
     console.error('Error cargando galería admin:', e);
+  }
+}
+
+async function assignPhotoToFolder(photoId, folderId){
+  try {
+    await db.collection('photos').doc(photoId).update({ folderId: folderId || null });
+    invalidateFoldersCache();
+    renderPublicGallery();
+    // Actualizar filtros públicos por si la carpeta es pública
+    loadPublicFolderFilters();
+  } catch(e){
+    showAlert('Error al asignar carpeta.', { title:'Error', icon:'✗' });
+    console.error(e);
+  }
+}
+
+async function setPhotoPermanent(photoId, isPermanent){
+  try {
+    await db.collection('photos').doc(photoId).update({ isPermanent });
+  } catch(e){
+    console.error('Error actualizando permanente:', e);
   }
 }
 
