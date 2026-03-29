@@ -1,5 +1,5 @@
 // ── Andrea López Portfolio — Service Worker ──────────────────────────────────
-const CACHE_NAME = 'andrea-v2';
+const CACHE_NAME = 'andrea-v3';
 
 // Assets que se pre-cachean al instalar el SW
 const PRECACHE = [

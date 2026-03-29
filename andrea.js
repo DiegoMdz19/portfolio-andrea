@@ -2640,9 +2640,13 @@ function showFolderQR(id, name, token){
   document.getElementById('qr-url').value = url;
   const dl = document.getElementById('qr-download-link');
   if(dl) dl.href = qrSrc;
-  // Mostrar modal (el estilo inline opacity:0 tiene que sobreescribirse)
+  // Mostrar modal
   m.style.display = 'flex';
   m.style.opacity = '1';
+  // Resetear estado hover del cursor (queda oculto tras hacer clic en el botón)
+  cursor?.classList.remove('hover','view');
+  ring?.classList.remove('hover','view');
+  label?.classList.remove('show');
 }
 
 function closeFolderQR(){

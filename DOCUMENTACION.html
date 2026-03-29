@@ -54,7 +54,7 @@
 <div class="cover">
   <div class="logo">Andrea López</div>
   <div class="sub">Documentación técnica del Portfolio</div>
-  <div class="date">Versión 1.0 · Marzo 2026</div>
+  <div class="cover .date">Versión 2.0 · Marzo 2026</div>
 </div>
 
 <div class="toc">
@@ -69,6 +69,9 @@
     <li><a href="#sw">Service Worker — modo offline</a></li>
     <li><a href="#seguridad">Seguridad</a></li>
     <li><a href="#mantenimiento">Mantenimiento habitual</a></li>
+    <li><a href="#carpetas">Carpetas, álbumes y códigos QR</a></li>
+    <li><a href="#autodelete">Auto-borrado de fotos</a></li>
+    <li><a href="#videos-upload">Subida de vídeos</a></li>
     <li><a href="#problemas">Solución de problemas</a></li>
   </ol>
 </div>
@@ -283,6 +286,62 @@
 <p>El formulario de contacto tiene un campo oculto que los humanos no ven pero los bots sí rellenan. Si ese campo llega con contenido, el mensaje se descarta silenciosamente sin enviarse.</p>
 
 <!-- ─────────────────────────────────────── -->
+<h2 id="carpetas">11. Carpetas, álbumes privados y códigos QR</h2>
+<p>El sistema de carpetas permite organizar las fotos y compartirlas con clientes de forma privada mediante un enlace o código QR.</p>
+
+<h3>📁 Crear y gestionar carpetas</h3>
+<p>Ve a <strong>Panel admin → Herramientas → Carpetas</strong>.</p>
+<ul>
+  <li>Escribe el nombre de la carpeta y pulsa <strong>Crear ✓</strong></li>
+  <li>Cada carpeta tiene dos opciones:
+    <ul>
+      <li><strong>Pública:</strong> la carpeta aparece como filtro en la galería del portfolio público</li>
+      <li><strong>Descarga:</strong> los clientes que accedan por QR pueden descargar las fotos como ZIP</li>
+    </ul>
+  </li>
+  <li>Para renombrar una carpeta: edita el campo de texto y haz clic fuera</li>
+  <li>Para eliminar: botón <code>✕</code> (las fotos no se borran, solo se desasignan)</li>
+</ul>
+
+<h3>📸 Asignar fotos a carpetas</h3>
+<p><strong>Al subir fotos nuevas:</strong> Secciones → Galería → arrastra la foto → en el formulario selecciona la carpeta antes de pulsar Añadir ✓.</p>
+<p><strong>Fotos ya subidas:</strong> Secciones → Galería → en cada foto hay un desplegable para cambiar la carpeta. El cambio se guarda automáticamente.</p>
+<div class="box warn">⚠️ El checkbox <strong>Permanente</strong> que aparece en cada foto del admin evita que esa foto se elimine con el auto-borrado automático.</div>
+
+<h3>📱 Generar y compartir el código QR</h3>
+<div class="step"><div class="step-num">1</div><div>Panel admin → Herramientas → Carpetas</div></div>
+<div class="step"><div class="step-num">2</div><div>Pulsa el botón <strong>QR</strong> en la carpeta que quieras compartir</div></div>
+<div class="step"><div class="step-num">3</div><div>Escanea el código QR con el móvil o copia el enlace</div></div>
+<div class="step"><div class="step-num">4</div><div>El cliente ve solo las fotos de esa carpeta. Si tiene <em>Descarga</em> activada, puede descargar un ZIP con todas las fotos</div></div>
+
+<div class="box">
+  <strong>URL del álbum:</strong> <code>https://andrealopezfoto.es?album=TOKEN</code><br>
+  El token es único por carpeta. Para cambiar el acceso, elimina la carpeta y crea una nueva.
+</div>
+
+<h3>Descarga ZIP para el cliente</h3>
+<p>Si la opción <strong>Descarga</strong> está activada en la carpeta, el cliente verá un botón “Descargar ZIP”. Al pulsarlo, el navegador descarga todas las fotos de la carpeta en un único fichero ZIP. La barra de progreso indica el avance.</p>
+<div class="box warn">⚠️ Las fotos pesadas pueden tardar varios segundos en comprimirse. Es normal.</div>
+
+<h2 id="autodelete">12. Auto-borrado de fotos antiguas</h2>
+<p>El sistema puede eliminar automáticamente fotos antiguas para mantener limpia la base de datos.</p>
+<table>
+  <tr><th>Dónde configurarlo</th><th>Panel admin → Configuración → Avanzado</th></tr>
+  <tr><td>Valor por defecto</td><td>365 días</td></tr>
+  <tr><td>0 = desactivado</td><td>Las fotos nunca se eliminan automáticamente</td></tr>
+  <tr><td>Cuándo se ejecuta</td><td>Cada vez que abres el panel admin</td></tr>
+</table>
+<div class="box warn">⚠️ Las fotos marcadas como <strong>Permanente</strong> (checkbox en la galería admin) <strong>nunca se eliminan</strong> aunque superen el límite de días.</div>
+<div class="box danger">🔴 Cloudinary no borra las imágenes automáticamente cuando se eliminan de Firestore. Solo desaparecen de la web, pero siguen ocupando espacio en Cloudinary. Limpia Cloudinary manualmente de vez en cuando desde <a href="https://cloudinary.com">cloudinary.com</a>.</div>
+
+<h2 id="videos-upload">13. Subida de vídeos</h2>
+<p>Los vídeos se suben exactamente igual que las fotos: arrastra el fichero MP4 a la zona de subida.</p>
+<div class="step"><div class="step-num">1</div><div>Panel admin → Herramientas → Vídeos</div></div>
+<div class="step"><div class="step-num">2</div><div>Arrastra el MP4 o haz clic. Se sube automáticamente a Cloudinary.</div></div>
+<div class="step"><div class="step-num">3</div><div>Añade título, descripción y categoría → pulsa <strong>Añadir ✓</strong></div></div>
+<div class="box warn">⚠️ Si la subida falla, ve a <a href="https://cloudinary.com">cloudinary.com</a> → Settings → Upload Presets → <code>andrea_portfolio</code> y asegúrate de que los formatos de vídeo (mp4, webm, mov) están permitidos.</div>
+
+<!-- ─────────────────────────────────────── -->
 <h2 id="mantenimiento">9. Mantenimiento habitual</h2>
 
 <table>
@@ -294,7 +353,9 @@
   <tr><td>Revisar Analytics</td><td>Mensualmente</td><td><a href="https://analytics.google.com">analytics.google.com</a></td></tr>
   <tr><td>Hacer copia de seguridad</td><td>Mensualmente</td><td>Panel admin → Estadísticas → Exportar config</td></tr>
   <tr><td>Subir cambios de código</td><td>Tras editar ficheros</td><td><code>git add . && git commit -m "..." && git push</code></td></tr>
-  <tr><td>Actualizar versión del SW</td><td>Tras cambios importantes</td><td>Cambiar <code>andrea-v1</code> → <code>andrea-v2</code> en <code>sw.js</code></td></tr>
+  <tr><td>Crear carpetas y asignar fotos</td><td>Cuando entregues un trabajo</td><td>Panel admin → Herramientas → Carpetas</td></tr>
+  <tr><td>Compartir álbum con cliente</td><td>Tras crear la carpeta</td><td>Botón QR → compartir enlace o imprimir QR</td></tr>
+  <tr><td>Actualizar versión del SW</td><td>Tras cambios importantes</td><td>Cambiar <code>andrea-v3</code> → <code>andrea-v4</code> en <code>sw.js</code></td></tr>
   <tr><td>Desplegar reglas Firebase</td><td>Solo si añades funcionalidad nueva</td><td><code>firebase deploy --only firestore:rules</code></td></tr>
 </table>
 
