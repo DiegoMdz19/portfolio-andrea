@@ -774,9 +774,43 @@ footer{
 }
 .form-error-msg.show{opacity:1;}
 
-/* ── LAZY LOADING ── */
-.gallery-item img[data-src]{opacity:0;transition:opacity .5s;}
-.gallery-item img.loaded{opacity:1;}
+/* ── LAZY LOADING & BLUR-UP ── */
+.gallery-item{
+  background-size:cover;background-position:center;
+  transition:background .3s;
+}
+.gl-image{
+  opacity:0;transition:opacity .8s cubic-bezier(.4,0,.2,1), transform .9s cubic-bezier(.25,.46,.45,.94) !important;
+  will-change:opacity, transform;
+}
+.gl-image.loaded{opacity:1;}
+
+/* ── MAGNETIC ELEMENTS ── */
+.magnetic-wrap{
+  display:inline-block;
+  transition:transform .3s cubic-bezier(.23,1,.32,1);
+}
+
+/* ── EXIF MODAL ── */
+.lightbox-exif-btn{
+  position:absolute;bottom:24px;left:32px;
+  background:none;border:none;color:rgba(240,236,228,.35);
+  font-size:.9rem;cursor:pointer;transition:color .3s, transform .3s;
+  z-index:11;display:flex;align-items:center;justify-content:center;
+}
+.lightbox-exif-btn:hover{color:#f0ece4;transform:scale(1.1);}
+.lightbox-exif-panel{
+  position:absolute;bottom:70px;left:32px;
+  background:rgba(15,14,12,.85);backdrop-filter:blur(12px);
+  padding:20px;border:1px solid rgba(200,184,154,.15);
+  border-radius:4px;display:none;flex-direction:column;gap:12px;
+  z-index:12;width:220px;
+  opacity:0;transform:translateY(10px);transition:opacity .3s, transform .3s;
+}
+.lightbox-exif-panel.show{display:flex;opacity:1;transform:translateY(0);}
+.exif-item{display:flex;justify-content:space-between;align-items:center;font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;}
+.exif-label{color:rgba(200,184,154,.5);font-weight:300;}
+.exif-val{color:#f0ece4;font-weight:400;text-align:right;}
 
 .sec-menu-btn{
   background:none;border:none;
@@ -1496,3 +1530,19 @@ svg.liquid-filter {
   font-size: .55rem;
   color: rgba(240,236,228,.7);
 }
+
+/* ── ADMIN EXIF FIELDS ── */
+.apc-exif-toggle{
+  cursor:pointer;opacity:.4;font-size:10px;text-transform:uppercase;margin:8px 0;transition:opacity .3s;
+  display: flex; align-items: center; gap: 5px;
+}
+.apc-exif-toggle:hover{opacity:1;}
+.apc-exif-fields{
+  display:none;flex-direction:column;gap:5px;background:rgba(0,0,0,.15);padding:10px;border-radius:4px;margin-bottom:10px;
+}
+.apc-exif-fields.show{display:flex;}
+.apc-exif-fields input{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;
+  font-size:10px;padding:6px;border-radius:2px;outline:none;width:100%;
+}
+.apc-exif-fields input:focus{border-color:var(--warm);}

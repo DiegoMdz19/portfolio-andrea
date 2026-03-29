@@ -163,6 +163,11 @@ export const ui = {
     'contacto.form.sending': 'Enviando...',
     'contacto.form.success': 'Mensaje enviado ✓',
     'contacto.form.error': 'Error al enviar. Inténtalo de nuevo.',
+    
+    // Social & Contact
+    'social.instagram': 'andrealopz___',
+    'social.whatsapp': '+34 600 000 000',
+    'social.email': 'andrea@email.com',
   },
   en: {
     // Nav & General
@@ -321,5 +326,10 @@ export const ui = {
     'contacto.form.sending': 'Sending...',
     'contacto.form.success': 'Message sent ✓',
     'contacto.form.error': 'Error sending. Please try again.',
+
+    // Social & Contact
+    'social.instagram': 'andrealopz___',
+    'social.whatsapp': '+34 600 000 000',
+    'social.email': 'andrea@email.com',
   }
 } as const;

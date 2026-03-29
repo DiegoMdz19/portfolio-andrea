@@ -48,6 +48,39 @@ async function saveConfigToFirebase(key, value){
   } catch(e){ console.warn('Error guardando config en Firebase:', e); }
 }
 
+// ── MAGNETIC UI ──
+function initMagneticElements(){
+  if(window.innerWidth < 768) return;
+  document.querySelectorAll('.btn-submit, .loader-enter, .hero-cta, #lightboxExifBtn, .whatsapp-btn').forEach(el => {
+    el.addEventListener('mousemove', e => {
+      const rect = el.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      el.style.transform = `translate(${x * 0.35}px, ${y * 0.35}px) scale(1.05)`;
+      if(el.classList.contains('hero-cta')) el.style.gap = '22px';
+    });
+    el.addEventListener('mouseleave', () => {
+      el.style.transform = '';
+      if(el.classList.contains('hero-cta')) el.style.gap = '';
+    });
+  });
+}
+
+// ── ASTRO TRANSITIONS RE-INIT ──
+document.addEventListener('astro:page-load', () => {
+  // Reinicializar TODO lo necesario tras navegación
+  loadConfigFromFirebase();
+  initMagneticElements();
+  renderPublicGallery();
+  renderPublicVideos();
+  initTrackMouse(); // Volver a activar la estela dorada
+  if(window.lenis && typeof window.lenis.scrollTo === 'function') {
+      window.lenis.scrollTo(0, { immediate: true });
+  }
+});
+
+
+
 async function loadConfigFromFirebase(){
   try{
     const doc = await db.collection('config').doc('site').get();
@@ -742,6 +775,7 @@ function buildTrack(){
     // Overlay título + descripción
     const titulo = item.dataset.titulo || item.querySelector('.gallery-item-label')?.textContent || '';
     const desc   = item.dataset.desc   || '';
+    const exif   = item.dataset.exif   || '';
     if(titulo || desc){
       const info = document.createElement('div');
       info.className = 'slide-info';
@@ -1164,36 +1198,41 @@ async function loadVideoAdmin(){
     snapshot.forEach(doc => {
       const v = doc.data();
       const div = document.createElement('div');
-      div.className = 'admin-video-row';
-      div.style.cssText = 'background:rgba(245,242,237,.03);border:1px solid rgba(245,242,237,.08);padding:14px;border-radius:2px;display:flex;align-items:center;justify-content:space-between;gap:16px;transition:opacity .2s,border-color .2s;';
+      div.className = 'admin-photo-card';
+      div.style.cssText = 'padding:16px; gap:12px;';
       div.innerHTML = `
         <div style="flex:1;">
-          <p style="font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(200,184,154,.4);margin-bottom:8px;">${esc((v.src||'').split('/').pop())}</p>
+          <p style="font-size:.55rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(200,184,154,.45);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+            <span>${esc((v.src||'').split('/').pop())}</span>
+            <span style="color:var(--warm);opacity:.6;">VÍDEO</span>
+          </p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div>
-              <label style="font-size:.45rem;color:rgba(200,184,154,.4);text-transform:uppercase;">Título (ES)</label>
-              <div style="display:flex;gap:6px;">
-                <input type="text" value="${esc(v.titulo)||''}" onchange="updateVideoField('${doc.id}','titulo',this.value)" style="flex:1;background:rgba(245,242,237,.05);border:none;border-bottom:1px solid rgba(245,242,237,.1);color:#f0ece4;font-size:.65rem;padding:4px 0;outline:none;">
-                <button onclick="autoTranslateVideo('${doc.id}',this)" style="background:rgba(200,184,154,.1);border:none;color:var(--warm);padding:0 8px;cursor:pointer;border-radius:2px;font-size:10px;">✨</button>
+            <div class="apc-field">
+              <label>Título (ES)</label>
+              <div class="apc-input-wrap">
+                <input type="text" value="${esc(v.titulo)||''}" onchange="updateVideoField('${doc.id}','titulo',this.value)" placeholder="Sin título">
+                <button onclick="autoTranslateVideo('${doc.id}',this)" class="apc-translate-btn" title="Traducir al Inglés">✨</button>
               </div>
             </div>
-            <div>
-              <label style="font-size:.45rem;color:rgba(200,184,154,.4);text-transform:uppercase;">Título (EN)</label>
-              <input type="text" value="${esc(v.titulo_en)||''}" onchange="updateVideoField('${doc.id}','titulo_en',this.value)" style="width:100%;background:rgba(245,242,237,.05);border:none;border-bottom:1px solid rgba(245,242,237,.1);color:#f0ece4;font-size:.65rem;padding:4px 0;outline:none;">
+            <div class="apc-field">
+              <label>Título (EN)</label>
+              <input type="text" value="${esc(v.titulo_en)||''}" onchange="updateVideoField('${doc.id}','titulo_en',this.value)" placeholder="Untitled">
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
-            <div>
-              <label style="font-size:.45rem;color:rgba(200,184,154,.4);text-transform:uppercase;">Descripción (ES)</label>
-              <input type="text" value="${esc(v.desc)||''}" onchange="updateVideoField('${doc.id}','desc',this.value)" style="width:100%;background:rgba(245,242,237,.05);border:none;border-bottom:1px solid rgba(245,242,237,.1);color:#f0ece4;font-size:.62rem;padding:4px 0;outline:none;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+            <div class="apc-field">
+              <label>Descripción (ES)</label>
+              <input type="text" value="${esc(v.desc)||''}" onchange="updateVideoField('${doc.id}','desc',this.value)" placeholder="Sin descripción">
             </div>
-            <div>
-              <label style="font-size:.45rem;color:rgba(200,184,154,.4);text-transform:uppercase;">Descripción (EN)</label>
-              <input type="text" value="${esc(v.desc_en)||''}" onchange="updateVideoField('${doc.id}','desc_en',this.value)" style="width:100%;background:rgba(245,242,237,.05);border:none;border-bottom:1px solid rgba(245,242,237,.1);color:#f0ece4;font-size:.62rem;padding:4px 0;outline:none;">
+            <div class="apc-field">
+              <label>Descripción (EN)</label>
+              <input type="text" value="${esc(v.desc_en)||''}" onchange="updateVideoField('${doc.id}','desc_en',this.value)" placeholder="No description">
             </div>
           </div>
         </div>
-        <button onclick="removeVideo('${doc.id}')" style="background:rgba(180,60,40,.3);border:none;color:#fff;padding:6px 12px;font-family:Outfit,sans-serif;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">Eliminar</button>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05);display:flex;justify-content:flex-end;">
+          <button onclick="removeVideo('${doc.id}')" class="admin-btn" style="border-color:rgba(180,60,40,.3);color:rgba(200,100,80,.8);font-size:.55rem;padding:7px 16px;">Eliminar Vídeo</button>
+        </div>
       `;
       list.appendChild(div);
     });
@@ -1697,7 +1736,8 @@ function uploadSobrePhoto(file){
 
   uploadToCloudinary(file, pct => {
     if(status) status.textContent = `Subiendo… ${pct}%`;
-  }).then(async url => {
+  }).then(async res => {
+    const url = res.url;
     await db.collection('sobre_photos').add({ src: url, created: Date.now() });
     if(status){ status.textContent = '✓ Foto añadida'; setTimeout(()=> status.style.display='none', 2000); }
     renderAdminSobrePhotos();
@@ -1762,7 +1802,8 @@ function uploadHeroFile(file){
   if(msg){ msg.textContent='Subiendo…'; msg.style.display='block'; }
   uploadToCloudinary(file, pct => {
     if(msg) msg.textContent = `Subiendo… ${pct}%`;
-  }).then(url => {
+  }).then(res => {
+    const url = res.url;
     const srcEl = document.getElementById('hero-src');
     if(srcEl) srcEl.value = url;
     // Auto-detect type
@@ -2242,7 +2283,26 @@ const CLOUDINARY_CLOUD  = 'dnof8srry';
 const CLOUDINARY_PRESET = 'andrea_portfolio';
 
 function uploadToCloudinary(file, onProgress){
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
+    // Extraer EXIF si es imagen
+    let exifData = null;
+    if(file.type.startsWith('image/') && typeof EXIF !== 'undefined'){
+      try {
+        exifData = await new Promise(res => {
+          EXIF.getData(file, function() {
+            const all = EXIF.getAllTags(this);
+            res({
+              camara: all.Make ? `${all.Make} ${all.Model||''}` : null,
+              lente: all.LensModel || all.LensInfo || null,
+              iso: all.ISOSpeedRatings || null,
+              apertura: all.FNumber ? `f/${all.FNumber}` : null,
+              velocidad: all.ExposureTime ? (all.ExposureTime < 1 ? `1/${Math.round(1/all.ExposureTime)}s` : `${all.ExposureTime}s`) : null
+            });
+          });
+        });
+      } catch(e) { console.warn('EXIF error:', e); }
+    }
+
     const fd = new FormData();
     fd.append('file', file);
     fd.append('upload_preset', CLOUDINARY_PRESET);
@@ -2261,7 +2321,7 @@ function uploadToCloudinary(file, onProgress){
     xhr.onload = () => {
       if(xhr.status === 200){
         const data = JSON.parse(xhr.responseText);
-        resolve(data.secure_url); // ✅ SIEMPRE HTTPS
+        resolve({ url: data.secure_url, exif: exifData }); 
       } else {
         reject(new Error('Error al subir'));
       }
@@ -2275,6 +2335,7 @@ function uploadToCloudinary(file, onProgress){
 // ── ESTADO ──────────────────────────────────────────────────────────────────────────────
 let pendingFile    = null;
 let pendingFileUrl = null;
+let pendingExif    = null;
 let pendingVideoUrl = null;
 
 // ── SUBIDA Y GESTIÓN DE VÍDEOS ────────────────────────────────────────────────
@@ -2343,10 +2404,11 @@ function handleFiles(files){
   uploadToCloudinary(file, pct => {
     status.textContent = `Subiendo… ${pct}%`;
   })
-  .then(url => {
-    pendingFileUrl = url;
+  .then(res => {
+    pendingFileUrl = res.url;
+    pendingExif    = res.exif;
     status.textContent = '✓ Lista para añadir';
-    if(previewImg) previewImg.src = url;
+    if(previewImg) previewImg.src = res.url;
   })
   .catch(() => {
     status.textContent = 'Error al subir';
@@ -2367,6 +2429,7 @@ async function addPhoto(){
       titulo:      document.getElementById('newTitulo')?.value || '',
       folderId:    folderId || null,
       isPermanent: false,
+      exif:        pendingExif || null,
       created:     Date.now()
     });
     showAlert('Foto añadida correctamente.', { title:'¡Hecho!', icon:'🔥' });
@@ -2440,6 +2503,18 @@ async function renderAdminGallery(){
             <select onchange="assignPhotoToFolder('${doc.id}',this.value)">
               ${folderOpts}
             </select>
+          </div>
+          <div class="apc-exif-toggle" onclick="this.nextElementSibling.classList.toggle('show')">
+            <span>⚙️ Datos Técnicos (EXIF)</span>
+          </div>
+          <div class="apc-exif-fields">
+            <input type="text" value="${esc(p.exif?.camara) || ''}" placeholder="Cámara" onchange="updatePhotoExif('${doc.id}', 'camara', this.value)">
+            <input type="text" value="${esc(p.exif?.lente) || ''}" placeholder="Lente" onchange="updatePhotoExif('${doc.id}', 'lente', this.value)">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;">
+              <input type="text" value="${esc(p.exif?.iso) || ''}" placeholder="ISO" onchange="updatePhotoExif('${doc.id}', 'iso', this.value)">
+              <input type="text" value="${esc(p.exif?.apertura) || ''}" placeholder="f/..." onchange="updatePhotoExif('${doc.id}', 'apertura', this.value)">
+              <input type="text" value="${esc(p.exif?.velocidad) || ''}" placeholder="Vel..." onchange="updatePhotoExif('${doc.id}', 'velocidad', this.value)">
+            </div>
           </div>
           <div class="apc-footer">
             <label class="apc-check">
@@ -2758,17 +2833,23 @@ function renderGalleryPage(){
   slice.forEach((p, i) => {
     const title = (lang === 'en' && p.titulo_en) ? p.titulo_en : (p.titulo || '');
     const div = document.createElement('div');
-    div.className      = 'gallery-item';
+    div.className      = 'gallery-item reveal';
     div.dataset.folder = p.folderId || '';
     div.dataset.index  = i;
     div.dataset.titulo = title;
-    const optSrc = (p.src && p.src.includes('cloudinary.com') && p.src.includes('/upload/')) ? p.src.replace('/upload/', '/upload/w_800,f_auto,q_auto/') : p.src;
+    
+    // Blur-up Placeholder: versión minúscula y borrosa
+    if(p.src && p.src.includes('cloudinary.com')){
+      const blurSrc = p.src.replace('/upload/', '/upload/e_blur:2000,w_40,f_auto,q_auto:low/');
+      div.style.backgroundImage = `url(${blurSrc})`;
+    }
+
+    const optSrc = (p.src && p.src.includes('cloudinary.com') && p.src.includes('/upload/')) ? p.src.replace('/upload/', '/upload/w_1000,f_auto,q_auto/') : p.src;
+    
     div.innerHTML = `
-      <picture>
-        <source srcset="${esc(optSrc)}" type="image/webp">
-        <img src="${esc(p.src)}" alt="${esc(title)}" loading="lazy" class="gl-image">
-      </picture>
+      <img src="${esc(optSrc)}" alt="${esc(title)}" loading="lazy" class="gl-image" onload="this.classList.add('loaded')">
       <div class="gallery-item-overlay"><span class="gallery-item-label">${esc(title)}</span></div>`;
+    
     div.addEventListener('click', () => {
       buildLightboxItems();
       const idx = lightboxItems.indexOf(div);
@@ -2777,6 +2858,7 @@ function renderGalleryPage(){
     div.addEventListener('mouseenter', () => setCursorView('Ver'));
     div.addEventListener('mouseleave', () => setCursorView(null));
     grid.appendChild(div);
+    if(typeof revealObs !== 'undefined') revealObs.observe(div);
   });
 
   updateGalleryFooter(showing, total);
@@ -2791,7 +2873,7 @@ function updateGalleryFooter(showing, total){
   if(!total){ footer.style.display = 'none'; return; }
   footer.style.display = 'flex';
   if(counter) {
-    const pattern = counter.dataset.tShowing || '{showing} de {total} fotos';
+    const pattern = counter.dataset.tShowing || (window.t ? window.t('galeria.showing') : '{showing} de {total} fotos');
     counter.textContent = pattern.replace('{showing}', showing).replace('{total}', total);
   }
   if(btn) btn.style.display = showing < total ? 'inline-block' : 'none';
@@ -3515,6 +3597,31 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+function updateExifDisplay(item){
+  const panel = document.getElementById('lightboxExifPanel');
+  if(!panel) return;
+  const p = _allGalleryPhotos.find(ph => ph.id === item.id) || {};
+  const exif = item.dataset.exif ? JSON.parse(item.dataset.exif) : (p.exif || null);
+  
+  if(!exif || (!exif.iso && !exif.camara)){
+    panel.innerHTML = '<p style="font-size:.5rem;opacity:.5;text-align:center;">Sin datos técnicos</p>';
+    return;
+  }
+  
+  panel.innerHTML = `
+    <div class="exif-item"><span class="exif-label">Cámara</span><span class="exif-val">${esc(exif.camara || '-')}</span></div>
+    <div class="exif-item"><span class="exif-label">Lente</span><span class="exif-val">${esc(exif.lente || '-')}</span></div>
+    <div class="exif-item"><span class="exif-label">Apertura</span><span class="exif-val">${esc(exif.apertura || '-')}</span></div>
+    <div class="exif-item"><span class="exif-label">Velocidad</span><span class="exif-val">${esc(exif.velocidad || '-')}</span></div>
+    <div class="exif-item"><span class="exif-label">ISO</span><span class="exif-val">${esc(exif.iso || '-')}</span></div>
+  `;
+}
+
+function toggleExifPanel(){
+  const p = document.getElementById('lightboxExifPanel');
+  if(p) p.classList.toggle('show');
+}
+
 // ── FOOTER WHATSAPP E INSTAGRAM ───────────────────────────────────────────────
 (function(){
   const d = JSON.parse(localStorage.getItem('alr_contacto')||'{}');
@@ -3931,14 +4038,29 @@ async function autoTranslateTitle(photoId, btn){
   btn.textContent = '...';
 
   try {
+    // Traducir Título
     const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=es|en`);
     const data = await res.json();
     const translated = data.responseData.translatedText;
     if(translated){
       enInput.value = translated;
       await updatePhotoTitle(photoId, translated, 'en');
-      showAlert('Traducción aplicada ✨', { icon:'✅', timeout: 1500 });
     }
+
+    // Traducir Descripción si existe en el multimedia-list
+    const descInputEs = card.querySelector('.foto-desc'); // Puede ser null si viene de tool-galeria
+    if(descInputEs && descInputEs.value){
+      const resD = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(descInputEs.value)}&langpair=es|en`);
+      const dataD = await resD.json();
+      if(dataD.responseData.translatedText){
+          // Si estamos en el listado de títulos, actualizamos el input EN si existe
+          // Pero la descripción EN no suele tener un input directo en la tarjeta de foto simple
+          // Se guarda en el objeto multimedia
+          await updatePhotoDesc(photoId, dataD.responseData.translatedText, 'en');
+      }
+    }
+
+    showAlert('Traducción aplicada ✨', { icon:'✅', timeout: 1500 });
   } catch(e){
     console.error('Error traduciendo:', e);
     showAlert('Error al traducir', { title:'Error', icon:'✗' });
@@ -3946,6 +4068,13 @@ async function autoTranslateTitle(photoId, btn){
     btn.classList.remove('loading');
     btn.textContent = oldTxt;
   }
+}
+
+async function updatePhotoDesc(photoId, val, lang){
+  const field = lang === 'en' ? 'desc_en' : 'desc';
+  try {
+    await db.collection('photos').doc(photoId).update({ [field]: val });
+  } catch(e){ console.error(e); }
 }
 
 async function updatePhotoTitle(photoId, val, lang){
@@ -3959,26 +4088,48 @@ async function updatePhotoTitle(photoId, val, lang){
 
 // ── OPTIMIZACIONES FINAL Y VIDEO I18N ───────────────────────────────────────────
 async function autoTranslateVideo(videoId, btn){
-  const card = btn.closest('.admin-video-row');
+  const card = btn.closest('.admin-photo-card'); // Corregido: antes .admin-video-row
   const esInput = card.querySelector('input[onchange*="\'titulo\'"]');
   const enInput = card.querySelector('input[onchange*="\'titulo_en\'"]');
-  const text = esInput.value;
-  if(!text) return;
+  const esDesc  = card.querySelector('input[onchange*="\'desc\'"]');
+  const enDesc  = card.querySelector('input[onchange*="\'desc_en\'"]');
+  
+  const textTitle = esInput ? esInput.value : '';
+  const textDesc  = esDesc  ? esDesc.value  : '';
+  
+  if(!textTitle && !textDesc) return;
 
   btn.style.opacity = '0.5';
   btn.textContent = '...';
 
   try {
-    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=es|en`);
-    const data = await res.json();
-    const translated = data.responseData.translatedText;
-    if(translated){
-      enInput.value = translated;
-      await db.collection('videos').doc(videoId).update({ titulo_en: translated });
+    const updates = {};
+    
+    if(textTitle){
+      const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(textTitle)}&langpair=es|en`);
+      const data = await res.json();
+      if(data.responseData.translatedText){
+        enInput.value = data.responseData.translatedText;
+        updates.titulo_en = data.responseData.translatedText;
+      }
+    }
+    
+    if(textDesc){
+      const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(textDesc)}&langpair=es|en`);
+      const data = await res.json();
+      if(data.responseData.translatedText){
+        enDesc.value = data.responseData.translatedText;
+        updates.desc_en = data.responseData.translatedText;
+      }
+    }
+
+    if(Object.keys(updates).length > 0){
+      await db.collection('videos').doc(videoId).update(updates);
       showAlert('Traducción de vídeo lista ✨', { icon:'✅', timeout: 1500 });
     }
   } catch(e){
     console.error(e);
+    showAlert('Error al traducir vídeo', { title:'Error', icon:'✗' });
   } finally {
     btn.style.opacity = '1';
     btn.textContent = '✨';
@@ -3988,5 +4139,11 @@ async function autoTranslateVideo(videoId, btn){
 async function updateVideoField(videoId, field, val){
   try {
     await db.collection('videos').doc(videoId).update({ [field]: val });
+  } catch(e){ console.error(e); }
+}
+
+async function updatePhotoExif(photoId, field, val){
+  try {
+    await db.collection('photos').doc(photoId).update({ [`exif.${field}`]: val });
   } catch(e){ console.error(e); }
 }
