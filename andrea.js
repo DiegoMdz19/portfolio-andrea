@@ -2329,34 +2329,30 @@ function handleFiles(files){
   });
 }
 
-// ── GUARDAR FOTO ──────────────────────────────────────────────────────────────
+// ── GUARDAR FOTO (con soporte de carpetas) ──────────────────────────────
 async function addPhoto(){
   if(!pendingFileUrl){
     showAlert('La imagen aún se está subiendo. Espera un momento.', { title:'Espera', icon:'⏳' });
     return;
   }
-
+  const folderId = document.getElementById('newFolder')?.value || null;
   try {
-    await db.collection("photos").add({
-      src: pendingFileUrl,
-      titulo: document.getElementById('newTitulo')?.value || '',
-      cat: document.getElementById('newCat')?.value || 'fotografia',
-      created: Date.now()
+    await db.collection('photos').add({
+      src:         pendingFileUrl,
+      titulo:      document.getElementById('newTitulo')?.value || '',
+      cat:         document.getElementById('newCat')?.value || 'fotografia',
+      folderId:    folderId || null,
+      isPermanent: false,
+      created:     Date.now()
     });
-
     showAlert('Foto añadida correctamente.', { title:'¡Hecho!', icon:'🔥' });
-
-    // Limpiar formulario
-    pendingFile = null;
+    pendingFile    = null;
     pendingFileUrl = null;
-    const preview = document.getElementById('previewImg');
-    if(preview) preview.src = '';
-    const titulo = document.getElementById('newTitulo');
-    if(titulo) titulo.value = '';
-    const status = document.getElementById('upload-status');
-    if(status) status.remove();
+    const preview   = document.getElementById('previewImg');  if(preview) preview.src = '';
+    const titulo    = document.getElementById('newTitulo');    if(titulo) titulo.value = '';
+    const folderSel = document.getElementById('newFolder');    if(folderSel) folderSel.value = '';
+    const status    = document.getElementById('upload-status'); if(status) status.remove();
     document.getElementById('newPhotoFields').style.display = 'none';
-
     renderAdminGallery();
     renderPublicGallery();
   } catch(e) {
@@ -2431,13 +2427,14 @@ async function renderAdminGallery(){
 async function assignPhotoToFolder(photoId, folderId){
   try {
     await db.collection('photos').doc(photoId).update({ folderId: folderId || null });
+    // Actualizar caché y galería pública sin re-renderizar el admin (para no perder los selects)
     invalidateFoldersCache();
+    _allGalleryPhotos = [];
     renderPublicGallery();
-    // Actualizar filtros públicos por si la carpeta es pública
     loadPublicFolderFilters();
   } catch(e){
-    showAlert('Error al asignar carpeta.', { title:'Error', icon:'✗' });
-    console.error(e);
+    console.error('Error asignando carpeta:', e);
+    showAlert('Error al asignar carpeta. Asegúrate de haber iniciado sesión en el panel y de que el inicio de sesión anónimo esté activo en Firebase.', { title:'Error', icon:'✗' });
   }
 }
 
@@ -2670,21 +2667,28 @@ function copyQrUrl(){
   }).catch(() => showAlert('No se pudo copiar. Copia manualmente el enlace.', {title:'Copiar', icon:'🔗'}));
 }
 
+let _loadingFolderFilters = false;
 async function loadPublicFolderFilters(){
-  const filterList = document.getElementById('galleryFilter');
-  if(!filterList) return;
-  filterList.querySelectorAll('[data-is-folder]').forEach(li => li.remove());
-  const folders = await loadFolders();
-  folders.filter(f => f.isPublic).forEach(f => {
-    const li  = document.createElement('li');
-    li.dataset.isFolder = '1';
-    const btn = document.createElement('button');
-    btn.dataset.filter = `folder:${f.id}`;
-    btn.textContent    = f.name;
-    btn.addEventListener('click', () => applyFilter(`folder:${f.id}`));
-    li.appendChild(btn);
-    filterList.appendChild(li);
-  });
+  if(_loadingFolderFilters) return; // Evita llamadas concurrentes que duplican los filtros
+  _loadingFolderFilters = true;
+  try {
+    const filterList = document.getElementById('galleryFilter');
+    if(!filterList) return;
+    filterList.querySelectorAll('[data-is-folder]').forEach(li => li.remove());
+    const folders = await loadFolders();
+    folders.filter(f => f.isPublic).forEach(f => {
+      const li  = document.createElement('li');
+      li.dataset.isFolder = '1';
+      const btn = document.createElement('button');
+      btn.dataset.filter = `folder:${f.id}`;
+      btn.textContent    = f.name;
+      btn.addEventListener('click', () => applyFilter(`folder:${f.id}`));
+      li.appendChild(btn);
+      filterList.appendChild(li);
+    });
+  } finally {
+    _loadingFolderFilters = false;
+  }
 }
 
 async function populateFolderSelector(selectId){
@@ -2838,10 +2842,16 @@ async function openAlbumView(token){
   const dlBtn = document.getElementById('albumDownloadBtn');
   if(dlBtn) dlBtn.style.display = _albumFolder.allowDownload ? 'inline-flex' : 'none';
 
-  // Cargar fotos de la carpeta
-  const photosSnap = await db.collection('photos').where('folderId','==',_albumFolder.id).orderBy('created','desc').get();
-  _albumPhotos = [];
-  photosSnap.forEach(doc => _albumPhotos.push({ id: doc.id, ...doc.data() }));
+  // Cargar fotos de la carpeta (sin orderBy para evitar requerir índice compuesto en Firestore)
+  try {
+    const photosSnap = await db.collection('photos').where('folderId','==',_albumFolder.id).get();
+    _albumPhotos = [];
+    photosSnap.forEach(doc => _albumPhotos.push({ id: doc.id, ...doc.data() }));
+    _albumPhotos.sort((a, b) => (b.created || 0) - (a.created || 0));
+  } catch(err) {
+    console.error('Error cargando fotos del álbum:', err);
+    _albumPhotos = [];
+  }
 
   const grid  = document.getElementById('album-grid');
   const empty = document.getElementById('album-empty');
