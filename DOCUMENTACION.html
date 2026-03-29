@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Documentación — Portfolio Andrea López</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;background:#fff;padding:40px;}
+  h1{font-size:28px;font-weight:700;margin-bottom:6px;color:#111;}
+  h2{font-size:20px;font-weight:700;margin:40px 0 12px;color:#111;border-bottom:2px solid #c8b89a;padding-bottom:6px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:#333;}
+  p{margin-bottom:12px;color:#333;}
+  ul,ol{margin:0 0 14px 22px;}
+  li{margin-bottom:6px;color:#333;}
+  code{background:#f4f0eb;padding:2px 7px;border-radius:4px;font-family:monospace;font-size:13px;color:#8a5c2e;}
+  .tag{display:inline-block;background:#f4f0eb;border:1px solid #ddd;padding:2px 10px;border-radius:20px;font-size:12px;color:#666;margin:2px;}
+  .box{background:#faf8f5;border-left:3px solid #c8b89a;padding:14px 18px;margin:16px 0;border-radius:0 6px 6px 0;}
+  .box.warn{border-left-color:#e8a020;background:#fffbf0;}
+  .box.ok{border-left-color:#4caf7d;background:#f0fdf4;}
+  .box.danger{border-left-color:#e05252;background:#fff5f5;}
+  .step{display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;}
+  .step-num{background:#c8b89a;color:#fff;font-weight:700;font-size:13px;min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+  table{width:100%;border-collapse:collapse;margin:14px 0;}
+  th{background:#f4f0eb;text-align:left;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #e0dbd4;}
+  td{padding:8px 12px;border:1px solid #e0dbd4;font-size:13px;vertical-align:top;}
+  tr:nth-child(even) td{background:#faf8f5;}
+  .cover{text-align:center;padding:60px 20px 40px;border-bottom:2px solid #e0dbd4;margin-bottom:40px;}
+  .cover .logo{font-size:48px;font-weight:700;letter-spacing:-2px;color:#111;}
+  .cover .sub{font-size:16px;color:#888;margin-top:8px;}
+  .cover .date{font-size:13px;color:#aaa;margin-top:16px;}
+  .toc{background:#faf8f5;border:1px solid #e0dbd4;padding:20px 28px;margin-bottom:40px;border-radius:6px;}
+  .toc h2{border:none;margin-top:0;font-size:16px;}
+  .toc ol{margin:0 0 0 18px;}
+  .toc li{margin-bottom:4px;font-size:14px;}
+  .toc a{color:#c8b89a;text-decoration:none;}
+  .toc a:hover{text-decoration:underline;}
+  .file-list{display:flex;flex-direction:column;gap:6px;margin:14px 0;}
+  .file-row{display:grid;grid-template-columns:200px 1fr;gap:12px;padding:8px 12px;border-radius:4px;background:#faf8f5;border:1px solid #e8e4df;}
+  .file-name{font-family:monospace;font-size:13px;font-weight:600;color:#8a5c2e;}
+  .file-desc{font-size:13px;color:#444;}
+  @media print{
+    body{padding:20px;}
+    .cover{padding:30px 0 20px;}
+    h2{page-break-after:avoid;}
+    .box,table,.step{page-break-inside:avoid;}
+    a{color:inherit;}
+  }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="logo">Andrea López</div>
+  <div class="sub">Documentación técnica del Portfolio</div>
+  <div class="date">Versión 1.0 · Marzo 2026</div>
+</div>
+
+<div class="toc">
+  <h2>📋 Índice</h2>
+  <ol>
+    <li><a href="#que-es">¿Qué es este proyecto?</a></li>
+    <li><a href="#ficheros">Ficheros del proyecto</a></li>
+    <li><a href="#admin">Panel de administración</a></li>
+    <li><a href="#firebase">Firebase — la base de datos</a></li>
+    <li><a href="#vercel">Vercel — dónde vive la web</a></li>
+    <li><a href="#analytics">Google Analytics</a></li>
+    <li><a href="#sw">Service Worker — modo offline</a></li>
+    <li><a href="#seguridad">Seguridad</a></li>
+    <li><a href="#mantenimiento">Mantenimiento habitual</a></li>
+    <li><a href="#problemas">Solución de problemas</a></li>
+  </ol>
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<h2 id="que-es">1. ¿Qué es este proyecto?</h2>
+<p>Este es el <strong>portfolio profesional de Andrea López</strong>, fotógrafa y piloto de dron. Es una página web que muestra su trabajo (fotos, vídeos), sus servicios y permite que los clientes contacten con ella.</p>
+<p>Lo importante es que <strong>no necesita WordPress ni ningún sistema de gestión externo</strong>. Tiene su propio panel de administración integrado que permite cambiar casi todo el contenido sin tocar código.</p>
+
+<div class="box ok">
+  <strong>✅ ¿Qué puede hacer Andrea desde el panel?</strong><br>
+  Subir fotos · Subir vídeos · Editar textos · Cambiar servicios y precios · Gestionar testimonios · Ocultar/mostrar secciones · Cambiar contraseña
+</div>
+
+<div class="box">
+  <strong>🌐 URL de la web:</strong> <code>https://andrealopezfoto.es</code><br>
+  <strong>🔑 Cómo abrir el panel admin:</strong> En cualquier página, escribe <code>andrea</code> en el teclado (sin hacer clic en ningún campo) o toca el logo 3 veces rápido en móvil.
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<h2 id="ficheros">2. Ficheros del proyecto</h2>
+<p>Estos son los ficheros que componen la web y para qué sirve cada uno:</p>
+
+<div class="file-list">
+  <div class="file-row"><span class="file-name">index.html</span><span class="file-desc">La página principal. Contiene toda la estructura HTML de la web (hero, galería, servicios, contacto, etc.).</span></div>
+  <div class="file-row"><span class="file-name">style.css</span><span class="file-desc">Todos los estilos visuales: colores, tipografías, animaciones, diseño responsive para móvil.</span></div>
+  <div class="file-row"><span class="file-name">andrea.js</span><span class="file-desc">El cerebro de la web. Controla el panel admin, la galería, los vídeos, los formularios, el sonido, las animaciones y la conexión con Firebase.</span></div>
+  <div class="file-row"><span class="file-name">sw.js</span><span class="file-desc">Service Worker. Hace que la web funcione aunque no haya conexión a internet y cargue más rápido en visitas repetidas.</span></div>
+  <div class="file-row"><span class="file-name">404.html</span><span class="file-desc">Página de error que se muestra cuando alguien visita una URL que no existe.</span></div>
+  <div class="file-row"><span class="file-name">vercel.json</span><span class="file-desc">Configuración de Vercel (el servidor). Define cabeceras de seguridad y cuánto tiempo se guardan los ficheros en caché.</span></div>
+  <div class="file-row"><span class="file-name">firebase.json</span><span class="file-desc">Configuración de Firebase CLI. Indica qué fichero contiene las reglas de seguridad de la base de datos.</span></div>
+  <div class="file-row"><span class="file-name">firestore.rules</span><span class="file-desc">Reglas de seguridad de la base de datos. Define quién puede leer y escribir datos.</span></div>
+  <div class="file-row"><span class="file-name">.firebaserc</span><span class="file-desc">Indica a qué proyecto de Firebase pertenece esta web (andrea-portfolio-a0817).</span></div>
+  <div class="file-row"><span class="file-name">site.webmanifest</span><span class="file-desc">Permite instalar la web como una app en el móvil (PWA). Define el nombre, colores e icono.</span></div>
+  <div class="file-row"><span class="file-name">sitemap.xml</span><span class="file-desc">Lista de páginas del sitio para que Google las indexe mejor (SEO).</span></div>
+  <div class="file-row"><span class="file-name">robots.txt</span><span class="file-desc">Le dice a Google qué páginas puede y no puede indexar.</span></div>
+  <div class="file-row"><span class="file-name">package.json</span><span class="file-desc">Fichero estándar de proyectos Node.js. Solo tiene el nombre del proyecto.</span></div>
+  <div class="file-row"><span class="file-name">fotos/</span><span class="file-desc">Carpeta con imágenes locales (como el retrato de la sección "Sobre mí").</span></div>
+  <div class="file-row"><span class="file-name">videos/</span><span class="file-desc">Carpeta con vídeos locales (como el vídeo del hero).</span></div>
+  <div class="file-row"><span class="file-name">sonidos/</span><span class="file-desc">Carpeta con sonidos de ambiente de la web.</span></div>
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<h2 id="admin">3. Panel de administración</h2>
+<p>El panel admin es la herramienta para gestionar el contenido de la web sin tocar código. Los cambios se guardan en Firebase y se ven en todos los navegadores y dispositivos.</p>
+
+<h3>🔓 Cómo acceder</h3>
+<div class="box">
+  <strong>En ordenador:</strong> Escribe la palabra <code>andrea</code> con el teclado (sin clic en ningún campo de texto).<br>
+  <strong>En móvil:</strong> Toca el logo "Andrea López" del menú 3 veces seguidas y rápido.<br><br>
+  Aparece un campo de contraseña. La contraseña por defecto es la configurada en el sistema.
+</div>
+
+<h3>📊 Pestaña: Estadísticas</h3>
+<p>Muestra un resumen rápido: número de fotos, vídeos y visitas. También hay botones para exportar e importar la configuración completa (útil como copia de seguridad).</p>
+
+<h3>📂 Pestaña: Secciones</h3>
+<p>Permite activar o desactivar cada sección de la web. Por ejemplo, si no quieres mostrar los testimonios temporalmente, apágalos aquí — desaparecen del menú y de la página sin borrarlos.</p>
+<div class="box warn">⚠️ Las secciones <strong>Hero</strong> y <strong>Contacto</strong> no se pueden desactivar porque son imprescindibles.</div>
+
+<p>Dentro de cada sección también puedes:</p>
+<ul>
+  <li><strong>Hero:</strong> cambiar el vídeo o imagen de fondo</li>
+  <li><strong>Sobre mí:</strong> editar los párrafos de texto y gestionar el carrusel de fotos</li>
+  <li><strong>Galería:</strong> subir y eliminar fotos de la galería</li>
+  <li><strong>Vídeos:</strong> añadir y eliminar vídeos</li>
+  <li><strong>Servicios:</strong> editar servicios, precios, iconos y ocultarlos individualmente</li>
+  <li><strong>Proceso:</strong> editar los 4 pasos del proceso de trabajo</li>
+  <li><strong>Testimonios:</strong> añadir, editar y eliminar testimonios de clientes</li>
+</ul>
+
+<h3>⚙️ Pestaña: Configuración</h3>
+<table>
+  <tr><th>Sección</th><th>Qué puedes cambiar</th></tr>
+  <tr><td>Textos</td><td>Tagline del hero, eyebrow ("Fotografía · Vídeo · Dron"), párrafos de "Sobre mí", texto de disponibilidad</td></tr>
+  <tr><td>Contacto</td><td>Instagram, email, teléfono, WhatsApp, zona de trabajo, marca de agua de fotos, contraseña del panel</td></tr>
+</table>
+
+<h3>🛠️ Pestaña: Herramientas</h3>
+<ul>
+  <li><strong>Títulos:</strong> editar el título y descripción de cada foto y vídeo ya subidos</li>
+  <li><strong>Galería:</strong> subir fotos nuevas con drag & drop</li>
+  <li><strong>Vídeos:</strong> añadir vídeos por ruta o URL</li>
+</ul>
+
+<h3>📸 Cómo subir una foto nueva</h3>
+<div class="step"><div class="step-num">1</div><div>Abre el panel admin → Secciones → Galería</div></div>
+<div class="step"><div class="step-num">2</div><div>Arrastra la foto a la zona de subida o haz clic en ella</div></div>
+<div class="step"><div class="step-num">3</div><div>Espera a que diga "Lista para añadir" (se sube automáticamente a Cloudinary)</div></div>
+<div class="step"><div class="step-num">4</div><div>Pon un título y selecciona la categoría (Fotografía / Dron / Retrato)</div></div>
+<div class="step"><div class="step-num">5</div><div>Haz clic en "Añadir ✓" — la foto aparece en la galería pública al momento</div></div>
+
+<h3>🎬 Cómo añadir un vídeo</h3>
+<div class="step"><div class="step-num">1</div><div>Pon el vídeo en la carpeta <code>videos/</code> del proyecto y despliega en Vercel</div></div>
+<div class="step"><div class="step-num">2</div><div>En el panel: Secciones → Vídeos → pon la ruta <code>videos/nombre.mp4</code></div></div>
+<div class="step"><div class="step-num">3</div><div>Añade título, descripción y categoría → "Añadir ✓"</div></div>
+
+<h3>🔑 Cambiar la contraseña del panel</h3>
+<div class="step"><div class="step-num">1</div><div>Panel admin → Configuración → Contacto</div></div>
+<div class="step"><div class="step-num">2</div><div>Escribe la nueva contraseña en "Nueva contraseña" y repítela en "Confirmar"</div></div>
+<div class="step"><div class="step-num">3</div><div>Haz clic en "Guardar cambios ✓"</div></div>
+<div class="box warn">⚠️ <strong>Guarda la contraseña en un lugar seguro.</strong> Si la olvidas, solo se puede recuperar editando el código fuente.</div>
+
+<!-- ─────────────────────────────────────── -->
+<h2 id="firebase">4. Firebase — la base de datos</h2>
+<p><strong>Firebase</strong> es el servicio de Google que almacena todos los datos dinámicos de la web: fotos, vídeos, configuración del panel. Es gratuito para el volumen que usa este portfolio.</p>
+
+<table>
+  <tr><th>Colección en Firebase</th><th>Qué guarda</th></tr>
+  <tr><td><code>photos</code></td><td>Las fotos de la galería (URL de Cloudinary + título + categoría)</td></tr>
+  <tr><td><code>videos</code></td><td>Los vídeos (ruta + título + descripción + categoría)</td></tr>
+  <tr><td><code>sobre_photos</code></td><td>Las fotos del carrusel de "Sobre mí"</td></tr>
+  <tr><td><code>config/site</code></td><td>Toda la configuración del panel (textos, servicios, testimonios, secciones visibles, contacto…)</td></tr>
+</table>
+
+<div class="box">
+  <strong>📍 Proyecto Firebase:</strong> <code>andrea-portfolio-a0817</code><br>
+  <strong>🔗 Consola:</strong> <a href="https://console.firebase.google.com/project/andrea-portfolio-a0817">console.firebase.google.com/project/andrea-portfolio-a0817</a>
+</div>
+
+<h3>🔒 Reglas de seguridad</h3>
+<p>Las reglas (<code>firestore.rules</code>) controlan quién puede escribir en la base de datos. La configuración actual es:</p>
+<ul>
+  <li><strong>Leer:</strong> cualquier persona puede leer (necesario para que los visitantes vean las fotos)</li>
+  <li><strong>Escribir:</strong> solo el administrador autenticado (es decir, solo desde el panel admin con contraseña correcta)</li>
+</ul>
+
+<h3>¿Cuándo desplegar las reglas?</h3>
+<p>Si en el futuro añades una funcionalidad nueva que requiera una colección nueva en Firestore, deberás actualizar el fichero <code>firestore.rules</code> y ejecutar:</p>
+<code>firebase deploy --only firestore:rules</code>
+<p style="margin-top:8px">Para la web tal como está ahora, <strong>no necesitas hacer nada más.</strong></p>
+
+<h3>📦 Cloudinary — almacenamiento de imágenes</h3>
+<p>Las fotos no se guardan en Firebase. Se suben a <strong>Cloudinary</strong>, un servicio especializado en imágenes que las comprime y optimiza automáticamente. Firebase solo guarda la URL de cada foto.</p>
+<div class="box">
+  <strong>Cuenta Cloudinary:</strong> cloud <code>dnof8srry</code> · preset <code>andrea_portfolio</code>
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<h2 id="vercel">5. Vercel — dónde vive la web</h2>
+<p><strong>Vercel</strong> es el servicio que aloja la web y la hace accesible en internet. Cada vez que subes cambios al repositorio de Git, Vercel los despliega automáticamente.</p>
+
+<h3>¿Cómo desplegar cambios?</h3>
+<div class="step"><div class="step-num">1</div><div>Guarda los cambios en los ficheros</div></div>
+<div class="step"><div class="step-num">2</div><div>Abre Warp (o cualquier terminal) en la carpeta del proyecto</div></div>
+<div class="step"><div class="step-num">3</div><div>Ejecuta: <code>git add . && git commit -m "descripción del cambio" && git push</code></div></div>
+<div class="step"><div class="step-num">4</div><div>Vercel detecta el push y despliega automáticamente en ~30 segundos</div></div>
+
+<div class="box ok">✅ La URL <code>https://andrealopezfoto.es</code> se actualiza sola. No hay que hacer nada más.</div>
+
+<!-- ─────────────────────────────────────── -->
+<h2 id="analytics">6. Google Analytics 4</h2>
+<p>Google Analytics registra las visitas a la web: cuánta gente entra, desde qué país, qué secciones miran, cuánto tiempo pasan, desde qué dispositivo, etc.</p>
+
+<div class="box">
+  <strong>ID de medición:</strong> <code>G-ZDXKJFZNBN</code><br>
+  <strong>Dashboard:</strong> <a href="https://analytics.google.com">analytics.google.com</a>
+</div>
+
+<div class="box warn">
+  ⚠️ <strong>RGPD:</strong> Analytics solo empieza a rastrear cuando el visitante acepta las cookies en el banner. Si las rechaza, sus datos <strong>no</strong> se recogen. Esto es correcto y legal.
+</div>
+
+<h3>¿Qué puedes ver en Analytics?</h3>
+<ul>
+  <li>Número de visitas diarias, semanales y mensuales</li>
+  <li>De qué países o ciudades vienen los visitantes</li>
+  <li>Qué dispositivo usan (móvil / ordenador)</li>
+  <li>Cuánto tiempo permanecen en la web</li>
+  <li>Desde qué fuente llegan (Google, Instagram, directo…)</li>
+</ul>
+
+<!-- ─────────────────────────────────────── -->
+<h2 id="sw">7. Service Worker — modo offline y velocidad</h2>
+<p>El <strong>Service Worker</strong> (<code>sw.js</code>) es un programa invisible que el navegador instala en el dispositivo del visitante. Sirve para dos cosas:</p>
+
+<ul>
+  <li><strong>Velocidad:</strong> en visitas posteriores, el HTML, CSS y JS se cargan desde la memoria del navegador sin esperar a descargarlos de nuevo. La web abre instantáneamente.</li>
+  <li><strong>Offline:</strong> si el visitante no tiene conexión, la web sigue abriendo (sin las fotos de Firebase, pero el resto funciona).</li>
+</ul>
+
+<h3>¿Cuándo cambiar la versión?</h3>
+<p>Cuando hagas cambios importantes en el diseño o el código y quieras que todos los visitantes vean la versión nueva, abre <code>sw.js</code> y cambia el número de versión:</p>
+
+<table>
+  <tr><th>Antes</th><th>Después</th></tr>
+  <tr><td><code>const CACHE_NAME = 'andrea-v1';</code></td><td><code>const CACHE_NAME = 'andrea-v2';</code></td></tr>
+</table>
+
+<p>Así el Service Worker borra la caché vieja y descarga la nueva versión para todos los visitantes.</p>
+
+<!-- ─────────────────────────────────────── -->
+<h2 id="seguridad">8. Seguridad</h2>
+
+<h3>🔒 Cabeceras HTTP (vercel.json)</h3>
+<p>El servidor envía cabeceras de seguridad con cada respuesta para proteger a los visitantes:</p>
+<table>
+  <tr><th>Cabecera</th><th>Para qué sirve</th></tr>
+  <tr><td><code>X-Frame-Options</code></td><td>Evita que la web se incruste en iframes de otras páginas (protege contra clickjacking)</td></tr>
+  <tr><td><code>X-Content-Type-Options</code></td><td>Evita que el navegador interprete mal el tipo de fichero</td></tr>
+  <tr><td><code>Referrer-Policy</code></td><td>Controla qué información de origen se comparte al navegar</td></tr>
+  <tr><td><code>Permissions-Policy</code></td><td>Desactiva acceso a cámara, micrófono y geolocalización</td></tr>
+</table>
+
+<h3>🔑 Contraseña del panel admin</h3>
+<p>La contraseña se guarda como un hash SHA-256 en el navegador. Nunca se guarda en texto plano. Nadie que acceda al código fuente puede leer la contraseña real.</p>
+
+<h3>📋 Reglas de Firestore</h3>
+<p>La base de datos está protegida: los visitantes pueden <strong>leer</strong> datos pero no <strong>escribir</strong>. Solo el administrador, después de autenticarse con la contraseña correcta, puede modificar el contenido.</p>
+
+<h3>🍯 Honeypot anti-spam</h3>
+<p>El formulario de contacto tiene un campo oculto que los humanos no ven pero los bots sí rellenan. Si ese campo llega con contenido, el mensaje se descarta silenciosamente sin enviarse.</p>
+
+<!-- ─────────────────────────────────────── -->
+<h2 id="mantenimiento">9. Mantenimiento habitual</h2>
+
+<table>
+  <tr><th>Tarea</th><th>Cuándo</th><th>Cómo</th></tr>
+  <tr><td>Subir fotos nuevas</td><td>Cuando quieras</td><td>Panel admin → Secciones → Galería</td></tr>
+  <tr><td>Añadir vídeos</td><td>Cuando quieras</td><td>Panel admin → Secciones → Vídeos</td></tr>
+  <tr><td>Actualizar precios</td><td>Cuando cambien</td><td>Panel admin → Secciones → Servicios</td></tr>
+  <tr><td>Añadir testimonios</td><td>Tras cada proyecto</td><td>Panel admin → Secciones → Testimonios</td></tr>
+  <tr><td>Revisar Analytics</td><td>Mensualmente</td><td><a href="https://analytics.google.com">analytics.google.com</a></td></tr>
+  <tr><td>Hacer copia de seguridad</td><td>Mensualmente</td><td>Panel admin → Estadísticas → Exportar config</td></tr>
+  <tr><td>Subir cambios de código</td><td>Tras editar ficheros</td><td><code>git add . && git commit -m "..." && git push</code></td></tr>
+  <tr><td>Actualizar versión del SW</td><td>Tras cambios importantes</td><td>Cambiar <code>andrea-v1</code> → <code>andrea-v2</code> en <code>sw.js</code></td></tr>
+  <tr><td>Desplegar reglas Firebase</td><td>Solo si añades funcionalidad nueva</td><td><code>firebase deploy --only firestore:rules</code></td></tr>
+</table>
+
+<!-- ─────────────────────────────────────── -->
+<h2 id="problemas">10. Solución de problemas</h2>
+
+<h3>❌ No puedo entrar al panel admin</h3>
+<div class="box danger">
+  <strong>Causa:</strong> Contraseña incorrecta o estás haciendo clic en un campo de texto antes de escribir "andrea".<br>
+  <strong>Solución:</strong> Haz clic en una zona vacía de la página primero, luego escribe <code>andrea</code>. Si olvidaste la contraseña, en <code>andrea.js</code> busca <code>ADMIN_HASH</code> y contacta con el desarrollador.
+</div>
+
+<h3>❌ Los cambios del panel no se ven en otro navegador</h3>
+<div class="box danger">
+  <strong>Causa:</strong> Firebase puede tardar unos segundos en sincronizar.<br>
+  <strong>Solución:</strong> Recarga la página en el otro navegador. Si sigue sin verse, comprueba la conexión a internet.
+</div>
+
+<h3>❌ Las fotos no se suben</h3>
+<div class="box danger">
+  <strong>Causa:</strong> Problema con Cloudinary o la conexión.<br>
+  <strong>Solución:</strong> Comprueba que el preset <code>andrea_portfolio</code> existe en tu cuenta de Cloudinary (<a href="https://cloudinary.com">cloudinary.com</a>) y que es de tipo "Unsigned".
+</div>
+
+<h3>❌ El formulario de contacto no llega</h3>
+<div class="box danger">
+  <strong>Causa:</strong> EmailJS no está configurado o la plantilla ha cambiado.<br>
+  <strong>Solución:</strong> Accede a <a href="https://emailjs.com">emailjs.com</a>, verifica que el servicio <code>service_obw8dnq</code> y la plantilla <code>template_ucs9imo</code> existen y están activos.
+</div>
+
+<h3>❌ La web no se actualiza tras subir cambios</h3>
+<div class="box danger">
+  <strong>Causa:</strong> El Service Worker está sirviendo la versión antigua desde caché.<br>
+  <strong>Solución:</strong> Cambia la versión en <code>sw.js</code> de <code>andrea-v1</code> a <code>andrea-v2</code> y vuelve a hacer push.
+</div>
+
+<h3>❌ Error "permission denied" al escribir en Firebase</h3>
+<div class="box danger">
+  <strong>Causa:</strong> Las reglas de Firestore están activas y el inicio de sesión anónimo no está habilitado.<br>
+  <strong>Solución:</strong> En Firebase Console → Authentication → Sign-in method → Anónimo → Activar.
+</div>
+
+<hr style="margin:40px 0;border:none;border-top:1px solid #e0dbd4;">
+<p style="text-align:center;font-size:13px;color:#aaa;">Documentación generada el 29 de marzo de 2026 · Portfolio Andrea López · Desarrollado con ❤</p>
+
+</body>
+</html>

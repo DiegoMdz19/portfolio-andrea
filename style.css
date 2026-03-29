@@ -629,7 +629,8 @@ html,body,*,*::before,*::after{
 }
 .servicio-card:hover::before{transform:scaleX(1);}
 .servicio-card:hover{border-color:var(--warm);transform:translateY(-4px);}
-.servicio-icono{font-size:1.4rem;margin-bottom:20px;opacity:.6;}
+.servicio-icono{font-size:1.4rem;margin-bottom:20px;opacity:.6;color:var(--warm);line-height:1;}
+.servicio-icono svg{display:block;stroke:var(--warm);}
 .servicio-nombre{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;margin-bottom:12px;transition:var(--transition-theme);}
 .servicio-desc{font-size:.8rem;font-weight:200;color:var(--mid);line-height:1.8;margin-bottom:24px;}
 .servicio-precio{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:300;color:var(--warm);}
@@ -1162,3 +1163,46 @@ body[data-admin="true"] .admin-wrap {
   border-color: rgba(255,255,255,0.25);
   background: rgba(255,255,255,0.05);
 }
+
+/* ── GALERÍA CONTROLS: FILTROS + BUSCADOR ───────────────────────────── */
+.gallery-controls{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;}
+.gallery-search-wrap{display:flex;align-items:center;gap:8px;background:rgba(240,236,228,.04);border:1px solid rgba(240,236,228,.1);padding:7px 14px;}
+.gallery-search-wrap svg{flex-shrink:0;opacity:.4;stroke:rgba(240,236,228,.8);}
+.gallery-search-wrap input{background:none;border:none;outline:none;color:#f0ece4;font-family:'Outfit',sans-serif;font-size:.72rem;font-weight:200;width:160px;}
+.gallery-search-wrap input::placeholder{color:rgba(240,236,228,.3);}
+
+/* ── GALERÍA FOOTER: LOAD MORE ────────────────────────────────────── */
+.gallery-footer{display:flex;align-items:center;justify-content:center;gap:24px;padding:40px 64px 20px;flex-wrap:wrap;}
+.gallery-counter{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,236,228,.3);font-weight:300;}
+.gallery-load-more{background:none;border:1px solid rgba(200,184,154,.3);color:#f0ece4;font-family:'Outfit',sans-serif;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;font-weight:300;padding:12px 36px;transition:all .35s;}
+.gallery-load-more:hover{border-color:var(--warm);background:rgba(200,184,154,.06);}
+
+/* ── VISTA ÁLBUM CLIENTE ───────────────────────────────────────────── */
+#album-view{display:none;min-height:100vh;background:var(--dark-bg);padding-bottom:60px;}
+[data-album-mode="1"] #navbar,[data-album-mode="1"] #hero,[data-album-mode="1"] #sobre,[data-album-mode="1"] #galeria,[data-album-mode="1"] #videos,[data-album-mode="1"] #servicios,[data-album-mode="1"] #proceso,[data-album-mode="1"] #testimonios,[data-album-mode="1"] #contacto,[data-album-mode="1"] footer,[data-album-mode="1"] #loader,[data-album-mode="1"] .sound-btn,[data-album-mode="1"] .whatsapp-btn,[data-album-mode="1"] #cookie-banner{display:none!important;}
+[data-album-mode="1"] #album-view{display:block!important;}
+.album-nav{display:flex;align-items:center;justify-content:space-between;padding:28px 64px;border-bottom:1px solid rgba(240,236,228,.08);gap:20px;}
+.album-back{background:none;border:none;color:rgba(240,236,228,.5);font-family:'Outfit',sans-serif;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;font-weight:300;display:flex;align-items:center;gap:8px;transition:color .3s;cursor:pointer;padding:0;}
+.album-back:hover{color:#f0ece4;}
+.album-back svg{stroke:currentColor;}
+.album-title-text{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:#f0ece4;letter-spacing:.06em;text-align:center;flex:1;}
+.album-zip-btn{display:inline-flex;align-items:center;gap:8px;background:none;border:1px solid rgba(200,184,154,.3);color:#f0ece4;font-family:'Outfit',sans-serif;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;font-weight:300;padding:10px 22px;transition:all .35s;cursor:pointer;}
+.album-zip-btn:hover{border-color:var(--warm);background:rgba(200,184,154,.06);}
+.album-zip-btn:disabled{opacity:.5;cursor:not-allowed;}
+#album-zip-progress{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 64px;}
+.album-zip-bar{width:min(400px,80%);height:2px;background:rgba(240,236,228,.08);overflow:hidden;}
+.album-zip-fill{height:100%;width:0%;background:linear-gradient(to right,transparent,#c8b89a,rgba(200,184,154,.6));transition:width .3s;}
+.album-zip-text{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(200,184,154,.6);font-weight:300;}
+#album-grid{padding:40px 64px;}
+.album-item .album-photo-dl{position:absolute;bottom:12px;right:12px;background:rgba(200,184,154,.15);border:1px solid rgba(200,184,154,.3);color:#f0ece4;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:.7rem;text-decoration:none;transition:background .3s;border-radius:2px;}
+.album-item .album-photo-dl:hover{background:rgba(200,184,154,.35);}
+@media(max-width:900px){.album-nav{padding:20px 28px;}.album-title-text{font-size:1.1rem;}#album-grid{padding:28px 28px;}}
+
+/* ── MODAL QR ─────────────────────────────────────────────────────── */
+#folder-qr-modal.open{display:flex!important;opacity:1;}
+
+/* ── CARPETAS ADMIN ─────────────────────────────────────────────── */
+.folder-row{background:rgba(245,242,237,.03);border:1px solid rgba(245,242,237,.08);padding:14px 16px;border-radius:2px;transition:border-color .3s;}
+.folder-row:hover{border-color:rgba(200,184,154,.15);}
+.folder-toggle{display:flex;align-items:center;gap:6px;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(200,184,154,.4);white-space:nowrap;}
+.folder-toggle input{accent-color:var(--warm);width:13px;height:13px;cursor:pointer;}

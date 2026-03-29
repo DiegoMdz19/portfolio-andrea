@@ -75,6 +75,11 @@ window.addEventListener('load', _applySections);
 <meta name="keywords" content="fotógrafa, fotografía profesional, dron, piloto dron, vídeo cinematográfico, bodas, eventos, España, Andrea López">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://andrealopezfoto.es">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#040302">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Andrea López">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231a1714'/%3E%3Cstop offset='1' stop-color='%230a0908'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23g)'/%3E%3Crect x='1' y='1' width='30' height='30' rx='5.5' fill='none' stroke='%23c8b89a' stroke-width='.4' stroke-opacity='.4'/%3E%3Cline x1='16' y1='4' x2='16' y2='28' stroke='%23c8b89a' stroke-width='.3' stroke-opacity='.15'/%3E%3Cline x1='4' y1='16' x2='28' y2='16' stroke='%23c8b89a' stroke-width='.3' stroke-opacity='.15'/%3E%3Ctext x='50%25' y='52%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-size='11' font-style='italic' font-weight='400' fill='%23c8b89a' letter-spacing='1' opacity='.95'%3EAL%3C/text%3E%3Ccircle cx='16' cy='26' r='.8' fill='%23c8b89a' opacity='.6'/%3E%3C/svg%3E">
 <script type="application/ld+json">{
   "@context":"https://schema.org",
@@ -101,6 +106,28 @@ window.addEventListener('load', _applySections);
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Outfit:wght@200;300;400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+// Detección instantánea modo álbum (evita flash del portfolio)
+(function(){
+  if(new URLSearchParams(location.search).get('album')){
+    document.documentElement.setAttribute('data-album-mode','1');
+  }
+})();
+</script>
+<!-- Google Analytics 4 (consent mode — solo rastrea si el usuario acepta cookies) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZDXKJFZNBN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied'});
+  gtag('js', new Date());
+  gtag('config','G-ZDXKJFZNBN',{anonymize_ip:true});
+  // Si ya aceptó cookies antes, activar analytics
+  if(localStorage.getItem('alr_cookies')==='all'){
+    gtag('consent','update',{analytics_storage:'granted'});
+  }
+</script>
 <link rel="stylesheet" href="style.css">
 
 </head>
@@ -239,15 +266,23 @@ window.addEventListener('load', _applySections);
   <div class="section-label reveal">Galería</div>
   <div class="gallery-header">
     <h2 class="gallery-title reveal reveal-delay-1">El encuadre<br><em>lo es todo</em></h2>
-    <ul class="gallery-filter reveal reveal-delay-2">
-      <li><button class="active" data-filter="all">Todo</button></li>
-      <li><button data-filter="fotografia">Fotografía</button></li>
-      <li><button data-filter="dron">Dron</button></li>
-      <li><button data-filter="retrato">Retrato</button></li>
-    </ul>
+    <div class="gallery-controls reveal reveal-delay-2">
+      <ul class="gallery-filter" id="galleryFilter">
+        <li><button class="active" data-filter="all">Todo</button></li>
+        <li><button data-filter="fotografia">Fotografía</button></li>
+        <li><button data-filter="dron">Dron</button></li>
+        <li><button data-filter="retrato">Retrato</button></li>
+      </ul>
+      <div class="gallery-search-wrap">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="gallerySearch" placeholder="Buscar fotos…" oninput="onGallerySearch(this.value)" autocomplete="off">
+      </div>
+    </div>
   </div>
-  <div class="gallery-grid" id="galleryGrid">
-    <!-- Cargado dinámicamente desde Firestore -->
+  <div class="gallery-grid" id="galleryGrid"></div>
+  <div class="gallery-footer" id="galleryFooter" style="display:none;">
+    <span id="galleryCounter" class="gallery-counter"></span>
+    <button class="gallery-load-more" id="galleryLoadMore" onclick="loadMorePhotos()">Ver más fotos</button>
   </div>
 </section>
 
@@ -266,37 +301,37 @@ window.addEventListener('load', _applySections);
   <h2 class="video-heading reveal reveal-delay-1">Lo que puedo<br><em>hacer por ti</em></h2>
   <div class="servicios-grid">
     <div class="servicio-card reveal">
-      <div class="servicio-icono">📷</div>
+      <div class="servicio-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="28" height="28"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
       <h3 class="servicio-nombre">Fotografía</h3>
       <p class="servicio-desc">Sesiones de fotografía profesional para bodas, eventos, retratos y producto. Entrega en 48h con edición incluida.</p>
       <div class="servicio-precio"><span class="servicio-desde">Desde</span>150 €</div>
     </div>
     <div class="servicio-card reveal reveal-delay-1">
-      <div class="servicio-icono">🚁</div>
+      <div class="servicio-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="28" height="28"><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="7" y2="7"/><line x1="17" y1="7" x2="21" y2="3"/><line x1="7" y1="17" x2="3" y2="21"/><line x1="17" y1="17" x2="21" y2="21"/></svg></div>
       <h3 class="servicio-nombre">Vídeo con Dron</h3>
       <p class="servicio-desc">Grabación aérea cinematográfica en 4K. Paisajes, eventos, inmobiliaria y publicidad. Certificación AESA.</p>
       <div class="servicio-precio"><span class="servicio-desde">Desde</span>250 €</div>
     </div>
     <div class="servicio-card reveal reveal-delay-2">
-      <div class="servicio-icono">🎬</div>
+      <div class="servicio-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="28" height="28"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 2v20"/><path d="M17 2v20"/><path d="M2 12h5"/><path d="M17 12h5"/></svg></div>
       <h3 class="servicio-nombre">Vídeo Corporativo</h3>
       <p class="servicio-desc">Producción audiovisual completa para marcas, empresas y redes sociales. Guion, grabación y edición profesional.</p>
       <div class="servicio-precio"><span class="servicio-desde">Desde</span>400 €</div>
     </div>
     <div class="servicio-card reveal">
-      <div class="servicio-icono">💍</div>
+      <div class="servicio-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="28" height="28"><circle cx="12" cy="12" r="5"/><path d="M12 7V3"/><path d="M7.05 9.95 4.22 7.22"/><path d="M5 12H1"/><path d="M7.05 14.05 4.22 16.78"/><path d="M12 17v4"/><path d="M16.95 14.05l2.83 2.73"/><path d="M19 12h4"/><path d="M16.95 9.95l2.83-2.73"/></svg></div>
       <h3 class="servicio-nombre">Bodas & Eventos</h3>
       <p class="servicio-desc">Cobertura completa del día con foto y vídeo. Álbum digital, highlights de 3 min y galería privada incluidos.</p>
       <div class="servicio-precio"><span class="servicio-desde">Desde</span>800 €</div>
     </div>
     <div class="servicio-card reveal reveal-delay-1">
-      <div class="servicio-icono">🏠</div>
+      <div class="servicio-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="28" height="28"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
       <h3 class="servicio-nombre">Inmobiliaria</h3>
       <p class="servicio-desc">Fotografía y vídeo aéreo para inmuebles. Tour virtual, fotos interiores y exteriores con dron incluido.</p>
       <div class="servicio-precio"><span class="servicio-desde">Desde</span>180 €</div>
     </div>
     <div class="servicio-card reveal reveal-delay-2">
-      <div class="servicio-icono">✨</div>
+      <div class="servicio-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="28" height="28"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
       <h3 class="servicio-nombre">Pack Personalizado</h3>
       <p class="servicio-desc">¿Tienes algo en mente que no encaja aquí? Cuéntame tu proyecto y creamos juntos el pack perfecto para ti.</p>
       <div class="servicio-precio"><a href="#contacto" style="color:var(--warm);text-decoration:none;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;">Consultar →</a></div>
@@ -377,10 +412,32 @@ window.addEventListener('load', _applySections);
       </div>
       <div class="form-group"><label>Tipo de proyecto</label><input type="text" name="proyecto" placeholder="Boda, evento, dron, vídeo..."></div>
       <div class="form-group"><label>Cuéntame más</label><textarea rows="5" name="message" placeholder="Describe tu proyecto, fecha, lugar..."></textarea></div>
-      <button type="submit" class="btn-submit">Enviar mensaje <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+      <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+      <button type="submit" class="btn-submit">Enviar mensaje
     </form>
   </div>
 </section>
+
+<!-- VISTA ÁLBUM (se activa con ?album=TOKEN) -->
+<div id="album-view">
+  <nav class="album-nav">
+    <button class="album-back" onclick="closeAlbumView()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Portfolio
+    </button>
+    <span id="album-title-text" class="album-title-text"></span>
+    <button id="albumDownloadBtn" class="album-zip-btn" onclick="downloadAlbumZip()" style="display:none;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Descargar ZIP
+    </button>
+  </nav>
+  <div id="album-zip-progress" style="display:none;">
+    <div class="album-zip-bar"><div class="album-zip-fill" id="albumZipFill"></div></div>
+    <span id="albumZipText" class="album-zip-text">Preparando…</span>
+  </div>
+  <div id="album-grid" class="gallery-grid"></div>
+  <p id="album-empty" style="display:none;text-align:center;padding:80px 24px;font-size:.82rem;color:#7a7068;font-weight:200;">Esta carpeta no tiene fotos aún.</p>
+</div>
 
 <!-- FOOTER -->
 <footer>
@@ -460,10 +517,10 @@ window.addEventListener('load', _applySections);
   <a id="whatsappPopupLink" href="https://wa.me/34600000000?text=Hola%20Andrea%2C%20me%20gustar%C3%ADa%20hablar%20sobre%20un%20proyecto" target="_blank" rel="noopener">Escribir por WhatsApp</a>
 </div>
 
-<!-- BOTÓN WHATSAPP FLOTANTE -
-<a class="whatsapp-btn" id="whatsappBtn" href="https://wa.me/34600000000?text=Hola%20Andrea%2C%20me%20gustar%C3%ADa%20hablar%20sobre%20un%20proyecto" target="_blank" rel="noopener" title="Escríbeme por WhatsApp">
+<!-- BOTÓN WHATSAPP FLOTANTE -->
+<a class="whatsapp-btn" id="whatsappBtn" href="https://wa.me/34600000000?text=Hola%20Andrea%2C%20me%20gustar%C3%ADa%20hablar%20sobre%20un%20proyecto" target="_blank" rel="noopener" aria-label="Escríbeme por WhatsApp">
   <svg viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-</a> -->
+</a>
 
 <!-- BOTÓN SONIDO AMBIENTE -->
 <button class="sound-btn" id="soundBtn" title="Sonido ambiente">
@@ -506,6 +563,21 @@ window.addEventListener('load', _applySections);
     <p>Tienes derecho a acceder, rectificar y suprimir tus datos. Puedes ejercerlos contactando a través del formulario de esta web.</p>
     <h3>5. Contacto</h3>
     <p>Para cualquier consulta relacionada con tu privacidad puedes escribirnos a través del formulario de contacto.</p>
+  </div>
+</div>
+
+<!-- MODAL QR CARPETA -->
+<div id="folder-qr-modal" style="display:none;position:fixed;inset:0;z-index:9100;background:rgba(4,3,2,.94);align-items:center;justify-content:center;opacity:0;transition:opacity .25s;">
+  <div style="background:#111009;border:1px solid rgba(200,184,154,.15);padding:36px;max-width:360px;width:90%;text-align:center;position:relative;">
+    <button onclick="closeFolderQR()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#7a7068;font-size:1rem;cursor:pointer;">✕</button>
+    <p style="font-size:.52rem;letter-spacing:.32em;text-transform:uppercase;color:rgba(200,184,154,.5);margin-bottom:6px;">Acceso a carpeta</p>
+    <p id="qr-folder-name" style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;color:#f0ece4;margin-bottom:20px;"></p>
+    <img id="qr-img" src="" style="width:180px;height:180px;background:#fff;padding:10px;border-radius:4px;display:block;margin:0 auto 18px;" alt="QR">
+    <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;">
+      <input id="qr-url" type="text" readonly style="flex:1;background:rgba(245,242,237,.04);border:none;border-bottom:1px solid rgba(245,242,237,.15);color:#f0ece4;font-family:'Outfit',sans-serif;font-size:.65rem;padding:8px 0;outline:none;" onclick="this.select()">
+      <button id="qr-copy-btn" onclick="copyQrUrl()" class="admin-btn" style="flex-shrink:0;font-size:.55rem;padding:8px 14px;">Copiar</button>
+    </div>
+    <a id="qr-download-link" href="" download="qr-acceso.png" class="admin-btn" style="display:inline-block;text-decoration:none;font-size:.55rem;">⬇ Descargar QR</a>
   </div>
 </div>
 
@@ -559,6 +631,7 @@ window.addEventListener('load', _applySections);
           <div style="width:140px;flex-shrink:0;border-right:1px solid rgba(245,242,237,.08);padding-right:20px;margin-right:28px;display:flex;flex-direction:column;gap:4px;">
             <button class="sec-menu-btn active" onclick="switchConfig('cfg-textos',this)">Textos</button>
             <button class="sec-menu-btn" onclick="switchConfig('cfg-contacto',this)">Contacto</button>
+            <button class="sec-menu-btn" onclick="switchConfig('cfg-avanzado',this)">Avanzado</button>
           </div>
           <div id="cfg-textos" style="flex:1;min-width:0;">
             <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:20px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Hero</p>
@@ -605,14 +678,28 @@ window.addEventListener('load', _applySections);
             <button onclick="saveContacto()" class="admin-btn">Guardar cambios ✓</button>
             <p id="contacto-msg" style="font-size:.72rem;color:#c8b89a;margin-top:14px;display:none;"></p>
           </div>
+          <div id="cfg-avanzado" style="flex:1;min-width:0;display:none;">
+            <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:20px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Auto-borrado de fotos</p>
+            <div style="margin-bottom:20px;">
+              <label class="admin-label">Eliminar fotos automáticamente después de (días)</label>
+              <input id="txt-autodelete" type="number" class="admin-input" placeholder="365" min="0" max="3650" style="max-width:120px;display:block;">
+              <p style="font-size:.6rem;color:rgba(245,242,237,.25);margin-top:8px;">0 = desactivado · Las fotos marcadas como Permanente nunca se eliminan</p>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button onclick="saveAvanzado()" class="admin-btn">Guardar ✓</button>
+              <button onclick="manualCleanExpired()" class="admin-btn" style="border-color:rgba(180,60,40,.35);color:rgba(200,100,80,.8)">🗑 Limpiar ahora</button>
+            </div>
+            <p id="avanzado-msg" style="font-size:.72rem;color:#c8b89a;margin-top:14px;display:none;"></p>
+          </div>
         </div>
       </div>
-      <div id="tab-tools" class="admin-tab-content">
+      <div id="tab-tools"
         <div style="display:flex;gap:0;height:100%;">
           <div style="width:140px;flex-shrink:0;border-right:1px solid rgba(245,242,237,.08);padding-right:20px;margin-right:28px;display:flex;flex-direction:column;gap:4px;">
             <button class="sec-menu-btn active" onclick="switchConfig('tool-titulos',this)">Títulos</button>
             <button class="sec-menu-btn" onclick="switchConfig('tool-galeria',this)">Galería</button>
             <button class="sec-menu-btn" onclick="switchConfig('tool-videos-admin',this)">Vídeos</button>
+            <button class="sec-menu-btn" onclick="switchConfig('tool-carpetas',this)">Carpetas</button>
           </div>
           <div id="tool-titulos" style="flex:1;min-width:0;">
             <div style="position:relative;margin-bottom:20px;">
@@ -635,9 +722,10 @@ window.addEventListener('load', _applySections);
               <input id="fileInput" type="file" accept="image/*" multiple style="display:none;" onchange="handleFiles(this.files)">
             </div>
             <div id="newPhotoFields" style="display:none;margin-top:20px;">
-              <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:14px;align-items:flex-end;margin-bottom:12px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:flex-end;margin-bottom:12px;">
                 <div><label class="admin-label">Título</label><input id="newTitulo" type="text" placeholder="Ej: Atardecer" class="admin-input"></div>
                 <div><label class="admin-label">Categoría</label><select id="newCat" class="admin-input"><option value="fotografia">Fotografía</option><option value="dron">Dron</option><option value="retrato">Retrato</option></select></div>
+                <div><label class="admin-label">Carpeta</label><select id="newFolder" class="admin-input"><option value="">Sin carpeta</option></select></div>
                 <button onclick="addPhoto()" class="admin-btn">Añadir ✓</button>
               </div>
               <img id="previewImg" style="max-height:140px;object-fit:contain;background:rgba(245,242,237,.04);display:block;">
@@ -648,9 +736,15 @@ window.addEventListener('load', _applySections);
             <p id="noPhotosMsg" style="font-size:.78rem;font-weight:200;color:#7a7068;text-align:center;padding:36px 0;">Aún no has añadido fotos. ¡Sube la primera!</p>
           </div>
           <div id="tool-videos-admin" style="flex:1;min-width:0;display:none;">
-            <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:16px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Añadir vídeo</p>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px;">
-              <div><label class="admin-label">Ruta</label><input id="vid-src" type="text" class="admin-input" placeholder="videos/mivideo.mp4"></div>
+            <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:16px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Subir vídeo</p>
+            <div class="drop-zone" onclick="document.getElementById('vidFileInput').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleVideoDrop(event)" style="margin-bottom:14px;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c8b89a" stroke-width="1" style="opacity:.4;display:block;margin:0 auto 12px;"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              <p style="font-size:.75rem;font-weight:200;color:#7a7068;line-height:1.7;">Arrastra tu vídeo aquí o haz clic<br><span style="font-size:.62rem;color:rgba(122,112,104,.5);">MP4 · Se sube a Cloudinary automáticamente</span></p>
+              <input id="vidFileInput" type="file" accept="video/mp4,video/webm,video/quicktime" style="display:none;" onchange="handleVideoFile(this.files[0])">
+            </div>
+            <p id="vid-upload-status" style="font-size:.72rem;color:#c8b89a;margin-bottom:10px;display:none;"></p>
+            <img id="vid-cloudinary-preview" style="max-height:90px;border-radius:2px;margin-bottom:14px;display:none;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px;">
               <div><label class="admin-label">Título</label><input id="vid-new-titulo" type="text" class="admin-input" placeholder="Título"></div>
               <div><label class="admin-label">Descripción</label><input id="vid-new-desc" type="text" class="admin-input" placeholder="Descripción breve"></div>
             </div>
@@ -662,6 +756,15 @@ window.addEventListener('load', _applySections);
             <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:16px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Vídeos actuales</p>
             <div id="admin-video-list" style="display:flex;flex-direction:column;gap:10px;"></div>
           </div>
+          <div id="tool-carpetas" style="flex:1;min-width:0;display:none;">
+            <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:16px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Nueva carpeta</p>
+            <div style="display:flex;gap:10px;margin-bottom:28px;">
+              <input id="new-folder-name" type="text" class="admin-input" placeholder="Ej: Boda García 2025" style="flex:1;">
+              <button onclick="createFolder()" class="admin-btn" style="flex-shrink:0;">Crear ✓</button>
+            </div>
+            <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:16px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Carpetas</p>
+            <div id="tool-carpetas-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+          </div>
         </div>
       </div>
       <hr class="admin-divider">
@@ -671,6 +774,7 @@ window.addEventListener('load', _applySections);
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="andrea.js?v=20260319d" defer></script>
 </body>
