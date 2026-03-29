@@ -2086,9 +2086,18 @@ function closeAdmin() {
 
 async function checkPass(){
   const input = document.getElementById('admin-pass').value;
-  const storedHash = localStorage.getItem('alr_pass');
-  const inputHash  = await sha256(input);
-  const ok = storedHash ? inputHash === storedHash : inputHash === ADMIN_HASH;
+  const stored = localStorage.getItem('alr_pass');
+  const inputHash = await sha256(input);
+
+  let ok = false;
+  if(stored){
+    // Compatibilidad: acepta tanto hash SHA-256 como texto plano (legado)
+    ok = (inputHash === stored) || (input === stored);
+    // Auto-migrar contraseña de texto plano a hash
+    if(ok && input === stored) localStorage.setItem('alr_pass', inputHash);
+  } else {
+    ok = inputHash === ADMIN_HASH;
+  }
   if(ok){
     // Iniciar sesión anónima en Firebase para que las Security Rules permitan escribir
     auth.signInAnonymously().catch(e => console.warn('Firebase auth:', e));
