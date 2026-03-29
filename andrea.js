@@ -93,9 +93,11 @@ function switchConfig(id, btn){
   btn.classList.add('active');
   if(id === 'cfg-textos')        loadTextosForm();
   if(id === 'cfg-contacto')      loadContactoForm();
+  if(id === 'cfg-avanzado')      loadAvanzadoForm();
   if(id === 'tool-titulos')      loadMultimediaForm();
   if(id === 'tool-galeria')      { renderAdminGallery(); setTimeout(initDragDrop, 50); }
   if(id === 'tool-videos-admin') loadVideoAdmin();
+  if(id === 'tool-carpetas')     loadFoldersAdmin();
 }
 
 // ── MODAL PERSONALIZADO
@@ -2097,6 +2099,12 @@ async function checkPass(){
       const activeTab = document.querySelector('.admin-tab.active');
       if(activeTab) moveTabIndicator(activeTab);
     }, 60);
+    // Auto-borrado silencioso + cargar selector de carpetas
+    setTimeout(async () => {
+      const deleted = await autoDeleteExpiredPhotos();
+      if(deleted > 0){ renderPublicGallery(); renderAdminGallery(); }
+      populateFolderSelector('newFolder');
+    }, 400);
   } else {
     document.getElementById('admin-error').style.display = 'block';
     document.getElementById('admin-pass').value = '';
@@ -2888,36 +2896,7 @@ async function manualCleanExpired(){
   }
 }
 
-// Cargar autoDeleteDays desde Firebase al iniciar el panel
-const _origSwitchConfig = switchConfig;
-function switchConfig(id, btn){
-  _origSwitchConfig(id, btn);
-  if(id === 'cfg-avanzado') loadAvanzadoForm();
-  if(id === 'tool-carpetas') loadFoldersAdmin();
-}
-
-// Corregir switchTab para llamar auto-borrado y load carpetas
-const _origSwitchTab = switchTab;
-function switchTab(id, el){
-  _origSwitchTab(id, el);
-}
-
-// Al abrir el panel admin: auto-borrado silencioso + selector carpetas
-const _origCheckPass = checkPass;
-async function checkPass(){
-  await _origCheckPass();
-  // Esperar a que el panel esté abierto
-  setTimeout(async () => {
-    if(document.getElementById('admin-panel')?.style.display !== 'none'){
-      const deleted = await autoDeleteExpiredPhotos();
-      if(deleted > 0){ renderPublicGallery(); renderAdminGallery(); }
-      populateFolderSelector('newFolder');
-    }
-  }, 400);
-}
-
-// Actualizar addPhoto para guardar folderId
-const _origAddPhoto = addPhoto;
+// Actualizar addPhoto para guardar folderId (reemplaza la función original por hoisting)
 async function addPhoto(){
   const folderId = document.getElementById('newFolder')?.value || null;
   // Temporalmente parchear db.collection para inyectar folderId
