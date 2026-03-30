@@ -174,8 +174,8 @@ const t = useTranslations(lang);
 
 <!-- PROCESO -->
 <section id="proceso">
-  <div class="section-label reveal" style="color:rgba(200,184,154,.55);">{t('proceso.label')}</div>
-  <h2 class="video-heading reveal reveal-delay-1" style="color:#f0ece4;">{t('proceso.heading1')}<br><em style="color:rgba(200,184,154,.7);">{t('proceso.heading2')}</em></h2>
+  <div class="section-label reveal" style="color:var(--warm-alpha-60);">{t('proceso.label')}</div>
+  <h2 class="video-heading reveal reveal-delay-1" style="color:var(--ink);">{t('proceso.heading1')}<br><em style="color:var(--warm);">{t('proceso.heading2')}</em></h2>
   <div class="proceso-steps">
     <div class="proceso-step reveal">
       <div class="proceso-num">01</div>
@@ -202,8 +202,8 @@ const t = useTranslations(lang);
 
 <!-- TESTIMONIOS -->
 <section id="testimonios">
-  <div class="section-label reveal" style="color:rgba(200,184,154,.55);">{t('testimonio.label')}</div>
-  <h2 class="video-heading reveal reveal-delay-1" style="color:#f0ece4;">{t('testimonio.heading1')}<br><em style="color:rgba(200,184,154,.7);">{t('testimonio.heading2')}</em></h2>
+  <div class="section-label reveal" style="color:var(--warm-alpha-60);">{t('testimonio.label')}</div>
+  <h2 class="video-heading reveal reveal-delay-1" style="color:var(--ink);">{t('testimonio.heading1')}<br><em style="color:var(--warm);">{t('testimonio.heading2')}</em></h2>
   <div class="testimonios-grid">
     <div class="testimonio-card reveal">
       <span class="testimonio-comilla">"</span>
@@ -373,13 +373,13 @@ const t = useTranslations(lang);
 
 <!-- MODAL QR CARPETA -->
 <div id="folder-qr-modal" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(4,3,2,.94);align-items:center;justify-content:center;opacity:0;transition:opacity .25s;">
-  <div style="background:#111009;border:1px solid rgba(200,184,154,.15);padding:36px;max-width:360px;width:90%;text-align:center;position:relative;">
-    <button onclick="closeFolderQR()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#7a7068;font-size:1rem;cursor:pointer;">✕</button>
-    <p style="font-size:.52rem;letter-spacing:.32em;text-transform:uppercase;color:rgba(200,184,154,.5);margin-bottom:6px;">{t('admin.qrLabel')}</p>
-    <p id="qr-folder-name" style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;color:#f0ece4;margin-bottom:20px;"></p>
+  <div style="background:var(--paper);border:1px solid var(--ink-15);padding:36px;max-width:360px;width:90%;text-align:center;position:relative;box-shadow:0 30px 60px rgba(0,0,0,0.5);">
+    <button onclick="closeFolderQR()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--mid);font-size:1rem;cursor:pointer;">✕</button>
+    <p style="font-size:.52rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:6px;">{t('admin.qrLabel')}</p>
+    <p id="qr-folder-name" style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;color:var(--ink);margin-bottom:20px;"></p>
     <img id="qr-img" src="" style="width:180px;height:180px;background:#fff;padding:10px;border-radius:4px;display:block;margin:0 auto 18px;" alt="QR">
     <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;">
-      <input id="qr-url" type="text" readonly style="flex:1;background:rgba(245,242,237,.04);border:none;border-bottom:1px solid rgba(245,242,237,.15);color:#f0ece4;font-family:'Outfit',sans-serif;font-size:.65rem;padding:8px 0;outline:none;" onclick="this.select()">
+      <input id="qr-url" type="text" readonly style="flex:1;background:var(--ink-05);border:none;border-bottom:1px solid var(--ink-15);color:var(--ink);font-family:'Outfit',sans-serif;font-size:.65rem;padding:8px 0;outline:none;" onclick="this.select()">
       <button id="qr-copy-btn" onclick="copyQrUrl()" class="admin-btn" style="flex-shrink:0;font-size:.55rem;padding:8px 14px;">{t('admin.copy')}</button>
     </div>
     <a id="qr-download-link" href="" download="qr-acceso.png" class="admin-btn" style="display:inline-block;text-decoration:none;font-size:.55rem;">{t('admin.downloadQR')}</a>
