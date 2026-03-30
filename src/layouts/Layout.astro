@@ -160,31 +160,62 @@ window.addEventListener('load', _applySections);
   import gsap from 'gsap';
 
   // Inicializar Lenis para Scroll Cinemático Mantequilla
-  window.lenis = new Lenis({
-    duration: 1.2,
-    easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
-    direction: 'vertical',
-    gestureDirection: 'vertical',
-    smooth: true,
-    mouseMultiplier: 1,
-    smoothTouch: false,
-    touchMultiplier: 2,
-    infinite: false,
-  } as any);
+  let lenisInstance: any = null;
+  let rafId: number | null = null;
 
-  function raf(time: number) {
-    window.lenis.raf(time);
-    requestAnimationFrame(raf);
+  function initLenis() {
+    if (lenisInstance) return;
+
+    lenisInstance = new Lenis({
+      duration: 1.2,
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
+      direction: 'vertical',
+      gestureDirection: 'vertical',
+      smooth: true,
+      mouseMultiplier: 1,
+      smoothTouch: false,
+      touchMultiplier: 2,
+      infinite: false,
+    } as any);
+    
+    (window as any).lenis = lenisInstance;
+
+    function raf(time: number) {
+      if (lenisInstance) {
+        lenisInstance.raf(time);
+        rafId = requestAnimationFrame(raf);
+      }
+    }
+    
+    rafId = requestAnimationFrame(raf);
   }
 
-  requestAnimationFrame(raf);
+  function destroyLenis() {
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+    if (lenisInstance) {
+      lenisInstance.destroy();
+      lenisInstance = null;
+      (window as any).lenis = null;
+    }
+  }
+
+  // Handle Astro page transitions to prevent memory leaks
+  document.addEventListener('astro:page-load', initLenis);
+  document.addEventListener('astro:before-preparation', destroyLenis);
+
+  // Fallback for first load if astro:page-load hasn't fired
+  if(!(window as any).lenis) initLenis();
 
   // Animar el efecto de agua WebGL de manera sutil y sin cortes (CSS Displacement)
   document.addEventListener('DOMContentLoaded', () => {
     if(window.innerWidth > 768) {
       document.body.addEventListener('mouseover', (e) => {
-        const item = e.target.closest && e.target.closest('.gallery-item');
-        const img = item ? item.querySelector('.gl-image') : null;
+        const target = e.target as HTMLElement;
+        const item = target && target.closest ? target.closest('.gallery-item') : null;
+        const img = item ? item.querySelector('.gl-image') as HTMLElement : null;
         if(img && !img.dataset.filtering) {
           img.dataset.filtering = '1';
           gsap.killTweensOf('#displacementMap');
@@ -196,10 +227,11 @@ window.addEventListener('load', _applySections);
         }
       });
       document.body.addEventListener('mouseout', (e) => {
-        const item = e.target.closest && e.target.closest('.gallery-item');
-        const img = item ? item.querySelector('.gl-image') : null;
+        const target = e.target as HTMLElement;
+        const item = target && target.closest ? target.closest('.gallery-item') : null;
+        const img = item ? item.querySelector('.gl-image') as HTMLElement : null;
         // Check if cursor actually left the item, not just moving inside children
-        if(item && !item.contains(e.relatedTarget) && img) {
+        if(item && !item.contains(e.relatedTarget as Node) && img) {
           gsap.killTweensOf('#displacementMap');
           gsap.to('#displacementMap', { 
             attr: { scale: 0 }, 

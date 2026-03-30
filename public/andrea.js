@@ -662,7 +662,7 @@ function applyTextos(t){
 
   // Hero tagline
   const tl = document.querySelector('.hero-tagline');
-  if(tl && t.tagline) tl.innerHTML = t.tagline.replace(/\n/g,'<br>');
+  if(tl && t.tagline) tl.innerHTML = esc(t.tagline).replace(/\n/g,'<br>');
   // Hero eyebrow
   const ey = document.querySelector('.hero-eyebrow');
   if(ey && t.eyebrow) ey.textContent = t.eyebrow;
@@ -2153,21 +2153,10 @@ function closeAdmin() {
 
 async function checkPass(){
   const input = document.getElementById('admin-pass').value;
-  const stored = localStorage.getItem('alr_pass');
-  const inputHash = await sha256(input);
 
-  let ok = false;
-  if(stored){
-    // Compatibilidad: acepta tanto hash SHA-256 como texto plano (legado)
-    ok = (inputHash === stored) || (input === stored);
-    // Auto-migrar contraseña de texto plano a hash
-    if(ok && input === stored) localStorage.setItem('alr_pass', inputHash);
-  } else {
-    ok = inputHash === ADMIN_HASH;
-  }
-  if(ok){
-    // Iniciar sesión anónima en Firebase para que las Security Rules permitan escribir
-    auth.signInAnonymously().catch(e => console.warn('Firebase auth:', e));
+  try {
+    await auth.signInWithEmailAndPassword('admin@andrealopezfoto.es', input);
+    
     document.getElementById('admin-login').style.display = 'none';
     document.getElementById('admin-panel').style.display = 'block';
     loadStats();
@@ -2175,16 +2164,16 @@ async function checkPass(){
       const activeTab = document.querySelector('.admin-tab.active');
       if(activeTab) moveTabIndicator(activeTab);
     }, 60);
-    // Auto-borrado silencioso + cargar selector de carpetas
     setTimeout(async () => {
       const deleted = await autoDeleteExpiredPhotos();
       if(deleted > 0){ renderPublicGallery(); renderAdminGallery(); }
       populateFolderSelector('newFolder');
     }, 400);
-  } else {
+  } catch(e) {
     document.getElementById('admin-error').style.display = 'block';
     document.getElementById('admin-pass').value = '';
     document.getElementById('admin-pass').focus();
+    console.warn('Firebase login error:', e);
   }
 }
 

@@ -196,8 +196,19 @@
 <p>Las reglas (<code>firestore.rules</code>) controlan quién puede escribir en la base de datos. La configuración actual es:</p>
 <ul>
   <li><strong>Leer:</strong> cualquier persona puede leer (necesario para que los visitantes vean las fotos)</li>
-  <li><strong>Escribir:</strong> solo el administrador autenticado (es decir, solo desde el panel admin con contraseña correcta)</li>
+  <li><strong>Escribir:</strong> solo la cuenta administradora configurada en Firebase Authentication (<code>admin@andrealopezfoto.es</code>).</li>
 </ul>
+
+<h3>👤 Crear el Usuario Administrador en Firebase</h3>
+<p>Para asegurar que solo tú puedes editar la web de forma 100% ciega a ataques, debes crear una cuenta de administrador en Firebase en lugar del antiguo sistema anónimo inseguro.</p>
+<div class="step"><div class="step-num">1</div><div>Ve a <a href="https://console.firebase.google.com/">Firebase Console</a> y abre tu proyecto <code>andrea-portfolio-a0817</code>.</div></div>
+<div class="step"><div class="step-num">2</div><div>En el menú izquierdo, ve a <strong>Authentication</strong> y luego a la pestaña <strong>Sign-in method</strong>.</div></div>
+<div class="step"><div class="step-num">3</div><div>Haz clic en <strong>Añadir nuevo proveedor</strong>, selecciona <strong>Correo electrónico/Contraseña</strong> y habilítalo (solo la primera opción). Guarda los cambios.</div></div>
+<div class="step"><div class="step-num">4</div><div>Ve a la pestaña <strong>Users (Usuarios)</strong> en la misma página de Authentication, y haz clic en <strong>Añadir usuario</strong>.</div></div>
+<div class="step"><div class="step-num">5</div><div>Escribe exactamente este correo: <code>admin@andrealopezfoto.es</code> e introduce la contraseña que quieres usar de ahora en adelante para entrar al panel de administración. Clic en "Añadir usuario".</div></div>
+<div class="box ok">
+  <strong>✅ ¡Listo!</strong> Ahora la web verificará y exigirá esta cuenta asegurada al entrar al Panel.
+</div>
 
 <h3>¿Cuándo desplegar las reglas?</h3>
 <p>Si en el futuro añades una funcionalidad nueva que requiera una colección nueva en Firestore, deberás actualizar el fichero <code>firestore.rules</code> y ejecutar:</p>
@@ -392,10 +403,10 @@
   <strong>Solución:</strong> Cambia la versión en <code>sw.js</code> de <code>andrea-v1</code> a <code>andrea-v2</code> y vuelve a hacer push.
 </div>
 
-<h3>❌ Error "permission denied" al escribir en Firebase</h3>
+<h3>❌ Error "Firebase login error" o panel no abre</h3>
 <div class="box danger">
-  <strong>Causa:</strong> Las reglas de Firestore están activas y el inicio de sesión anónimo no está habilitado.<br>
-  <strong>Solución:</strong> En Firebase Console → Authentication → Sign-in method → Anónimo → Activar.
+  <strong>Causa:</strong> Tu cuenta de administrador `admin@andrealopezfoto.es` no existe o la contraseña introducida en el panel no coincide con la de Authentication.<br>
+  <strong>Solución:</strong> En Firebase Console → Authentication → Users. Verifica que existe el usuario <code>admin@andrealopezfoto.es</code>. Si no recuerdas la contraseña allí, puedes cambiarla. 
 </div>
 
 <hr style="margin:40px 0;border:none;border-top:1px solid #e0dbd4;">
