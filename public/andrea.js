@@ -326,25 +326,25 @@ themeBtn.addEventListener('click', () => {
 });
 
 // ── CURSOR ───────────────────────────────────────────────────────────────────
-const cursor = document.getElementById('cursor');
-const ring   = document.getElementById('cursorRing');
-const label  = document.getElementById('cursorLabel');
+let cursor = null;
+let ring   = null;
+let label  = null;
 let mx = 0, my = 0, rx = 0, ry = 0;
 
 document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
 
 // ── ESTELA DORADA ─────────────────────────────────────────────────────────────
-const trailCanvas = document.getElementById('trail-canvas');
-const tc = trailCanvas.getContext('2d');
+let trailCanvas = null;
+let tc = null;
 const trail = [];
 const MAX_TRAIL = 28;
-let isDark = false;
 
 function resizeCanvas(){
-  trailCanvas.width  = window.innerWidth;
-  trailCanvas.height = window.innerHeight;
+  if(trailCanvas){
+    trailCanvas.width  = window.innerWidth;
+    trailCanvas.height = window.innerHeight;
+  }
 }
-resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
 document.addEventListener('mousemove', e => {
@@ -353,18 +353,20 @@ document.addEventListener('mousemove', e => {
 });
 
 function drawTrail(){
-  tc.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-  for(let i = 1; i < trail.length; i++){
-    const p  = trail[i - 1];
-    const c  = trail[i];
-    const t  = i / trail.length;
-    tc.beginPath();
-    tc.moveTo(p.x, p.y);
-    tc.lineTo(c.x, c.y);
-    tc.strokeStyle = `rgba(200,184,154,${t * 0.18})`;
-    tc.lineWidth   = t * 2.5;
-    tc.lineCap     = 'round';
-    tc.stroke();
+  if(tc && trailCanvas){
+    tc.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+    for(let i = 1; i < trail.length; i++){
+      const p  = trail[i - 1];
+      const c  = trail[i];
+      const t  = i / trail.length;
+      tc.beginPath();
+      tc.moveTo(p.x, p.y);
+      tc.lineTo(c.x, c.y);
+      tc.strokeStyle = `rgba(200,184,154,${t * 0.18})`;
+      tc.lineWidth   = t * 2.5;
+      tc.lineCap     = 'round';
+      tc.stroke();
+    }
   }
   // Fade gradual
   for(let i = 0; i < trail.length; i++) trail[i].life -= 0.02;
@@ -374,53 +376,78 @@ drawTrail();
 
 (function anim(){
   rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
-  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
-  ring.style.left   = rx + 'px'; ring.style.top   = ry + 'px';
-  label.style.left  = rx + 'px'; label.style.top  = ry + 'px';
+  if(cursor){ cursor.style.left = mx + 'px'; cursor.style.top = my + 'px'; }
+  if(ring)  { ring.style.left   = rx + 'px'; ring.style.top   = ry + 'px'; }
+  if(label) { label.style.left  = rx + 'px'; label.style.top  = ry + 'px'; }
   requestAnimationFrame(anim);
 })();
 
-function setCursorHover(on){ cursor.classList.toggle('hover', on); ring.classList.toggle('hover', on); }
+function setCursorHover(on){ 
+  if(cursor) cursor.classList.toggle('hover', on); 
+  if(ring) ring.classList.toggle('hover', on); 
+}
 function setCursorView(text){
-  if(text){ cursor.classList.add('view'); ring.classList.add('view'); label.textContent = text; label.classList.add('show'); }
-  else    { cursor.classList.remove('view'); ring.classList.remove('view'); label.classList.remove('show'); }
+  if(text){ 
+    if(cursor) cursor.classList.add('view'); 
+    if(ring) ring.classList.add('view'); 
+    if(label){ label.textContent = text; label.classList.add('show'); }
+  } else { 
+    if(cursor) cursor.classList.remove('view'); 
+    if(ring) ring.classList.remove('view'); 
+    if(label) label.classList.remove('show'); 
+  }
 }
 
-document.querySelectorAll('a, button').forEach(el => {
-  el.addEventListener('mouseenter', () => setCursorHover(true));
-  el.addEventListener('mouseleave', () => setCursorHover(false));
-});
-document.querySelectorAll('.gallery-item').forEach(el => {
-  el.addEventListener('mouseenter', () => setCursorView('Ver'));
-  el.addEventListener('mouseleave', () => setCursorView(null));
-});
-document.querySelectorAll('.video-card').forEach(el => {
-  el.addEventListener('mouseenter', () => setCursorView('Play'));
-  el.addEventListener('mouseleave', () => setCursorView(null));
-});
-// Secciones con fondo oscuro: cursor siempre blanco
-const darkSections = document.querySelectorAll('#hero, #galeria, #contacto, #loader');
-darkSections.forEach(s => {
-  s.addEventListener('mouseenter', () => { cursor.classList.add('on-dark'); ring.classList.add('on-dark'); });
-  s.addEventListener('mouseleave', () => { cursor.classList.remove('on-dark'); ring.classList.remove('on-dark'); });
-});
-// Hero siempre oscuro al cargar (empieza ahí)
-cursor.classList.add('on-dark'); ring.classList.add('on-dark');
+document.addEventListener('astro:page-load', () => {
+  cursor = document.getElementById('cursor');
+  ring   = document.getElementById('cursorRing');
+  label  = document.getElementById('cursorLabel');
+  trailCanvas = document.getElementById('trail-canvas');
+  if(trailCanvas){ tc = trailCanvas.getContext('2d'); resizeCanvas(); }
 
-// ── HAMBURGUESA MÓVIL ────────────────────────────────────────────────────────
-const hamburger  = document.getElementById('hamburger');
-const mobileMenu = document.getElementById('mobileMenu');
-hamburger.addEventListener('click', () => {
-  hamburger.classList.toggle('open');
-  mobileMenu.classList.toggle('open');
-  document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : '';
-});
-document.querySelectorAll('.mobile-link').forEach(a => {
-  a.addEventListener('click', () => {
-    hamburger.classList.remove('open');
-    mobileMenu.classList.remove('open');
-    document.body.style.overflow = '';
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => setCursorHover(true));
+    el.addEventListener('mouseleave', () => setCursorHover(false));
   });
+  document.querySelectorAll('.gallery-item').forEach(el => {
+    el.addEventListener('mouseenter', () => setCursorView('Ver'));
+    el.addEventListener('mouseleave', () => setCursorView(null));
+  });
+  document.querySelectorAll('.video-card').forEach(el => {
+    el.addEventListener('mouseenter', () => setCursorView('Play'));
+    el.addEventListener('mouseleave', () => setCursorView(null));
+  });
+  // Secciones con fondo oscuro: cursor siempre blanco
+  const darkSections = document.querySelectorAll('#hero, #galeria, #contacto, #loader');
+  darkSections.forEach(s => {
+    s.addEventListener('mouseenter', () => { if(cursor) cursor.classList.add('on-dark'); if(ring) ring.classList.add('on-dark'); });
+    s.addEventListener('mouseleave', () => { if(cursor) cursor.classList.remove('on-dark'); if(ring) ring.classList.remove('on-dark'); });
+  });
+  // Hero siempre oscuro al cargar (empieza ahí)
+  if(cursor) cursor.classList.add('on-dark'); 
+  if(ring) ring.classList.add('on-dark');
+
+  // ── HAMBURGUESA MÓVIL ────────────────────────────────────────────────────────
+  const hamburger  = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  if(hamburger && mobileMenu){
+    // Limpiar eventos por si acaso para evitar dobles clics
+    const newHam = hamburger.cloneNode(true);
+    hamburger.replaceWith(newHam);
+    newHam.addEventListener('click', () => {
+      newHam.classList.toggle('open');
+      mobileMenu.classList.toggle('open');
+      document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : '';
+    });
+    
+    document.querySelectorAll('.mobile-link').forEach(a => {
+      a.addEventListener('click', () => {
+        newHam.classList.remove('open');
+        mobileMenu.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+    });
+  }
 });
 
 // ── NAVBAR SCROLL ─────────────────────────────────────────────────────────
