@@ -3029,7 +3029,7 @@ async function openAlbumView(token){
     div.innerHTML = `
       <picture>
         <source srcset="${esc(optSrc)}" type="image/webp">
-        <img src="${esc(p.src)}" alt="${esc(p.titulo||'')}" loading="lazy" class="gl-image">
+        <img src="${esc(p.src)}" alt="${esc(p.titulo||'')}" loading="lazy" class="gl-image" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
       </picture>
       <div class="gallery-item-overlay" style="display:flex; justify-content:space-between; align-items:flex-end;">
         <span class="gallery-item-label">${esc(p.titulo||'')}</span>
