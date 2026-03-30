@@ -178,124 +178,133 @@ function showAlert(msg, { title='Aviso', icon='ℹ' } = {}){
 
 // ── LOADER ──────────────────────────────────────────────────────────────────
 // Partículas de polvo en el loader
-(function initLoaderParticles(){
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', _initLoader);
-  } else {
-    _initLoader();
+document.addEventListener('astro:page-load', () => {
+  const canvas = document.getElementById('loaderCanvas');
+  if(!canvas) return;
+  
+  // Limpiar timers de anteriores visitas (ViewTransitions)
+  if(window._stopLoaderParticles) window._stopLoaderParticles();
+  if(window._loaderPctAnim) cancelAnimationFrame(window._loaderPctAnim);
+  if(window._loaderEmergencyId) clearTimeout(window._loaderEmergencyId);
+
+  const ctx = canvas.getContext('2d');
+
+  function resize(){
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  
+  // Limpiar resize al salir de la página
+  document.addEventListener('astro:before-preparation', () => {
+     window.removeEventListener('resize', resize);
+  }, { once: true });
+
+  const particles = Array.from({length: 120}, () => ({
+    x:     Math.random() * window.innerWidth,
+    y:     Math.random() * window.innerHeight,
+    r:     Math.random() * 1.5 + 0.3,
+    vx:    (Math.random() - .5) * .3,
+    vy:    -(Math.random() * .4 + .1),
+    alpha: Math.random() * .45 + .08,
+  }));
+
+  let running = true;
+  window._stopLoaderParticles = () => { running = false; };
+
+  function draw(){
+    if(!running) return;
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(200,184,154,${p.alpha})`;
+      ctx.fill();
+      p.x += p.vx; p.y += p.vy;
+      if(p.y < -5)  { p.y = H + 5; p.x = Math.random() * W; }
+      if(p.x < -5)    p.x = W + 5;
+      if(p.x > W + 5) p.x = -5;
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  // Contador de porcentaje
+  const pct = document.getElementById('loaderPct');
+  if(pct){
+    const start = Date.now();
+    const duration = 2200, delay = 1200;
+    function tickPct(){
+      const elapsed = Date.now() - start - delay;
+      if(elapsed < 0){ 
+        window._loaderPctAnim = requestAnimationFrame(tickPct); 
+        return; 
+      }
+      const t = Math.min(elapsed / duration, 1);
+      pct.textContent = Math.floor((1 - Math.pow(1-t,3)) * 100) + '%';
+      if(t < 1) {
+        window._loaderPctAnim = requestAnimationFrame(tickPct);
+      } else {
+        pct.textContent = '100%';
+        if(typeof activateEnterBtn === 'function') activateEnterBtn();
+      }
+    }
+    window._loaderPctAnim = requestAnimationFrame(tickPct);
   }
 
-  function _initLoader(){
-    const canvas = document.getElementById('loaderCanvas');
-    if(!canvas) return;
-    const ctx = canvas.getContext('2d');
-
-    function resize(){
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    resize();
-    window.addEventListener('resize', resize);
-
-    const particles = Array.from({length: 120}, () => ({
-      x:     Math.random() * window.innerWidth,
-      y:     Math.random() * window.innerHeight,
-      r:     Math.random() * 1.5 + 0.3,
-      vx:    (Math.random() - .5) * .3,
-      vy:    -(Math.random() * .4 + .1),
-      alpha: Math.random() * .45 + .08,
-    }));
-
-    let running = true;
-    function draw(){
-      if(!running) return;
-      const W = canvas.width, H = canvas.height;
-      ctx.clearRect(0, 0, W, H);
-      particles.forEach(p => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(200,184,154,${p.alpha})`;
-        ctx.fill();
-        p.x += p.vx; p.y += p.vy;
-        if(p.y < -5)  { p.y = H + 5; p.x = Math.random() * W; }
-        if(p.x < -5)    p.x = W + 5;
-        if(p.x > W + 5) p.x = -5;
-      });
-      requestAnimationFrame(draw);
-    }
-    draw();
-    window._stopLoaderParticles = () => { running = false; };
-
-    // Contador de porcentaje
-    const pct = document.getElementById('loaderPct');
-    if(pct){
-      const start = Date.now();
-      const duration = 2200, delay = 1200;
-      let animationFrame;
-      function tickPct(){
-        const elapsed = Date.now() - start - delay;
-        if(elapsed < 0){ 
-          animationFrame = requestAnimationFrame(tickPct); 
-          return; 
-        }
-        const t = Math.min(elapsed / duration, 1);
-        pct.textContent = Math.floor((1 - Math.pow(1-t,3)) * 100) + '%';
-        if(t < 1) {
-          animationFrame = requestAnimationFrame(tickPct);
-        } else {
-          pct.textContent = '100%';
-          activateEnterBtn();
-        }
-      }
-      animationFrame = requestAnimationFrame(tickPct);
-    }
-
-    // Botón Entrar - CORREGIDO
+  // ✅ FUNCIÓN para activar botón cuando esté listo
+  window.activateEnterBtn = function(){
     const enterBtn = document.getElementById('loaderEnterBtn');
     if(enterBtn){
-      // Ocultar inicialmente (CSS ya lo hace, pero por seguridad)
-      enterBtn.style.opacity = '0';
-      enterBtn.style.pointerEvents = 'none';
-      
-      // Event listener UNA SOLA VEZ
-      enterBtn.addEventListener('click', () => {
-        hideLoader();
-        try {
-          const actx = getAudioCtx();
-          if(!introPlayed){ 
-            introPlayed = true; 
-            playIntroSound(actx); 
-          }
-          setTimeout(() => {
-            soundOn = true;
-            const on  = document.getElementById('soundIconOn');
-            const off = document.getElementById('soundIconOff');
-            if(on)  on.style.display  = 'block';
-            if(off) off.style.display = 'none';
-            if(soundBtn) soundBtn.style.opacity = '1';
-            if(ambientGain){
-              ambientGain.gain.cancelScheduledValues(actx.currentTime);
-              ambientGain.gain.setValueAtTime(0, actx.currentTime);
-              ambientGain.gain.linearRampToValueAtTime(0.4, actx.currentTime + 3);
-            }
-          }, 800);
-        } catch(e){ 
-          console.warn('audio error', e); 
-        }
-      });
+      enterBtn.style.opacity = '1';
+      enterBtn.style.pointerEvents = 'auto';
+      enterBtn.classList.add('ready');
     }
+  };
 
-    // ✅ FUNCIÓN para activar botón cuando esté listo
-    window.activateEnterBtn = function(){
-      if(enterBtn){
-        enterBtn.style.opacity = '1';
-        enterBtn.style.pointerEvents = 'auto';
-        // Opcional: añadir clase para efectos CSS
-        enterBtn.classList.add('ready');
+  // Botón Entrar
+  const enterBtn = document.getElementById('loaderEnterBtn');
+  if(enterBtn){
+    enterBtn.style.opacity = '0';
+    enterBtn.style.pointerEvents = 'none';
+    
+    enterBtn.addEventListener('click', () => {
+      hideLoader();
+      try {
+        const actx = getAudioCtx();
+        if(!introPlayed){ 
+          introPlayed = true; 
+          playIntroSound(actx); 
+        }
+        setTimeout(() => {
+          soundOn = true;
+          const on  = document.getElementById('soundIconOn');
+          const off = document.getElementById('soundIconOff');
+          if(on)  on.style.display  = 'block';
+          if(off) off.style.display = 'none';
+          if(soundBtn) soundBtn.style.opacity = '1';
+          if(ambientGain){
+            ambientGain.gain.cancelScheduledValues(actx.currentTime);
+            ambientGain.gain.setValueAtTime(0, actx.currentTime);
+            ambientGain.gain.linearRampToValueAtTime(0.4, actx.currentTime + 3);
+          }
+        }, 800);
+      } catch(e){ 
+        console.warn('audio error', e); 
       }
-    };
+    });
   }
-})();
+
+  // Timeout de emergencia y fallback silencioso
+  window._loaderEmergencyId = setTimeout(hideLoader, 8000);
+  Promise.all([
+    document.fonts.load('300 1rem "Cormorant Garamond"'),
+    document.fonts.load('200 1rem "Outfit"')
+    // No exigimos el load de window para evitar bloqueos en ViewTransitions
+  ]).catch(() => setTimeout(hideLoader, 500));
+});
 
 function hideLoader(){
   const l = document.getElementById('loader');
@@ -305,16 +314,6 @@ function hideLoader(){
   }
   if(window._stopLoaderParticles) window._stopLoaderParticles();
 }
-
-// Timeout de emergencia
-setTimeout(hideLoader, 8000);
-
-// Fallback silencioso
-Promise.all([
-  document.fonts.load('300 1rem "Cormorant Garamond"'),
-  document.fonts.load('200 1rem "Outfit"'),
-  new Promise(r => window.addEventListener('load', r))
-]).catch(() => setTimeout(hideLoader, 500));
 
 // ── TEMA CLARO / OSCURO
 const themeBtn = document.getElementById('themeBtn');
