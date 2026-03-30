@@ -1053,8 +1053,9 @@ footer{
 }
 @media(max-width:480px){
   .hero-name{font-size:clamp(2.6rem,13vw,4.5rem);}
-  .gallery-grid{grid-template-columns:1fr;grid-auto-rows:200px;}
+  .gallery-grid{grid-template-columns:1fr 1fr;grid-auto-rows:minmax(180px, auto);gap:4px;}
   .gallery-item:nth-child(n){grid-column:span 1;grid-row:span 1;}
+  .gallery-item:nth-child(1){grid-column:span 1;grid-row:span 1;}
   #stats{grid-template-columns:1fr 1fr;}
   .admin-grid{grid-template-columns:repeat(3,1fr);}
 }
@@ -1122,6 +1123,11 @@ body[data-admin="true"] #admin-overlay {
   transform: translateY(30px) scale(.96);
   opacity: 0;
   transition: transform .4s cubic-bezier(.2,.8,.2,1), opacity .3s ease;
+}
+@media(max-width:480px){
+  .admin-wrap{padding:24px 18px;border-radius:12px;}
+  .admin-tabs{gap:2px;margin-bottom:24px;}
+  .admin-tab{padding:10px 8px;font-size:0.6rem;letter-spacing:.1em;}
 }
 
 .admin-wrap::-webkit-scrollbar {

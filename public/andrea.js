@@ -89,7 +89,21 @@ document.addEventListener('astro:page-load', () => {
   if(window.lenis && typeof window.lenis.scrollTo === 'function') {
       window.lenis.scrollTo(0, { immediate: true });
   }
+
+  // 👉 Seguridad: Forzar visibilidad de fotos que ya cargaron pero no dispararon onload
+  checkMissingLoads();
 });
+
+function checkMissingLoads(){
+  const imgs = document.querySelectorAll('.gl-image:not(.loaded)');
+  imgs.forEach(img => {
+    if(img.complete && img.naturalWidth > 0){
+      img.classList.add('loaded');
+    }
+  });
+}
+// Repetir cada pocos segundos por si acaso
+setInterval(checkMissingLoads, 3000);
 
 
 
@@ -2227,7 +2241,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if(!logo) return;
 
-  function handleTap() {
+  function handleTap(e) {
+    // Si es touch, prevenimos que también dispare el 'click' un segundo después
+    if(e.type === 'touchend') e.preventDefault();
+
     _tapCount++;
     clearTimeout(_tapTimer);
 
@@ -2237,10 +2254,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 400);
   }
 
-  // 👉 Móvil
-  logo.addEventListener('touchend', handleTap);
-
-  // 👉 PC
+  // 👉 Móvil y PC (unificado con prevención de rebote)
+  logo.addEventListener('touchend', handleTap, { passive: false });
   logo.addEventListener('click', handleTap);
 });
 
