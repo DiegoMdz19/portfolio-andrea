@@ -1,4 +1,10 @@
 ---
-import IndexEs from '../index.astro';
+import Layout from '../../layouts/Layout.astro';
+import MainPageContent from '../../components/MainPageContent.astro';
+import { getLangFromUrl } from '../../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
 ---
-<IndexEs />
+<Layout title="Andrea López — Photography & Drone Video" lang={lang}>
+  <MainPageContent lang={lang} />
+</Layout>
