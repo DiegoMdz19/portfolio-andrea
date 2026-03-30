@@ -2479,13 +2479,21 @@ async function renderAdminGallery(){
           <div class="apc-field">
             <label>Título (ES)</label>
             <div class="apc-input-wrap">
-              <input type="text" value="${esc(p.titulo) || ''}" onchange="updatePhotoTitle('${doc.id}', this.value, 'es')" placeholder="Sin título">
+              <input type="text" class="apc-title-es" value="${esc(p.titulo) || ''}" onchange="updatePhotoTitle('${doc.id}', this.value, 'es')" placeholder="Sin título">
               <button onclick="autoTranslateTitle('${doc.id}', this)" class="apc-translate-btn" title="Traducir al Inglés">✨</button>
             </div>
           </div>
           <div class="apc-field">
             <label>Título (EN)</label>
-            <input type="text" value="${esc(p.titulo_en) || ''}" onchange="updatePhotoTitle('${doc.id}', this.value, 'en')" placeholder="Untitled">
+            <input type="text" class="apc-title-en" value="${esc(p.titulo_en) || ''}" onchange="updatePhotoTitle('${doc.id}', this.value, 'en')" placeholder="Untitled">
+          </div>
+          <div class="apc-field">
+            <label>Descripción (ES)</label>
+            <input type="text" class="apc-desc-es" value="${esc(p.desc) || ''}" onchange="updatePhotoDesc('${doc.id}', this.value, 'es')" placeholder="Por ejemplo: Sesión en el bosque">
+          </div>
+          <div class="apc-field">
+            <label>Descripción (EN)</label>
+            <input type="text" class="apc-desc-en" value="${esc(p.desc_en) || ''}" onchange="updatePhotoDesc('${doc.id}', this.value, 'en')" placeholder="Por ejemplo: Forest session">
           </div>
           <div class="apc-field">
             <label>Carpeta</label>
@@ -4017,10 +4025,15 @@ setTimeout(() => {
 // ── TRADUCCIÓN AUTO ──────────────────────────────────────────────────────────────────
 async function autoTranslateTitle(photoId, btn){
   const card = btn.closest('.admin-photo-card');
-  const esInput = card.querySelector('input[placeholder="Sin título"]');
-  const enInput = card.querySelector('input[placeholder="Untitled"]');
-  const text = esInput.value;
-  if(!text) return;
+  const esInput = card.querySelector('.apc-title-es') || card.querySelector('input[placeholder="Sin título"]');
+  const enInput = card.querySelector('.apc-title-en') || card.querySelector('input[placeholder="Untitled"]');
+  const esDesc = card.querySelector('.apc-desc-es') || card.querySelector('.foto-desc');
+  const enDesc = card.querySelector('.apc-desc-en');
+
+  const textTitle = esInput ? esInput.value : '';
+  const textDesc  = esDesc ? esDesc.value : '';
+
+  if(!textTitle && !textDesc) return;
 
   btn.classList.add('loading');
   const oldTxt = btn.textContent;
@@ -4028,24 +4041,24 @@ async function autoTranslateTitle(photoId, btn){
 
   try {
     // Traducir Título
-    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=es|en`);
-    const data = await res.json();
-    const translated = data.responseData.translatedText;
-    if(translated){
-      enInput.value = translated;
-      await updatePhotoTitle(photoId, translated, 'en');
+    if(textTitle && enInput){
+      const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(textTitle)}&langpair=es|en`);
+      const data = await res.json();
+      const translated = data.responseData.translatedText;
+      if(translated){
+        enInput.value = translated;
+        await updatePhotoTitle(photoId, translated, 'en');
+      }
     }
 
-    // Traducir Descripción si existe en el multimedia-list
-    const descInputEs = card.querySelector('.foto-desc'); // Puede ser null si viene de tool-galeria
-    if(descInputEs && descInputEs.value){
-      const resD = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(descInputEs.value)}&langpair=es|en`);
+    // Traducir Descripción
+    if(textDesc){
+      const resD = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(textDesc)}&langpair=es|en`);
       const dataD = await resD.json();
-      if(dataD.responseData.translatedText){
-          // Si estamos en el listado de títulos, actualizamos el input EN si existe
-          // Pero la descripción EN no suele tener un input directo en la tarjeta de foto simple
-          // Se guarda en el objeto multimedia
-          await updatePhotoDesc(photoId, dataD.responseData.translatedText, 'en');
+      const translatedD = dataD.responseData.translatedText;
+      if(translatedD){
+          if(enDesc) enDesc.value = translatedD;
+          await updatePhotoDesc(photoId, translatedD, 'en');
       }
     }
 

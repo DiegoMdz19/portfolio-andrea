@@ -117,6 +117,7 @@ const t = useTranslations(lang);
 <section id="videos">
   <div class="section-label reveal">{t('nav.videos')}</div>
   <h2 class="video-heading reveal reveal-delay-1">{t('videos.heading1')}<br><em>{t('videos.heading2')}</em></h2>
+  <div class="video-grid">
     <!-- Cargado dinámicamente desde Firestore -->
     <div id="video-empty-msg" style="display:none;grid-column:1/-1;text-align:center;padding:40px;color:rgba(200,184,154,.4);font-size:.7rem;">
       {t('galeria.noPhotos')}
@@ -302,8 +303,8 @@ const t = useTranslations(lang);
       <button class="lightbox-btn" id="lightboxNext" aria-label="Foto siguiente">&#8594;</button>
     </div>
     <div class="lightbox-watermark" id="lightboxWatermark">© Andrea López</div>
-    <button class="lightbox-exif-btn" id="lightboxExifBtn" title="Datos técnicos" onclick="toggleExifPanel()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="12" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+    <button class="lightbox-exif-btn" id="lightboxExifBtn" title="Datos técnicos" onclick="toggleExifPanel()" style="opacity:1;color:#f0ece4;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
     </button>
     <div class="lightbox-exif-panel" id="lightboxExifPanel"></div>
   </div>
