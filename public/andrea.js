@@ -38,7 +38,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db   = firebase.firestore();
 const auth = firebase.auth();
-const CONFIG_DOC    = 'site';
+const CONFIG_DOC = db.collection('config').doc('site');
 
 // ── GLOBAL STATE & CONSTANTS (Fix ReferenceErrors) ───────────────────────────
 // ── CONTROL DE SECCIONES ─────────────────────────────────────────────────────
@@ -52,11 +52,7 @@ let vlbItems        = [];
 
 
 // ── FIREBASE CONFIG SYNC ──────────────────────────────────────────────────────
-async function saveConfigToFirebase(key, value){
-  try{
-    await db.collection('config').doc('site').set({ [key]: value }, { merge: true });
-  } catch(e){ console.warn('Error guardando config en Firebase:', e); }
-}
+// [saveConfigToFirebase definido más abajo en la sección Firebase Sync]
 
 // ── MAGNETIC UI ──
 function initMagneticElements(){
@@ -97,21 +93,7 @@ document.addEventListener('astro:page-load', () => {
 
 
 
-async function loadConfigFromFirebase(){
-  try{
-    const doc = await db.collection('config').doc('site').get();
-    if(!doc.exists) return;
-    const d = doc.data();
-    if(d.textos)     { localStorage.setItem('alr_textos',     JSON.stringify(d.textos));     applyTextos(Object.assign({}, TEXTOS_DEFAULT, d.textos)); }
-    if(d.contacto)   { localStorage.setItem('alr_contacto',   JSON.stringify(d.contacto));   applyContacto(d.contacto); applyWatermark(); }
-    if(d.sections)   { localStorage.setItem('alr_sections',   JSON.stringify(d.sections));   refreshSectionsCSS(); updateNavLinks(d.sections); }
-    if(d.hero)       { localStorage.setItem('alr_hero',       JSON.stringify(d.hero));       applyHeroMedia(d.hero); }
-    if(d.proceso)    { localStorage.setItem('alr_proceso',    JSON.stringify(d.proceso));    renderProceso(d.proceso); }
-    if(d.servicios)  { localStorage.setItem('alr_servicios',  JSON.stringify(d.servicios));  renderServicios(d.servicios); }
-    if(d.testimonios){ localStorage.setItem('alr_testimonios',JSON.stringify(d.testimonios));renderTestimonios(d.testimonios); }
-    if(d.multimedia) { localStorage.setItem('alr_multimedia', JSON.stringify(d.multimedia)); applyMultimedia(); }
-  } catch(e){ console.warn('Error cargando config desde Firebase:', e); }
-}
+// [loadConfigFromFirebase definido más abajo en la sección Firebase Sync]
 
 // ── UTILIDAD: escapar HTML para prevenir XSS ──────────────────────────────────
 function esc(s){
@@ -3813,7 +3795,7 @@ document.getElementById('slideshowBtn')?.addEventListener('click', () => {
 // ── GUARDAR TODA LA CONFIG EN FIREBASE ───────────────────────────────────────
 async function saveConfigToFirebase(key, value){
   try {
-    await db.collection('config').doc(CONFIG_DOC).set({ [key]: value }, { merge: true });
+    await CONFIG_DOC.set({ [key]: value }, { merge: true });
     console.log('Firebase sync:', key);
   } catch(e){
     console.warn('Firebase sync error:', e);
