@@ -2203,7 +2203,19 @@ async function checkPass(){
       populateFolderSelector('newFolder');
     }, 400);
   } catch(e) {
-    document.getElementById('admin-error').style.display = 'block';
+    const errEl = document.getElementById('admin-error');
+    if(errEl){
+      errEl.style.display = 'block';
+      let msg = 'Contraseña incorrecta';
+      if(e.code === 'auth/user-not-found') {
+        msg = 'Error: No se encuentra el usuario "admin@andrealopezfoto.es" en Firebase. Revisa la DOCUMENTACION.html (Sección 4.2)';
+      } else if (e.code === 'auth/wrong-password') {
+        msg = 'Contraseña incorrecta';
+      } else {
+        msg = 'Error de acceso: ' + (e.message || 'Desconocido');
+      }
+      errEl.textContent = msg;
+    }
     document.getElementById('admin-pass').value = '';
     document.getElementById('admin-pass').focus();
     console.warn('Firebase login error:', e);
