@@ -112,7 +112,13 @@ const t = useTranslations(lang);
 <!-- VÍDEOS -->
 <section id="videos">
   <div class="section-label reveal">{t('nav.videos')}</div>
-  <h2 class="video-heading reveal reveal-delay-1">{t('videos.heading1')}<br><em>{t('videos.heading2')}</em></h2>
+  <div class="gallery-header reveal">
+    <h2 class="gallery-title">{t('videos.title')} <em>{t('videos.subtitle')}</em></h2>
+    <div id="videoFilters" class="gallery-filter">
+      <button class="active" data-filter="all">{t('galeria.filter.todos')}</button>
+      <!-- Los demás se cargan dinámicamente -->
+    </div>
+  </div>
   <div class="video-grid">
     <!-- Cargado dinámicamente desde Firestore -->
     <div id="video-empty-msg" style="display:none;grid-column:1/-1;text-align:center;padding:40px;color:rgba(200,184,154,.4);font-size:.7rem;">

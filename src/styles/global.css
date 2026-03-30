@@ -436,8 +436,8 @@ html,body,*,*::before,*::after{
 }
 .gallery-item:hover .gallery-item-overlay{opacity:1;}
 .gallery-item-label{font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:#f0ece4;font-weight:300;}
-@media(max-width:900px){.gallery-grid{columns:2;}}
-@media(max-width:480px){.gallery-grid{columns:2;column-gap:4px;}}
+@media(max-width:900px){.gallery-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;columns:auto;}}
+@media(max-width:480px){.gallery-grid{grid-template-columns:1fr 1fr;gap:8px;}}
 
 /* ── LIGHTBOX ── */
 .lightbox{
@@ -1043,13 +1043,13 @@ footer{
   .sobre-accent-box{display:none;}
   #galeria,#videos,#contacto{padding:80px 28px;}
   .gallery-header{flex-direction:column;align-items:flex-start;gap:24px;}
-  .gallery-grid{grid-template-columns:1fr 1fr;grid-auto-rows:55px;}
-  .gallery-item:nth-child(n){grid-column:span 1;grid-row:span 3;}
-  .gallery-item:nth-child(1){grid-column:span 2;grid-row:span 4;}
-  .video-grid{grid-template-columns:1fr;gap:36px;}
+  .gallery-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;columns:auto;}
+  .gallery-item:nth-child(n){grid-column:span 1;grid-row:auto;}
+  .gallery-item:nth-child(1){grid-column:span 1;grid-row:auto;}
+  .video-grid{grid-template-columns:1fr 1fr;gap:16px;}
   .contacto-inner{grid-template-columns:1fr;gap:52px;}
   .form-row{grid-template-columns:1fr;}
-  .lightbox-nav{width:calc(100% + 60px);left:-30px;}
+  .lightbox-nav{width:100%;left:0;padding:0 10px;}
 }
 @media(max-width:480px){
   .hero-name{font-size:clamp(2.6rem,13vw,4.5rem);}
@@ -1122,9 +1122,11 @@ body[data-admin="true"] #admin-overlay {
   transition: transform .4s cubic-bezier(.2,.8,.2,1), opacity .3s ease;
 }
 @media(max-width:480px){
-  .admin-wrap{padding:24px 18px;border-radius:12px;}
-  .admin-tabs{gap:2px;margin-bottom:24px;}
-  .admin-tab{padding:10px 8px;font-size:0.6rem;letter-spacing:.1em;}
+  .admin-wrap{padding:20px 14px;border-radius:12px;width:96vw;max-height:92vh;}
+  .admin-tabs{gap:0;margin-bottom:20px;overflow-x:auto;padding-bottom:4px;}
+  .admin-tab{padding:10px 12px;font-size:0.55rem;letter-spacing:.05em;white-space:nowrap;flex-shrink:0;}
+  .admin-grid{grid-template-columns:1fr 1fr;gap:8px;}
+  .admin-photo-grid{grid-template-columns:1fr 1fr;gap:10px;}
 }
 
 .admin-wrap::-webkit-scrollbar {

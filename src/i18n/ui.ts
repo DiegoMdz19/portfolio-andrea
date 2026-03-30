@@ -54,8 +54,12 @@ export const ui = {
 
 
     // Vídeos
+    'videos.label': 'Vídeos',
+    'videos.title': 'Historias en',
+    'videos.subtitle': 'movimiento',
     'videos.heading1': 'Historias en',
     'videos.heading2': 'movimiento',
+    'galeria.filter.todos': 'Todo',
 
     // Servicios
     'servicios.heading1': 'Lo que puedo',
@@ -217,8 +221,12 @@ export const ui = {
 
 
     // Vídeos
+    'videos.label': 'Videos',
+    'videos.title': 'Stories in',
+    'videos.subtitle': 'motion',
     'videos.heading1': 'Stories in',
     'videos.heading2': 'motion',
+    'galeria.filter.todos': 'All',
 
     // Servicios
     'servicios.heading1': 'What I can',

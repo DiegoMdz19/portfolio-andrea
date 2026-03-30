@@ -245,28 +245,8 @@ document.addEventListener('astro:page-load', () => {
   }
   draw();
 
-  // Contador de porcentaje
-  const pct = document.getElementById('loaderPct');
-  if(pct){
-    const start = Date.now();
-    const duration = 2200, delay = 1200;
-    function tickPct(){
-      const elapsed = Date.now() - start - delay;
-      if(elapsed < 0){ 
-        window._loaderPctAnim = requestAnimationFrame(tickPct); 
-        return; 
-      }
-      const t = Math.min(elapsed / duration, 1);
-      pct.textContent = Math.floor((1 - Math.pow(1-t,3)) * 100) + '%';
-      if(t < 1) {
-        window._loaderPctAnim = requestAnimationFrame(tickPct);
-      } else {
-        pct.textContent = '100%';
-        if(typeof activateEnterBtn === 'function') activateEnterBtn();
-      }
-    }
-    window._loaderPctAnim = requestAnimationFrame(tickPct);
-  }
+  // Contador de porcentaje (Blindado ante transiciones de Astro)
+  startLoaderPct();
 
   // ✅ FUNCIÓN para activar botón cuando esté listo
   window.activateEnterBtn = function(){
@@ -298,6 +278,7 @@ document.addEventListener('astro:page-load', () => {
           const off = document.getElementById('soundIconOff');
           if(on)  on.style.display  = 'block';
           if(off) off.style.display = 'none';
+          const soundBtn = document.getElementById('soundBtn');
           if(soundBtn) soundBtn.style.opacity = '1';
           if(ambientGain){
             ambientGain.gain.cancelScheduledValues(actx.currentTime);
@@ -319,6 +300,46 @@ document.addEventListener('astro:page-load', () => {
     // No exigimos el load de window para evitar bloqueos en ViewTransitions
   ]).catch(() => setTimeout(hideLoader, 500));
 });
+
+function startLoaderPct(){
+  const pct = document.getElementById('loaderPct');
+  if(!pct) return;
+
+  if(window._loaderPctAnim) cancelAnimationFrame(window._loaderPctAnim);
+  
+  const start = Date.now();
+  const duration = 2400; // Duración total
+  const delay = 300;     // Pequeño delay inicial para suavidad
+
+  function tickPct(){
+    const elapsed = Date.now() - start - delay;
+    if(elapsed < 0){ 
+      pct.textContent = '0%';
+      window._loaderPctAnim = requestAnimationFrame(tickPct); 
+      return; 
+    }
+    
+    const t = Math.min(elapsed / duration, 1);
+    const val = Math.floor((1 - Math.pow(1 - t, 2.5)) * 100);
+    pct.textContent = val + '%';
+
+    if(t < 1) {
+      window._loaderPctAnim = requestAnimationFrame(tickPct);
+    } else {
+      pct.textContent = '100%';
+      if(window.activateEnterBtn) window.activateEnterBtn();
+    }
+  }
+  window._loaderPctAnim = requestAnimationFrame(tickPct);
+
+  // Failsafe: Si en 4 segundos no ha llegado al 100%, forzar.
+  setTimeout(() => {
+    if(pct.textContent !== '100%'){
+      pct.textContent = '100%';
+      if(window.activateEnterBtn) window.activateEnterBtn();
+    }
+  }, 4000);
+}
 
 function hideLoader(){
   const l = document.getElementById('loader');
@@ -1253,6 +1274,14 @@ async function loadVideoAdmin(){
             <span>${esc((v.src||'').split('/').pop())}</span>
             <span style="color:var(--warm);opacity:.6;">VÍDEO</span>
           </p>
+          <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;">
+             <div style="width:40px;height:40px;background:#000;border-radius:4px;overflow:hidden;flex-shrink:0;">
+                <video muted playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;opacity:.6;">
+                   <source src="${esc(v.src)}" type="video/mp4">
+                </video>
+             </div>
+             ${v.folder ? `<span style="font-size:.42rem;letter-spacing:.08em;text-transform:uppercase;background:rgba(122,112,104,.15);color:#7a7068;padding:3px 8px;border-radius:2px;">Carpeta: ${esc(v.folder)}</span>` : ''}
+          </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div class="apc-field">
               <label>Título (ES)</label>
@@ -1297,11 +1326,13 @@ async function addVideoAdmin(){
   if(!src){ showAlert('Sube un vídeo primero.', { title:'Vídeo requerido', icon:'🎬' }); return; }
 
   try {
+    const folder = document.getElementById('vid-new-folder')?.value || '';
     await db.collection('videos').add({
       src,
       titulo,
       desc,
       cat: cat + (subcat ? ' · ' + subcat : ''),
+      folder,
       created: Date.now()
     });
 
@@ -1309,7 +1340,7 @@ async function addVideoAdmin(){
 
     // Limpiar
     pendingVideoUrl = null;
-    ['vid-src','vid-new-titulo','vid-new-desc','vid-cat','vid-subcat'].forEach(id => {
+    ['vid-src','vid-new-titulo','vid-new-desc','vid-cat','vid-subcat','vid-new-folder'].forEach(id => {
       const el = document.getElementById(id);
       if(el) el.value = '';
     });
@@ -1340,20 +1371,30 @@ function removeVideo(docId){
 }
 
 // ── VÍDEOS PÚBLICOS ─────────────────────────────────────────────────────────
-async function renderPublicVideos(){
+async function renderPublicVideos(folderFilter = 'all'){
   const grid = document.querySelector('.video-grid');
   if(!grid) return;
   const loadingT = grid.parentElement.dataset.tLoading || 'Cargando vídeos…';
   grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;font-size:.72rem;color:#7a7068;font-weight:200;padding:40px 0;">${loadingT}</p>`;
 
-
   try {
-    const snapshot = await db.collection('videos').orderBy('created').get();
+    const snap = await db.collection('videos').orderBy('created','desc').get();
     grid.innerHTML = '';
 
     const lang = document.documentElement.lang || 'es';
-    snapshot.forEach((doc, i) => {
+    const videos = [];
+    snap.forEach(doc => {
       const v = doc.data();
+      if(folderFilter !== 'all' && v.folder !== folderFilter) return;
+      videos.push({...v, id: doc.id});
+    });
+
+    if(videos.length === 0){
+      grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;font-size:.72rem;color:#7a7068;font-weight:200;padding:40px 0;">No hay vídeos en esta categoría.</p>`;
+      return;
+    }
+
+    videos.forEach((v, i) => {
       const title = (lang === 'en' && v.titulo_en) ? v.titulo_en : (v.titulo || esc((v.src||'').split('/').pop()));
       const desc  = (lang === 'en' && v.desc_en) ? v.desc_en : (v.desc || '');
       
@@ -1362,6 +1403,7 @@ async function renderPublicVideos(){
       card.dataset.src   = v.src;
       card.dataset.title = title;
       card.dataset.desc  = desc;
+      card.dataset.folder = v.folder || '';
       card.innerHTML = `
         <div class="video-thumb" style="background:#000;">
           <video muted loop playsinline preload="metadata" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.8;"
@@ -1371,11 +1413,10 @@ async function renderPublicVideos(){
           <div class="play-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
         </div>
         <div class="video-info">
-          <span class="video-category">${esc(v.cat) || 'Dron'}</span>
+          <span class="video-category">${esc(v.cat)||(v.folder||'Dron')}</span>
           <h3 class="video-title">${esc(title)}</h3>
           <p class="video-desc">${esc(desc)}</p>
         </div>`;
-
 
       card.addEventListener('click', () => {
         buildVlbItems();
@@ -1388,13 +1429,49 @@ async function renderPublicVideos(){
       grid.appendChild(card);
     });
 
-    // Observar reveals
     if(typeof revealObs !== 'undefined'){
       grid.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
     }
+    
+    // Poblar filtros de vídeo si es la carga inicial o 'all'
+    if(folderFilter === 'all') populateVideoFilters(snap);
+
   } catch(e) {
-    console.error('Error cargando vídeos públicos:', e);
+    console.error('Error cargando vídeos:', e);
   }
+}
+
+function populateVideoFilters(snap){
+  const filterWrap = document.getElementById('videoFilters');
+  if(!filterWrap) return;
+
+  const folders = new Set();
+  snap.forEach(doc => {
+    const f = doc.data().folder;
+    if(f) folders.add(f);
+  });
+
+  const currentFilter = filterWrap.querySelector('.active')?.dataset.filter || 'all';
+  filterWrap.innerHTML = `<button class="${currentFilter==='all'?'active':''}" data-filter="all">${window.t ? window.t('galeria.filter.todos') : 'Todo'}</button>`;
+  
+  folders.forEach(f => {
+    const btn = document.createElement('button');
+    btn.dataset.filter = f;
+    btn.className = currentFilter === f ? 'active' : '';
+    btn.textContent = f.charAt(0).toUpperCase() + f.slice(1);
+    btn.addEventListener('click', () => {
+      filterWrap.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderPublicVideos(f);
+    });
+    filterWrap.appendChild(btn);
+  });
+  
+  filterWrap.querySelector('[data-filter="all"]').addEventListener('click', (e) => {
+    filterWrap.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    renderPublicVideos('all');
+  });
 }
 
 // ── DRAG & DROP GALERÍA ADMIN ──────────────────────────────────────────────────
@@ -1592,7 +1669,8 @@ const SECTION_CONTENT = {
       <div><label class="admin-label">Título</label><input id="vid-new-titulo" type="text" class="admin-input" placeholder="Título"></div>
       <div><label class="admin-label">Descripción</label><input id="vid-new-desc" type="text" class="admin-input" placeholder="Descripción breve"></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;margin-bottom:20px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;margin-bottom:20px;">
+      <div><label class="admin-label">Carpeta</label><select id="vid-new-folder" class="admin-input"><option value="">Sin carpeta</option></select></div>
       <div><label class="admin-label">Categoría</label><input id="vid-cat" type="text" class="admin-input" placeholder="Dron · Cinematográfico"></div>
       <div><label class="admin-label">Subcategoría</label><input id="vid-subcat" type="text" class="admin-input" placeholder="Costa, Ciudad..."></div>
       <div style="display:flex;align-items:flex-end;"><button onclick="addVideoAdmin()" class="admin-btn">Añadir ✓</button></div>
@@ -1677,7 +1755,7 @@ function renderSectionContent(id){
 
   // Triggers post-render
   if(id === 'galeria')     { renderAdminGallery(); setTimeout(initDragDrop,50); setTimeout(()=>populateFolderSelector('newFolder'),100); }
-  if(id === 'videos')      loadVideoAdmin();
+  if(id === 'videos')      { loadVideoAdmin(); setTimeout(()=>populateFolderSelector('vid-new-folder'),100); }
   if(id === 'servicios')   loadServiciosAdmin();
   if(id === 'testimonios') loadTestimoniosAdmin();
   if(id === 'proceso')     loadProcesoAdmin();
@@ -3067,40 +3145,91 @@ async function openAlbumView(token){
   const empty = document.getElementById('album-empty');
   grid.innerHTML = '';
 
-  if(!_albumPhotos.length){
+  // Cargar vídeos de la carpeta (donde folder === folderName)
+  let _albumVideos = [];
+  try {
+    const videosSnap = await db.collection('videos').where('folder','==',_albumFolder.name).get();
+    videosSnap.forEach(doc => _albumVideos.push({ id: doc.id, ...doc.data() }));
+    _albumVideos.sort((a, b) => (b.created || 0) - (a.created || 0));
+  } catch(err) {
+    console.error('Error cargando vídeos del álbum:', err);
+  }
+
+  if(!_albumPhotos.length && !_albumVideos.length){
     if(empty) empty.style.display = 'block';
     return;
   }
   if(empty) empty.style.display = 'none';
 
-  _albumPhotos.forEach(p => {
-    const div = document.createElement('div');
-    div.className = 'gallery-item album-item';
-    const dlHtml = _albumFolder.allowDownload
-      ? `<a href="${esc(p.src.replace('/upload/', '/upload/fl_attachment/'))}" download class="album-photo-dl" onclick="event.stopPropagation()" title="Descargar" style="text-decoration:none; color:#f0ece4; font-size:1.1rem; background:rgba(0,0,0,.5); border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);">⬇</a>`
-      : '';
-    const clientId = getClientId();
-    const isLiked = Array.isArray(p.likes) && p.likes.includes(clientId);
-    const likeHtml = `<button class="album-photo-like ${isLiked ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${p.id}', this)" title="Marcar Favorito" style="background:rgba(0,0,0,.5); border:none; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#f0ece4; backdrop-filter:blur(4px); transition:transform 0.2s;">
-        <svg viewBox="0 0 24 24" width="16" height="16" stroke="${isLiked ? '#c87a6a' : 'currentColor'}" fill="${isLiked ? '#c87a6a' : 'none'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-        </svg>
-      </button>`;
-    const optSrc = (p.src && p.src.includes('cloudinary.com') && p.src.includes('/upload/')) ? p.src.replace('/upload/', '/upload/w_800,f_auto,q_auto/') : p.src;
-    div.innerHTML = `
-      <picture>
-        <source srcset="${esc(optSrc)}" type="image/webp">
-        <img src="${esc(p.src)}" alt="${esc(p.titulo||'')}" loading="lazy" class="gl-image" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
-      </picture>
-      <div class="gallery-item-overlay" style="display:flex; justify-content:space-between; align-items:flex-end;">
-        <span class="gallery-item-label">${esc(p.titulo||'')}</span>
-        <div style="display:flex; gap:8px;">
-          ${likeHtml}
-          ${dlHtml}
+  // Renderizar Fotos
+  if(_albumPhotos.length){
+    const h3 = document.createElement('h3');
+    h3.className = 'album-section-title';
+    h3.textContent = document.documentElement.lang === 'en' ? 'Photos' : 'Fotografías';
+    h3.style.cssText = 'grid-column:1/-1; margin: 40px 0 20px; font-size: .65rem; letter-spacing: .3em; text-transform: uppercase; color: rgba(200,184,154,.4); font-weight: 300; border-bottom: 1px solid rgba(245,242,237,.05); padding-bottom: 12px;';
+    grid.appendChild(h3);
+
+    _albumPhotos.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'gallery-item album-item';
+      const dlHtml = _albumFolder.allowDownload
+        ? `<a href="${esc(p.src.replace('/upload/', '/upload/fl_attachment/'))}" download class="album-photo-dl" onclick="event.stopPropagation()" title="Descargar" style="text-decoration:none; color:#f0ece4; font-size:1.1rem; background:rgba(0,0,0,.5); border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);">⬇</a>`
+        : '';
+      const clientId = getClientId();
+      const isLiked = Array.isArray(p.likes) && p.likes.includes(clientId);
+      const likeHtml = `<button class="album-photo-like ${isLiked ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${p.id}', this)" title="Marcar Favorito" style="background:rgba(0,0,0,.5); border:none; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#f0ece4; backdrop-filter:blur(4px); transition:transform 0.2s;">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="${isLiked ? '#c87a6a' : 'currentColor'}" fill="${isLiked ? '#c87a6a' : 'none'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+        </button>`;
+      const optSrc = (p.src && p.src.includes('cloudinary.com') && p.src.includes('/upload/')) ? p.src.replace('/upload/', '/upload/w_800,f_auto,q_auto/') : p.src;
+      div.innerHTML = `
+        <picture>
+          <source srcset="${esc(optSrc)}" type="image/webp">
+          <img src="${esc(p.src)}" alt="${esc(p.titulo||'')}" loading="lazy" class="gl-image" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
+        </picture>
+        <div class="gallery-item-overlay" style="display:flex; justify-content:space-between; align-items:flex-end;">
+          <span class="gallery-item-label">${esc(p.titulo||'')}</span>
+          <div style="display:flex; gap:8px;">
+            ${likeHtml}
+            ${dlHtml}
+          </div>
+        </div>`;
+      grid.appendChild(div);
+    });
+  }
+
+  // Renderizar Vídeos
+  if(_albumVideos.length){
+    const h3 = document.createElement('h3');
+    h3.className = 'album-section-title';
+    h3.textContent = document.documentElement.lang === 'en' ? 'Videos' : 'Vídeos';
+    h3.style.cssText = 'grid-column:1/-1; margin: 60px 0 20px; font-size: .65rem; letter-spacing: .3em; text-transform: uppercase; color: rgba(200,184,154,.4); font-weight: 300; border-bottom: 1px solid rgba(245,242,237,.05); padding-bottom: 12px;';
+    grid.appendChild(h3);
+
+    _albumVideos.forEach(v => {
+      const div = document.createElement('div');
+      div.className = 'video-card album-video-card';
+      div.dataset.src = v.src;
+      const title = (document.documentElement.lang === 'en' && v.titulo_en) ? v.titulo_en : (v.titulo || 'Video');
+      div.innerHTML = `
+        <div class="video-thumb" style="aspect-ratio:16/9; background:#000; position:relative; overflow:hidden;">
+          <video muted loop playsinline preload="metadata" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.7;"
+            onmouseenter="this.play()" onmouseleave="this.pause()">
+            <source src="${esc(v.src)}" type="video/mp4">
+          </video>
+          <div class="play-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
         </div>
-      </div>`;
-    grid.appendChild(div);
-  });
+        <div class="video-info" style="padding:12px 0;">
+          <h3 class="video-title" style="font-size:.7rem;color:#f0ece4;">${esc(title)}</h3>
+        </div>`;
+      div.addEventListener('click', () => {
+         // Reutilizar funcionalidad de lightbox de vídeo
+         openVlb(v.src, title, v.desc || '');
+      });
+      grid.appendChild(div);
+    });
+  }
 }
 
 function closeAlbumView(){
