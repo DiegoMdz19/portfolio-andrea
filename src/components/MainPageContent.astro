@@ -44,12 +44,28 @@ const t = useTranslations(lang);
 
 <Navbar />
 
+<!-- MENÚ MÓVIL REHABILITADO -->
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu-inner">
+    <a href="#sobre"       class="mobile-link">{t('nav.sobre')}</a>
+    <a href="#galeria"     class="mobile-link">{t('nav.galeria')}</a>
+    <a href="#videos"      class="mobile-link">{t('nav.videos')}</a>
+    <a href="#servicios"   class="mobile-link">{t('nav.servicios')}</a>
+    <a href="#proceso"     class="mobile-link">{t('nav.proceso')}</a>
+    <a href="#testimonios" class="mobile-link">{t('nav.testimonios')}</a>
+    <a href="#contacto"    class="mobile-link">{t('nav.contacto')}</a>
+    <div class="mobile-menu-footer">
+       <a href={`https://instagram.com/${t('social.instagram')}`} target="_blank" class="mobile-menu-social">Instagram</a>
+    </div>
+  </div>
+</div>
+
 <main>
   <Hero />
 
   <section id="sobre">
     <div class="sobre-inner">
-      <div class="sobre-img-col" data-reveal="fade-in">
+      <div class="sobre-img-col reveal">
         <div class="sobre-carousel">
           <div class="sobre-carousel-track" id="sobreTrack">
              <div class="sobre-carousel-slide"><img src="/fotos/retrato.jpeg" alt="Andrea López" loading="lazy" /></div>
@@ -64,16 +80,16 @@ const t = useTranslations(lang);
       </div>
       
       <div class="sobre-content-col">
-        <p class="section-label" data-reveal="fade-right">{t('sobre.label')}</p>
-        <h2 class="sobre-heading" data-reveal="fade-left">
+        <p class="section-label reveal">{t('sobre.label')}</p>
+        <h2 class="sobre-heading reveal">
           {t('sobre.heading1')}<br/>
           <em>{t('sobre.heading2')}</em>
         </h2>
-        <div class="sobre-body" data-reveal="fade-up">
+        <div class="sobre-body reveal">
           <p>{t('sobre.p1')}</p>
           <p>{t('sobre.p2')}</p>
         </div>
-        <a href="#contacto" class="social-link" data-reveal="fade-in">
+        <a href="#contacto" class="social-link reveal">
           <span>{t('nav.contacto')}</span>
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
         </a>
@@ -83,7 +99,7 @@ const t = useTranslations(lang);
 
   <section id="galeria">
     <div class="container">
-      <div class="gallery-header" data-reveal="fade-up">
+      <div class="gallery-header reveal">
         <div class="gallery-info">
           <p class="section-label">{t('galeria.label')}</p>
           <h2 class="gallery-title">{t('galeria.heading1')} <em>{t('galeria.heading2')}</em></h2>
@@ -96,14 +112,14 @@ const t = useTranslations(lang);
         </div>
       </div>
 
-      <div class="gallery-search-wrap" data-reveal="fade-in">
+      <div class="gallery-search-wrap reveal">
         <input type="text" id="gallerySearch" placeholder={t('galeria.search')} />
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
       </div>
 
       <div class="gallery-grid" id="galleryGrid"></div>
 
-      <div class="gallery-footer" data-reveal="fade-up">
+      <div class="gallery-footer reveal">
         <div class="gallery-counter" id="galleryCounter"></div>
         <button class="gallery-load-more" id="loadMoreBtn">{t('galeria.loadMore')}</button>
       </div>
@@ -112,8 +128,8 @@ const t = useTranslations(lang);
 
   <section id="videos">
     <div class="container">
-      <p class="section-label" data-reveal="fade-right">{t('videos.label')}</p>
-      <h2 class="gallery-title" data-reveal="fade-left" style="margin-bottom:60px;">{t('videos.title')} <em>{t('videos.subtitle')}</em></h2>
+      <p class="section-label reveal">{t('videos.label')}</p>
+      <h2 class="gallery-title reveal" style="margin-bottom:60px;">{t('videos.title')} <em>{t('videos.subtitle')}</em></h2>
       
       <div class="video-grid" id="videoGrid"></div>
     </div>
@@ -121,43 +137,43 @@ const t = useTranslations(lang);
 
   <section id="servicios">
     <div class="container">
-      <div class="servicios-header" data-reveal="fade-up">
+      <div class="servicios-header reveal">
         <h2 class="servicios-h">{t('servicios.heading1')}<br/><em>{t('servicios.heading2')}</em></h2>
         <a href="#contacto" class="btn-primary">{t('servicios.btn')}</a>
       </div>
 
       <div class="servicios-grid">
-        <div class="servicio-card" data-reveal="fade-up">
+        <div class="servicio-card reveal">
           <span class="serv-num">01</span>
           <h3>{t('servicios.s1.n')}</h3>
           <p>{t('servicios.s1.d')}</p>
           <div class="serv-footer"><span class="serv-price">{t('servicios.desde')} <strong>{t('servicios.s1.p')}</strong></span></div>
         </div>
-        <div class="servicio-card" data-reveal="fade-up" data-delay="0.1">
+        <div class="servicio-card reveal">
           <span class="serv-num">02</span>
           <h3>{t('servicios.s2.n')}</h3>
           <p>{t('servicios.s2.d')}</p>
           <div class="serv-footer"><span class="serv-price">{t('servicios.desde')} <strong>{t('servicios.s2.p')}</strong></span></div>
         </div>
-        <div class="servicio-card" data-reveal="fade-up" data-delay="0.2">
+        <div class="servicio-card reveal">
           <span class="serv-num">03</span>
           <h3>{t('servicios.s3.n')}</h3>
           <p>{t('servicios.s3.d')}</p>
           <div class="serv-footer"><span class="serv-price">{t('servicios.desde')} <strong>{t('servicios.s3.p')}</strong></span></div>
         </div>
-        <div class="servicio-card" data-reveal="fade-up">
+        <div class="servicio-card reveal">
           <span class="serv-num">04</span>
           <h3>{t('servicios.s4.n')}</h3>
           <p>{t('servicios.s4.d')}</p>
           <div class="serv-footer"><span class="serv-price">{t('servicios.desde')} <strong>{t('servicios.s4.p')}</strong></span></div>
         </div>
-        <div class="servicio-card" data-reveal="fade-up" data-delay="0.1">
+        <div class="servicio-card reveal">
           <span class="serv-num">05</span>
           <h3>{t('servicios.s5.n')}</h3>
           <p>{t('servicios.s5.d')}</p>
           <div class="serv-footer"><span class="serv-price">{t('servicios.desde')} <strong>{t('servicios.s5.p')}</strong></span></div>
         </div>
-        <div class="servicio-card" data-reveal="fade-up" data-delay="0.2">
+        <div class="servicio-card reveal">
           <span class="serv-num">06</span>
           <h3>{t('servicios.s6.n')}</h3>
           <p>{t('servicios.s6.d')}</p>
@@ -169,27 +185,27 @@ const t = useTranslations(lang);
 
   <section id="proceso">
     <div class="container">
-      <div class="proceso-header" data-reveal="fade-up">
+      <div class="proceso-header reveal">
         <p class="section-label">{t('proceso.label')}</p>
         <h2 class="proceso-h">{t('proceso.heading1')} <em>{t('proceso.heading2')}</em></h2>
       </div>
       <div class="proceso-steps">
-        <div class="proceso-step" data-reveal="fade-up">
+        <div class="proceso-step reveal">
           <div class="proceso-num">01</div>
           <h3 class="proceso-titulo">{t('proceso.p1.n')}</h3>
           <p class="proceso-desc">{t('proceso.p1.d')}</p>
         </div>
-        <div class="proceso-step" data-reveal="fade-up" data-delay="0.1">
+        <div class="proceso-step reveal">
           <div class="proceso-num">02</div>
           <h3 class="proceso-titulo">{t('proceso.p2.n')}</h3>
           <p class="proceso-desc">{t('proceso.p2.d')}</p>
         </div>
-        <div class="proceso-step" data-reveal="fade-up" data-delay="0.2">
+        <div class="proceso-step reveal">
           <div class="proceso-num">03</div>
           <h3 class="proceso-titulo">{t('proceso.p3.n')}</h3>
           <p class="proceso-desc">{t('proceso.p3.d')}</p>
         </div>
-        <div class="proceso-step" data-reveal="fade-up" data-delay="0.3">
+        <div class="proceso-step reveal">
           <div class="proceso-num">04</div>
           <h3 class="proceso-titulo">{t('proceso.p4.n')}</h3>
           <p class="proceso-desc">{t('proceso.p4.d')}</p>
@@ -200,18 +216,18 @@ const t = useTranslations(lang);
 
   <section id="testimonios">
     <div class="container">
-      <p class="section-label" data-reveal="fade-right">{t('testimonio.label')}</p>
-      <h2 class="testimonio-h" data-reveal="fade-left">{t('testimonio.heading1')}<br/><em>{t('testimonio.heading2')}</em></h2>
+      <p class="section-label reveal">{t('testimonio.label')}</p>
+      <h2 class="testimonio-h reveal">{t('testimonio.heading1')}<br/><em>{t('testimonio.heading2')}</em></h2>
       <div class="testimonio-grid">
-        <div class="testimonio-card" data-reveal="fade-up">
+        <div class="testimonio-card reveal">
           <p class="test-text">{t('testimonio.t1.t')}</p>
           <div class="test-footer"><strong>{t('testimonio.t1.a')}</strong><span>{t('testimonio.t1.p')}</span></div>
         </div>
-        <div class="testimonio-card" data-reveal="fade-up" data-delay="0.1">
+        <div class="testimonio-card reveal">
           <p class="test-text">{t('testimonio.t2.t')}</p>
           <div class="test-footer"><strong>{t('testimonio.t2.a')}</strong><span>{t('testimonio.t2.p')}</span></div>
         </div>
-        <div class="testimonio-card" data-reveal="fade-up" data-delay="0.2">
+        <div class="testimonio-card reveal">
           <p class="test-text">{t('testimonio.t3.t')}</p>
           <div class="test-footer"><strong>{t('testimonio.t3.a')}</strong><span>{t('testimonio.t3.p')}</span></div>
         </div>
@@ -222,7 +238,7 @@ const t = useTranslations(lang);
   <section id="contacto">
     <div class="container">
       <div class="contacto-inner">
-        <div class="contacto-content" data-reveal="fade-right">
+        <div class="contacto-content reveal">
           <p class="section-label">{t('nav.contacto')}</p>
           <h2 class="contacto-heading">{t('contacto.heading1')}<br/><em>{t('contacto.heading2')}</em></h2>
           <p class="contacto-body">{t('contacto.desc')}</p>
@@ -232,7 +248,7 @@ const t = useTranslations(lang);
             <div class="contacto-info-item"><div class="info-dot"></div><a href={`https://instagram.com/${t('social.instagram')}`} target="_blank">@{t('social.instagram')}</a></div>
           </div>
         </div>
-        <div class="contacto-form-col" data-reveal="fade-left">
+        <div class="contacto-form-col reveal">
           <form class="contacto-form" id="contactForm">
             <div class="form-row">
               <div class="form-group"><label>{t('contacto.form.name')}</label><input type="text" name="user_name" placeholder={t('loader.name')} required /></div>
@@ -286,7 +302,14 @@ const t = useTranslations(lang);
   </div>
 </div>
 
-<div id="custom-modal"><div class="modal-box"><h3 id="modalTitle"></h3><p id="modalDesc"></p><div class="modal-btns"><button class="modal-btn" id="modalCancel">Cancel</button><button class="modal-btn confirm" id="modalConfirm">Confirm</button></div></div></div>
+<div id="custom-modal">
+  <div class="modal-box">
+    <div class="modal-icon" id="modal-icon">⚠</div>
+    <h3 id="modal-title"></h3>
+    <p id="modal-msg"></p>
+    <div class="modal-btns" id="modal-btns"></div>
+  </div>
+</div>
 
 <div id="qr-modal" class="qrm-overlay">
   <div class="qrm-box">
