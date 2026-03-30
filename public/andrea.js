@@ -329,15 +329,21 @@ themeBtn.addEventListener('click', () => {
 let cursor = null;
 let ring   = null;
 let label  = null;
-let mx = 0, my = 0, rx = 0, ry = 0;
+let mx = window.innerWidth/2, my = window.innerHeight/2, rx = window.innerWidth/2, ry = window.innerHeight/2;
 
-document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-
-// ── ESTELA DORADA ─────────────────────────────────────────────────────────────
 let trailCanvas = null;
 let tc = null;
 const trail = [];
 const MAX_TRAIL = 28;
+let animFrameId = null;
+let trailFrameId = null;
+
+document.addEventListener('mousemove', e => { 
+  mx = e.clientX; 
+  my = e.clientY; 
+  trail.push({ x: e.clientX, y: e.clientY, life: 1 });
+  if(trail.length > MAX_TRAIL) trail.shift();
+});
 
 function resizeCanvas(){
   if(trailCanvas){
@@ -346,11 +352,6 @@ function resizeCanvas(){
   }
 }
 window.addEventListener('resize', resizeCanvas);
-
-document.addEventListener('mousemove', e => {
-  trail.push({ x: e.clientX, y: e.clientY, life: 1 });
-  if(trail.length > MAX_TRAIL) trail.shift();
-});
 
 function drawTrail(){
   if(tc && trailCanvas){
@@ -368,19 +369,17 @@ function drawTrail(){
       tc.stroke();
     }
   }
-  // Fade gradual
   for(let i = 0; i < trail.length; i++) trail[i].life -= 0.02;
-  requestAnimationFrame(drawTrail);
+  trailFrameId = requestAnimationFrame(drawTrail);
 }
-drawTrail();
 
-(function anim(){
+function anim(){
   rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
   if(cursor){ cursor.style.left = mx + 'px'; cursor.style.top = my + 'px'; }
   if(ring)  { ring.style.left   = rx + 'px'; ring.style.top   = ry + 'px'; }
   if(label) { label.style.left  = rx + 'px'; label.style.top  = ry + 'px'; }
-  requestAnimationFrame(anim);
-})();
+  animFrameId = requestAnimationFrame(anim);
+}
 
 function setCursorHover(on){ 
   if(cursor) cursor.classList.toggle('hover', on); 
@@ -399,12 +398,22 @@ function setCursorView(text){
 }
 
 document.addEventListener('astro:page-load', () => {
+  // Re-capturar elementos del Layout (aunque ya existan, por seguridad si Astro hiciera algo raro)
   cursor = document.getElementById('cursor');
   ring   = document.getElementById('cursorRing');
   label  = document.getElementById('cursorLabel');
   trailCanvas = document.getElementById('trail-canvas');
   if(trailCanvas){ tc = trailCanvas.getContext('2d'); resizeCanvas(); }
 
+  // Iniciar bucles si no están ya en marcha
+  if(!animFrameId) anim();
+  if(!trailFrameId) drawTrail();
+
+  // Resetear clases por defecto para el loader (siempre fondo oscuro al inicio)
+  if(cursor){ cursor.classList.add('on-dark'); cursor.classList.remove('hover','view'); }
+  if(ring)  { ring.classList.add('on-dark'); ring.classList.remove('hover','view'); }
+
+  // Vincular eventos a la NUEVA página cargada
   document.querySelectorAll('a, button').forEach(el => {
     el.addEventListener('mouseenter', () => setCursorHover(true));
     el.addEventListener('mouseleave', () => setCursorHover(false));
@@ -417,21 +426,19 @@ document.addEventListener('astro:page-load', () => {
     el.addEventListener('mouseenter', () => setCursorView('Play'));
     el.addEventListener('mouseleave', () => setCursorView(null));
   });
-  // Secciones con fondo oscuro: cursor siempre blanco
+  
+  // Secciones con fondo oscuro
   const darkSections = document.querySelectorAll('#hero, #galeria, #contacto, #loader');
   darkSections.forEach(s => {
     s.addEventListener('mouseenter', () => { if(cursor) cursor.classList.add('on-dark'); if(ring) ring.classList.add('on-dark'); });
     s.addEventListener('mouseleave', () => { if(cursor) cursor.classList.remove('on-dark'); if(ring) ring.classList.remove('on-dark'); });
   });
-  // Hero siempre oscuro al cargar (empieza ahí)
-  if(cursor) cursor.classList.add('on-dark'); 
-  if(ring) ring.classList.add('on-dark');
 
   // ── HAMBURGUESA MÓVIL ────────────────────────────────────────────────────────
   const hamburger  = document.getElementById('hamburger');
   const mobileMenu = document.getElementById('mobileMenu');
   if(hamburger && mobileMenu){
-    // Limpiar eventos por si acaso para evitar dobles clics
+    // Limpiar eventos por si acaso clonando
     const newHam = hamburger.cloneNode(true);
     hamburger.replaceWith(newHam);
     newHam.addEventListener('click', () => {

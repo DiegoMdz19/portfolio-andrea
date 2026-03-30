@@ -150,6 +150,12 @@ window.addEventListener('load', _applySections);
 
 <slot />
 
+<!-- CURSOR PERSISTENTE -->
+<canvas id="trail-canvas"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-label" id="cursorLabel"></div>
+
 <script is:inline src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script is:inline src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script is:inline src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
