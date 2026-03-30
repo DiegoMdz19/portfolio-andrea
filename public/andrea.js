@@ -124,27 +124,6 @@ async function sha256(text){
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
-// ── SWITCH CONFIG (sub-paneles dentro de tabs) ────────────────────────────────
-function switchConfig(id, btn){
-  const el = document.getElementById(id);
-  if(!el) return;
-  const parent = el.parentElement;
-  Array.from(parent.children).forEach(child => {
-    if(child !== el && child.id) child.style.display = 'none';
-  });
-  el.style.display = '';
-  const sidebar = btn.closest('div');
-  if(sidebar) sidebar.querySelectorAll('.sec-menu-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  if(id === 'cfg-textos')        loadTextosForm();
-  if(id === 'cfg-contacto')      loadContactoForm();
-  if(id === 'cfg-avanzado')      loadAvanzadoForm();
-  if(id === 'tool-titulos')      loadMultimediaForm();
-  if(id === 'tool-galeria')      { renderAdminGallery(); setTimeout(initDragDrop, 50); }
-  if(id === 'tool-videos-admin') loadVideoAdmin();
-  if(id === 'tool-carpetas')     loadFoldersAdmin();
-}
-
 // ── MODAL PERSONALIZADO
 function showModal({ icon='⚠', title, msg, btns }){
   const m = document.getElementById('custom-modal');
@@ -1978,7 +1957,7 @@ function loadProcesoAdmin(){
   list.innerHTML = '';
   data.forEach((s,i) => {
     const row = document.createElement('div');
-    row.style.cssText = 'background:rgba(245,242,237,.03);border:1px solid rgba(245,242,237,.08);padding:14px;border-radius:2px;';
+    row.style.cssText = 'background:var(--ink-05);border:1px solid var(--ink-10);padding:14px;border-radius:2px;';
     row.innerHTML = `
       <div style="display:grid;grid-template-columns:60px 1fr 1fr auto;gap:10px;align-items:center;">
         <div><label class="admin-label">Nº</label><input type="text" class="admin-input paso-num" data-i="${i}" value="${s.num}"></div>
@@ -2299,12 +2278,16 @@ async function checkPass(){
     if(errEl){
       errEl.style.display = 'block';
       let msg = 'Contraseña incorrecta';
-      if(e.code === 'auth/user-not-found') {
-        msg = 'Error: No se encuentra el usuario "admin@andrealopezfoto.es" en Firebase. Revisa la DOCUMENTACION.html (Sección 4.2)';
+      
+      const rawError = e.message || '';
+      if(rawError.includes('INVALID_LOGIN_CREDENTIALS') || e.code === 'auth/invalid-login-credentials') {
+        msg = 'Credenciales inválidas. Revisa que el usuario "admin@andrealopezfoto.es" esté creado en Firebase Console y la contraseña sea correcta.';
+      } else if(e.code === 'auth/user-not-found') {
+        msg = 'Error: Usuario no encontrado. Revisa la Sección 4.2 de la DOCUMENTACION.html';
       } else if (e.code === 'auth/wrong-password') {
         msg = 'Contraseña incorrecta';
       } else {
-        msg = 'Error de acceso: ' + (e.message || 'Desconocido');
+        msg = 'Error de acceso: Credenciales no válidas o usuario no existente.';
       }
       errEl.textContent = msg;
     }
@@ -2793,6 +2776,65 @@ async function toggleFolderDownload(id, allowDownload){
   invalidateFoldersCache();
 }
 
+// ── NAVEGACIÓN ADMIN (GSAP 11/10) ──────────────────────────────────────────
+function switchTab(tabId, btn){
+  const target = document.getElementById(tabId);
+  if(!target) return;
+
+  // Actualizar botones
+  document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateTabIndicator(btn);
+
+  // Transición cinemática
+  const current = document.querySelector('.admin-tab-content.active');
+  if(current && current !== target){
+    const tl = gsap.timeline();
+    tl.to(current, { opacity:0, x:-20, duration:0.3, ease:"power2.in", onComplete:() => {
+      current.classList.remove('active');
+      current.style.display = 'none';
+      
+      target.style.display = 'block';
+      target.classList.add('active');
+      gsap.fromTo(target, { opacity:0, x:20 }, { opacity:1, x:0, duration:0.5, ease:"power3.out" });
+    }});
+  } else if(!current) {
+    target.style.display = 'block';
+    target.classList.add('active');
+    gsap.fromTo(target, { opacity:0, y:15 }, { opacity:1, y:0, duration:0.5 });
+  }
+}
+
+function switchConfig(cfgId, btn){
+  const target = document.getElementById(cfgId);
+  if(!target) return;
+
+  // Actualizar Sidebar
+  btn.parentElement.querySelectorAll('.sec-menu-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const containers = ['cfg-textos','cfg-contacto','cfg-avanzado','tool-titulos','tool-galeria','tool-videos-admin','tool-carpetas'];
+  const current = Array.from(target.parentElement.children).find(el => el.style.display !== 'none' && containers.includes(el.id));
+
+  if(current && current !== target){
+    gsap.to(current, { opacity:0, y:10, duration:0.25, onComplete:() => {
+      current.style.display = 'none';
+      target.style.display = 'block';
+      gsap.fromTo(target, { opacity:0, y:-10 }, { opacity:1, y:0, duration:0.4, ease:"power2.out" });
+    }});
+  } else if(!current){
+    target.style.display = 'block';
+    gsap.fromTo(target, { opacity:0 }, { opacity:1, duration:0.4 });
+  }
+
+  // Cargar datos
+  if(cfgId === 'cfg-textos')   loadTextosForm();
+  if(cfgId === 'cfg-contacto') loadContactoForm();
+  if(cfgId === 'tool-carpetas') loadFoldersAdmin();
+  if(cfgId === 'tool-galeria') { renderAdminGallery(); setTimeout(initDragDrop,80); }
+  if(cfgId === 'tool-videos-admin') loadVideoAdmin();
+}
+
 async function loadFoldersAdmin(){
   const list = document.getElementById('tool-carpetas-list');
   if(!list) return;
@@ -2818,7 +2860,7 @@ async function loadFoldersAdmin(){
         <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
           <input type="text" value="${esc(f.name)}" class="admin-input" style="flex:1;max-width:200px;font-weight:400;color:var(--warm);"
             onblur="renameFolder('${f.id}',this.value)">
-          <span style="font-size:.58rem;color:#7a7068;letter-spacing:.05em;background:rgba(245,242,237,.05);padding:3px 8px;border-radius:10px;white-space:nowrap;">${counts[f.id]||0} fotos</span>
+          <span style="font-size:.58rem;color:var(--mid);letter-spacing:.05em;background:var(--ink-05);padding:3px 8px;border-radius:10px;white-space:nowrap;">${counts[f.id]||0} fotos</span>
         </div>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
           <div style="display:flex;gap:12px;">
@@ -3130,7 +3172,11 @@ async function openAlbumView(token){
   const dlBtn = document.getElementById('albumDownloadBtn');
   if(dlBtn) dlBtn.style.display = _albumFolder.allowDownload ? 'inline-flex' : 'none';
 
-  // Cargar fotos de la carpeta (sin orderBy para evitar requerir índice compuesto en Firestore)
+  // Animación de entrada inicial: ocultar grid mientras carga
+  gsap.set(view, { display: 'block', opacity: 0, scale: 0.98 });
+  gsap.to(view, { opacity: 1, scale: 1, duration: 0.8, ease: "power4.out" });
+
+  // Cargar fotos de la carpeta
   try {
     const photosSnap = await db.collection('photos').where('folderId','==',_albumFolder.id).get();
     _albumPhotos = [];
@@ -3166,7 +3212,7 @@ async function openAlbumView(token){
     const h3 = document.createElement('h3');
     h3.className = 'album-section-title';
     h3.textContent = document.documentElement.lang === 'en' ? 'Photos' : 'Fotografías';
-    h3.style.cssText = 'grid-column:1/-1; margin: 40px 0 20px; font-size: .65rem; letter-spacing: .3em; text-transform: uppercase; color: rgba(200,184,154,.4); font-weight: 300; border-bottom: 1px solid rgba(245,242,237,.05); padding-bottom: 12px;';
+    h3.style.cssText = 'grid-column:1/-1; margin: 40px 0 20px; font-size: .65rem; letter-spacing: .3em; text-transform: uppercase; color: var(--warm); font-weight: 300; border-bottom: 1px solid var(--ink-10); padding-bottom: 12px;';
     grid.appendChild(h3);
 
     _albumPhotos.forEach(p => {
@@ -3230,12 +3276,32 @@ async function openAlbumView(token){
       grid.appendChild(div);
     });
   }
+
+  // Animación escalonada de elementos (fotos y vídeos)
+  const items = grid.querySelectorAll('.album-item, .album-video-card, .album-section-title');
+  gsap.fromTo(items, 
+    { opacity: 0, y: 30, scale: 0.95 },
+    { opacity: 1, y: 0, scale: 1, duration: 1, stagger: 0.08, ease: "expo.out", delay: 0.2 }
+  );
 }
 
 function closeAlbumView(){
-  document.documentElement.removeAttribute('data-album-mode');
-  history.pushState({}, '', location.pathname);
-  document.title = 'Andrea López — Fotografía & Vídeo con Dron';
+  const view = document.getElementById('album-view');
+  if(view){
+    gsap.to(view, { 
+      opacity: 0, 
+      scale: 1.02, 
+      duration: 0.5, 
+      ease: "power2.inOut", 
+      onComplete: () => {
+        document.documentElement.removeAttribute('data-album-mode');
+        history.pushState({}, '', location.pathname);
+        document.title = 'Andrea López — Fotografía & Vídeo con Dron';
+        view.style.display = 'none';
+        window.scrollTo(0,0);
+      }
+    });
+  }
 }
 
 async function downloadAlbumZip(){
@@ -4156,6 +4222,21 @@ saveContacto = function(){
   if(np){
     localStorage.setItem('alr_pass', np);
     saveConfigToFirebase('adminPass', np);
+    
+    // Sincronizar con Firebase Auth (Seguridad 11/10)
+    const user = firebase.auth().currentUser;
+    if(user){
+      user.updatePassword(np).then(() => {
+        console.log('✅ Contraseña actualizada en Firebase Auth');
+      }).catch(err => {
+        console.error('❌ Error actualizando contraseña:', err);
+        if(err.code === 'auth/requires-recent-login'){
+          showAlert('Por seguridad, Firebase requiere que cierres sesión y vuelvas a entrar antes de poder cambiar tu contraseña.', {title:'Re-autenticación', icon:'🔑'});
+        } else {
+          showAlert('No se pudo actualizar la contraseña en Firebase: ' + err.message, {title:'Error', icon:'✗'});
+        }
+      });
+    }
   }
 
   // Actualizar WhatsApp en tiempo real
