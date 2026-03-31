@@ -67,7 +67,7 @@ const t = useTranslations(lang);
     <section id="sobre">
       <div class="sobre-inner">
         <div class="sobre-img-col reveal">
-          <div class="sobre-carousel">
+          <div class="sobre-carousel" id="sobreCarousel">
             <div class="sobre-carousel-track" id="sobreTrack">
                <div class="sobre-carousel-slide"><img src="/fotos/retrato.jpeg" alt="Andrea López" loading="lazy" /></div>
                <div class="sobre-carousel-slide"><img src="/fotos/drone1.jpg" alt="Andrea flying drone" loading="lazy" /></div>
@@ -120,9 +120,9 @@ const t = useTranslations(lang);
 
         <div class="gallery-grid" id="galleryGrid"></div>
 
-        <div class="gallery-footer reveal">
+        <div class="gallery-footer reveal" id="galleryFooter">
           <div class="gallery-counter" id="galleryCounter"></div>
-          <button class="gallery-load-more" id="loadMoreBtn">{t('galeria.loadMore')}</button>
+          <button class="gallery-load-more" id="galleryLoadMore">{t('galeria.loadMore')}</button>
         </div>
       </div>
     </section>

@@ -91,8 +91,10 @@ function initMagneticElements(){
 document.addEventListener('astro:page-load', () => {
   // Reinicializar TODO lo necesario tras navegación
   loadConfigFromFirebase();
+  renderSobreCarousel();
   initMagneticElements();
   renderPublicGallery();
+
   renderPublicVideos();
   initTrackMouse(); // Volver a activar la estela dorada
   
