@@ -1,368 +1,257 @@
 ---
-import "../styles/global.css";
-import { ClientRouter } from "astro:transitions";
-import { languages, ui, defaultLang } from "../i18n/ui";
+import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import { languages, ui, defaultLang } from '../i18n/ui';
 const { title, lang = defaultLang } = Astro.props;
 const translations = ui[lang as keyof typeof ui] || ui[defaultLang];
 ---
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang={lang} data-theme="light">
-  <head>
-    <meta charset="UTF-8" />
-    <script is:inline define:vars={{ translations }}>
-      window.t = function (key) {
-        return translations[key] || key;
-      };
-    </script>
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    />
-    <title>{title}</title>
-    <script is:inline>
-      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-      window.scrollTo(0, 0);
+<head>
+<meta charset="UTF-8">
+<script is:inline define:vars={{ translations }}>
+  window.t = function(key) {
+    return translations[key] || key;
+  };
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>{title}</title>
+<script is:inline>
+if('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.scrollTo(0,0);
 
-      // CSS dinámico: ocultar secciones + nav links (excepto mobile-menu que usa visibility)
-      function _buildSectionsCSS(stored) {
-        var ids = [
-          "sobre",
-          "galeria",
-          "videos",
-          "servicios",
-          "proceso",
-          "testimonios",
-          "contacto",
-        ];
-        var css = "";
-        ids.forEach(function (id) {
-          if (stored[id] === false || stored[id] === "false") {
-            css += "#" + id + "{display:none!important}";
-            css +=
-              'nav .nav-links a[href="#' +
-              id +
-              '"],#footer-nav a[href="#' +
-              id +
-              '"]{display:none!important}';
-            css +=
-              '.mobile-menu a[href="#' +
-              id +
-              '"]{visibility:hidden!important;height:0!important;overflow:hidden!important;margin:0!important;padding:0!important;min-height:0!important;}';
-          }
-        });
-        return css;
-      }
+// CSS dinámico: ocultar secciones + nav links (excepto mobile-menu que usa visibility)
+function _buildSectionsCSS(stored){
+  var ids = ['sobre','galeria','videos','servicios','proceso','testimonios','contacto'];
+  var css = '';
+  ids.forEach(function(id){
+    if(stored[id]===false||stored[id]==='false'){
+      css += '#'+id+'{display:none!important}';
+      css += 'nav .nav-links a[href="#'+id+'"],#footer-nav a[href="#'+id+'"]{display:none!important}';
+      css += '.mobile-menu a[href="#'+id+'"]{visibility:hidden!important;height:0!important;overflow:hidden!important;margin:0!important;padding:0!important;min-height:0!important;}';
+    }
+  });
+  return css;
+}
 
-      (function () {
-        try {
-          var stored = JSON.parse(localStorage.getItem("alr_sections") || "{}");
-          var css = _buildSectionsCSS(stored);
-          if (css) {
-            var st = document.createElement("style");
-            st.id = "_sections-hide";
-            st.textContent = css;
-            document.head.appendChild(st);
-          }
-        } catch (e) {}
-      })();
+(function(){
+  try{
+    var stored = JSON.parse(localStorage.getItem('alr_sections')||'{}');
+    var css = _buildSectionsCSS(stored);
+    if(css){
+      var st = document.createElement('style');
+      st.id = '_sections-hide';
+      st.textContent = css;
+      document.head.appendChild(st);
+    }
+  }catch(e){}
+})();
 
-      function _applySections() {
-        window.scrollTo(0, 0);
-        var old = document.getElementById("_sections-hide");
-        if (old) old.remove();
-        try {
-          var stored = JSON.parse(localStorage.getItem("alr_sections") || "{}");
-          var css = _buildSectionsCSS(stored);
-          if (css) {
-            var st = document.createElement("style");
-            st.id = "_sections-hide";
-            st.textContent = css;
-            document.head.appendChild(st);
-          }
-        } catch (e) {}
-      }
-      document.addEventListener("DOMContentLoaded", _applySections);
-      window.addEventListener("load", _applySections);
-    </script>
-    <meta
-      name="description"
-      content="Fotógrafa profesional y piloto de dron. Bodas, eventos, paisajes aéreos y vídeo cinematográfico en España."
-    />
-    <meta name="author" content="Andrea López" />
-    <meta
-      property="og:title"
-      content="Andrea López — Fotografía & Vídeo con Dron"
-    />
-    <meta
-      property="og:description"
-      content="Capturo lo que el ojo no alcanza a ver solo. Desde el suelo hasta el cielo, cada encuadre es una decisión."
-    />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://andrealopezfoto.es" />
-    <meta
-      property="og:image"
-      content="https://andrealopezfoto.es/fotos/retrato.jpeg"
-    />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:locale" content="es_ES" />
-    <meta property="og:site_name" content="Andrea López Fotografía" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="Andrea López — Fotografía & Vídeo con Dron"
-    />
-    <meta
-      name="twitter:description"
-      content="Fotógrafa profesional y piloto de dron. Bodas, eventos, paisajes aéreos y vídeo cinematográfico en España."
-    />
-    <meta
-      name="twitter:image"
-      content="https://andrealopezfoto.es/fotos/retrato.jpeg"
-    />
-    <meta
-      name="keywords"
-      content="fotógrafa, fotografía profesional, dron, piloto dron, vídeo cinematográfico, bodas, eventos, España, Andrea López"
-    />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://andrealopezfoto.es" />
-    <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#040302" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
-    <meta name="apple-mobile-web-app-title" content="Andrea López" />
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231a1714'/%3E%3Cstop offset='1' stop-color='%230a0908'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23g)'/%3E%3Crect x='1' y='1' width='30' height='30' rx='5.5' fill='none' stroke='%23c8b89a' stroke-width='.4' stroke-opacity='.4'/%3E%3Cline x1='16' y1='4' x2='16' y2='28' stroke='%23c8b89a' stroke-width='.3' stroke-opacity='.15'/%3E%3Cline x1='4' y1='16' x2='28' y2='16' stroke='%23c8b89a' stroke-width='.3' stroke-opacity='.15'/%3E%3Ctext x='50%25' y='52%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-size='11' font-style='italic' font-weight='400' fill='%23c8b89a' letter-spacing='1' opacity='.95'%3EAL%3C/text%3E%3Ccircle cx='16' cy='26' r='.8' fill='%23c8b89a' opacity='.6'/%3E%3C/svg%3E"
-    />
-    <script is:inline type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "LocalBusiness",
-        "name": "Andrea López Fotografía",
-        "description": "Fotógrafa profesional y piloto de dron certificada AESA. Bodas, eventos, paisajes aéreos y vídeo cinematográfico en España.",
-        "url": "https://andrealopezfoto.es",
-        "telephone": "",
-        "image": "https://andrealopezfoto.es/fotos/retrato.jpeg",
-        "priceRange": "€€",
-        "address": { "@type": "PostalAddress", "addressCountry": "ES" },
-        "sameAs": ["https://instagram.es/andrealopz___"],
-        "founder": { "@type": "Person", "name": "Andrea López" },
-        "hasOfferCatalog": {
-          "@type": "OfferCatalog",
-          "name": "Servicios de fotografía y vídeo",
-          "itemListElement": [
-            {
-              "@type": "Offer",
-              "itemOffered": {
-                "@type": "Service",
-                "name": "Fotografía profesional"
-              },
-              "price": "150",
-              "priceCurrency": "EUR"
-            },
-            {
-              "@type": "Offer",
-              "itemOffered": { "@type": "Service", "name": "Vídeo con dron" },
-              "price": "250",
-              "priceCurrency": "EUR"
-            },
-            {
-              "@type": "Offer",
-              "itemOffered": { "@type": "Service", "name": "Bodas y eventos" },
-              "price": "800",
-              "priceCurrency": "EUR"
-            }
-          ]
-        }
-      }
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Outfit:wght@200;300;400&display=swap"
-      rel="stylesheet"
-    />
-    <script
-      is:inline
-      src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"
-    ></script>
-    <script
-      is:inline
-      src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"
-    ></script>
-    <script is:inline>
-      (function () {
-        if (new URLSearchParams(location.search).get("album")) {
-          document.documentElement.setAttribute("data-album-mode", "1");
-        }
-      })();
-    </script>
-    <script
-      is:inline
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-ZDXKJFZNBN"></script>
-    <script is:inline>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("consent", "default", {
-        analytics_storage: "denied",
-        ad_storage: "denied",
-      });
-      gtag("js", new Date());
-      gtag("config", "G-ZDXKJFZNBN", { anonymize_ip: true });
-      if (localStorage.getItem("alr_cookies") === "all") {
-        gtag("consent", "update", { analytics_storage: "granted" });
-      }
-    </script>
-    <script is:inline src="https://cdn.jsdelivr.net/npm/exif-js"></script>
-    <ClientRouter />
-  </head>
-  <body>
-    <svg class="liquid-filter" xmlns="http://www.w3.org/2000/svg">
-      <filter id="liquid-distortion">
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="0.01 0.01"
-          numOctaves="1"
-          result="noise"></feTurbulence>
-        <feDisplacementMap
-          in="SourceGraphic"
-          in2="noise"
-          scale="0"
-          xChannelSelector="R"
-          yChannelSelector="B"
-          id="displacementMap"></feDisplacementMap>
-      </filter>
-    </svg>
+function _applySections(){
+  window.scrollTo(0,0);
+  var old = document.getElementById('_sections-hide');
+  if(old) old.remove();
+  try{
+    var stored = JSON.parse(localStorage.getItem('alr_sections')||'{}');
+    var css = _buildSectionsCSS(stored);
+    if(css){
+      var st = document.createElement('style');
+      st.id = '_sections-hide';
+      st.textContent = css;
+      document.head.appendChild(st);
+    }
+  }catch(e){}
+}
+document.addEventListener('DOMContentLoaded', _applySections);
+window.addEventListener('load', _applySections);
+</script>
+<meta name="description" content="Fotógrafa profesional y piloto de dron. Bodas, eventos, paisajes aéreos y vídeo cinematográfico en España.">
+<meta name="author" content="Andrea López">
+<meta property="og:title" content="Andrea López — Fotografía & Vídeo con Dron">
+<meta property="og:description" content="Capturo lo que el ojo no alcanza a ver solo. Desde el suelo hasta el cielo, cada encuadre es una decisión.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://andrealopezfoto.es">
+<meta property="og:image" content="https://andrealopezfoto.es/fotos/retrato.jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="es_ES">
+<meta property="og:site_name" content="Andrea López Fotografía">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Andrea López — Fotografía & Vídeo con Dron">
+<meta name="twitter:description" content="Fotógrafa profesional y piloto de dron. Bodas, eventos, paisajes aéreos y vídeo cinematográfico en España.">
+<meta name="twitter:image" content="https://andrealopezfoto.es/fotos/retrato.jpeg">
+<meta name="keywords" content="fotógrafa, fotografía profesional, dron, piloto dron, vídeo cinematográfico, bodas, eventos, España, Andrea López">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://andrealopezfoto.es">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#040302">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Andrea López">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231a1714'/%3E%3Cstop offset='1' stop-color='%230a0908'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23g)'/%3E%3Crect x='1' y='1' width='30' height='30' rx='5.5' fill='none' stroke='%23c8b89a' stroke-width='.4' stroke-opacity='.4'/%3E%3Cline x1='16' y1='4' x2='16' y2='28' stroke='%23c8b89a' stroke-width='.3' stroke-opacity='.15'/%3E%3Cline x1='4' y1='16' x2='28' y2='16' stroke='%23c8b89a' stroke-width='.3' stroke-opacity='.15'/%3E%3Ctext x='50%25' y='52%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-size='11' font-style='italic' font-weight='400' fill='%23c8b89a' letter-spacing='1' opacity='.95'%3EAL%3C/text%3E%3Ccircle cx='16' cy='26' r='.8' fill='%23c8b89a' opacity='.6'/%3E%3C/svg%3E">
+<script is:inline type="application/ld+json">{
+  "@context":"https://schema.org",
+  "@type":"LocalBusiness",
+  "name":"Andrea López Fotografía",
+  "description":"Fotógrafa profesional y piloto de dron certificada AESA. Bodas, eventos, paisajes aéreos y vídeo cinematográfico en España.",
+  "url":"https://andrealopezfoto.es",
+  "telephone":"",
+  "image":"https://andrealopezfoto.es/fotos/retrato.jpeg",
+  "priceRange":"€€",
+  "address":{"@type":"PostalAddress","addressCountry":"ES"},
+  "sameAs":["https://instagram.es/andrealopz___"],
+  "founder":{"@type":"Person","name":"Andrea López"},
+  "hasOfferCatalog":{
+    "@type":"OfferCatalog",
+    "name":"Servicios de fotografía y vídeo",
+    "itemListElement":[
+      {"@type":"Offer","itemOffered":{"@type":"Service","name":"Fotografía profesional"},"price":"150","priceCurrency":"EUR"},
+      {"@type":"Offer","itemOffered":{"@type":"Service","name":"Vídeo con dron"},"price":"250","priceCurrency":"EUR"},
+      {"@type":"Offer","itemOffered":{"@type":"Service","name":"Bodas y eventos"},"price":"800","priceCurrency":"EUR"}
+    ]
+  }
+}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Outfit:wght@200;300;400&display=swap" rel="stylesheet">
+<script is:inline src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script is:inline>
+(function(){
+  if(new URLSearchParams(location.search).get('album')){
+    document.documentElement.setAttribute('data-album-mode','1');
+  }
+})();
+</script>
+<script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-ZDXKJFZNBN"></script>
+<script is:inline>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied'});
+  gtag('js', new Date());
+  gtag('config','G-ZDXKJFZNBN',{anonymize_ip:true});
+  if(localStorage.getItem('alr_cookies')==='all'){
+    gtag('consent','update',{analytics_storage:'granted'});
+  }
+</script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+<ClientRouter />
+</head>
+<body>
+<svg class="liquid-filter" xmlns="http://www.w3.org/2000/svg">
+  <filter id="liquid-distortion">
+    <feTurbulence type="fractalNoise" baseFrequency="0.01 0.01" numOctaves="1" result="noise" />
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="B" id="displacementMap" />
+  </filter>
+</svg>
 
-    <div id="page-transition"></div>
+<div id="page-transition"></div>
 
-    <slot />
+<slot />
 
-    <!-- CURSOR PERSISTENTE -->
-    <canvas id="trail-canvas"></canvas>
-    <div class="cursor" id="cursor"></div>
-    <div class="cursor-ring" id="cursorRing"></div>
-    <div class="cursor-label" id="cursorLabel"></div>
+<!-- CURSOR PERSISTENTE -->
+<canvas id="trail-canvas"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-label" id="cursorLabel"></div>
 
-    <script
-      is:inline
-      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script
-      is:inline
-      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script
-      is:inline
-      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"
-    ></script>
-    <script is:inline src="/andrea.js?v=2026" defer></script>
+<script is:inline src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script is:inline src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script is:inline src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script is:inline src="/andrea.js?v=2026" defer></script>
 
-    <script>
-      import Lenis from "@studio-freight/lenis";
-      import gsap from "gsap";
+<script>
+  import Lenis from '@studio-freight/lenis';
+  import gsap from 'gsap';
 
-      // Inicializar Lenis para Scroll Cinemático Mantequilla
-      let lenisInstance: any = null;
-      let rafId: number | null = null;
+  // Inicializar Lenis para Scroll Cinemático Mantequilla
+  let lenisInstance: any = null;
+  let rafId: number | null = null;
 
-      function initLenis() {
-        if (lenisInstance) return;
+  function initLenis() {
+    if (lenisInstance) return;
 
-        lenisInstance = new Lenis({
-          duration: 1.2,
-          easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-          direction: "vertical",
-          gestureDirection: "vertical",
-          smooth: true,
-          mouseMultiplier: 1,
-          smoothTouch: false,
-          touchMultiplier: 2,
-          infinite: false,
-        } as any);
+    lenisInstance = new Lenis({
+      duration: 1.2,
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
+      direction: 'vertical',
+      gestureDirection: 'vertical',
+      smooth: true,
+      mouseMultiplier: 1,
+      smoothTouch: false,
+      touchMultiplier: 2,
+      infinite: false,
+    } as any);
+    
+    (window as any).lenis = lenisInstance;
 
-        (window as any).lenis = lenisInstance;
-
-        function raf(time: number) {
-          if (lenisInstance) {
-            lenisInstance.raf(time);
-            rafId = requestAnimationFrame(raf);
-          }
-        }
-
+    function raf(time: number) {
+      if (lenisInstance) {
+        lenisInstance.raf(time);
         rafId = requestAnimationFrame(raf);
       }
+    }
+    
+    rafId = requestAnimationFrame(raf);
+  }
 
-      function destroyLenis() {
-        if (rafId) {
-          cancelAnimationFrame(rafId);
-          rafId = null;
+  function destroyLenis() {
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+    if (lenisInstance) {
+      lenisInstance.destroy();
+      lenisInstance = null;
+      (window as any).lenis = null;
+    }
+  }
+
+  // Handle Astro page transitions to prevent memory leaks
+  document.addEventListener('astro:page-load', initLenis);
+  document.addEventListener('astro:before-preparation', destroyLenis);
+
+  // Fallback for first load if astro:page-load hasn't fired
+  if(!(window as any).lenis) initLenis();
+
+  // Animar el efecto de agua WebGL de manera sutil y sin cortes (CSS Displacement)
+  document.addEventListener('DOMContentLoaded', () => {
+    if(window.innerWidth > 768) {
+      document.body.addEventListener('mouseover', (e) => {
+        const target = e.target as HTMLElement;
+        const item = target && target.closest ? target.closest('.gallery-item') : null;
+        const img = item ? item.querySelector('.gl-image') as HTMLElement : null;
+        if(img && !img.dataset.filtering) {
+          img.dataset.filtering = '1';
+          gsap.killTweensOf('#displacementMap');
+          img.style.filter = 'url(#liquid-distortion)';
+          gsap.fromTo('#displacementMap', 
+            { attr: { scale: 0 } }, 
+            { attr: { scale: 12 }, duration: 1.5, ease: "sine.out" }
+          );
         }
-        if (lenisInstance) {
-          lenisInstance.destroy();
-          lenisInstance = null;
-          (window as any).lenis = null;
-        }
-      }
-
-      // Handle Astro page transitions to prevent memory leaks
-      document.addEventListener("astro:page-load", initLenis);
-      document.addEventListener("astro:before-preparation", destroyLenis);
-
-      // Fallback for first load if astro:page-load hasn't fired
-      if (!(window as any).lenis) initLenis();
-
-      // Animar el efecto de agua WebGL de manera sutil y sin cortes (CSS Displacement)
-      document.addEventListener("DOMContentLoaded", () => {
-        if (window.innerWidth > 768) {
-          document.body.addEventListener("mouseover", (e) => {
-            const target = e.target as HTMLElement;
-            const item =
-              target && target.closest ? target.closest(".gallery-item") : null;
-            const img = item
-              ? (item.querySelector(".gl-image") as HTMLElement)
-              : null;
-            if (img && !img.dataset.filtering) {
-              img.dataset.filtering = "1";
-              gsap.killTweensOf("#displacementMap");
-              img.style.filter = "url(#liquid-distortion)";
-              gsap.fromTo(
-                "#displacementMap",
-                { attr: { scale: 0 } },
-                { attr: { scale: 12 }, duration: 1.5, ease: "sine.out" },
-              );
-            }
-          });
-          document.body.addEventListener("mouseout", (e) => {
-            const target = e.target as HTMLElement;
-            const item =
-              target && target.closest ? target.closest(".gallery-item") : null;
-            const img = item
-              ? (item.querySelector(".gl-image") as HTMLElement)
-              : null;
-            // Check if cursor actually left the item, not just moving inside children
-            if (item && !item.contains(e.relatedTarget as Node) && img) {
-              gsap.killTweensOf("#displacementMap");
-              gsap.to("#displacementMap", {
-                attr: { scale: 0 },
-                duration: 1.2,
-                ease: "sine.inOut",
-                onComplete: () => {
-                  img.style.filter = "";
-                  delete img.dataset.filtering;
-                },
-              });
+      });
+      document.body.addEventListener('mouseout', (e) => {
+        const target = e.target as HTMLElement;
+        const item = target && target.closest ? target.closest('.gallery-item') : null;
+        const img = item ? item.querySelector('.gl-image') as HTMLElement : null;
+        // Check if cursor actually left the item, not just moving inside children
+        if(item && !item.contains(e.relatedTarget as Node) && img) {
+          gsap.killTweensOf('#displacementMap');
+          gsap.to('#displacementMap', { 
+            attr: { scale: 0 }, 
+            duration: 1.2, 
+            ease: "sine.inOut",
+            onComplete: () => {
+              img.style.filter = '';
+              delete img.dataset.filtering;
             }
           });
         }
       });
-    </script>
-  </body>
+    }
+  });
+</script>
+</body>
 </html>
