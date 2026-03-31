@@ -41,6 +41,21 @@ const auth = firebase.auth();
 const CONFIG_DOC = db.collection('config').doc('site');
 
 // ── GLOBAL STATE & CONSTANTS (Fix ReferenceErrors) ───────────────────────────
+const SECTIONS_CONFIG = [
+  { id:'hero',        label:'Hero',         icon:'🎬', required:true  },
+  { id:'sobre',       label:'Sobre mí',     icon:'👤', required:false },
+  { id:'galeria',     label:'Galería',      icon:'🖼', required:false },
+  { id:'videos',      label:'Vídeos',       icon:'🎥', required:false },
+  { id:'servicios',   label:'Servicios',    icon:'💼', required:false },
+  { id:'proceso',     label:'Proceso',      icon:'⚡', required:false },
+  { id:'testimonios', label:'Testimonios',  icon:'💬', required:false },
+  { id:'contacto',    label:'Contacto',     icon:'✉',  required:true  },
+];
+let _allGalleryPhotos  = [];
+let _galleryPage       = 0;
+let _gallerySearch     = '';
+const GALLERY_PAGE_SIZE = 15;
+
 // ── CONTROL DE SECCIONES ─────────────────────────────────────────────────────
 let _foldersCache   = null;
 // ── GESTIÓN DE CARPETAS ──────────────────────────────────────────────────────
@@ -1500,16 +1515,6 @@ async function syncGalleryOrder(){
 
 // ── TOGGLE SECCIÓN VISIBLE ────────────────────────────────────────────────────
 // ── CONTROL DE SECCIONES ─────────────────────────────────────────────────────
-const SECTIONS_CONFIG = [
-  { id:'hero',        label:'Hero',         icon:'🎬', required:true  },
-  { id:'sobre',       label:'Sobre mí',     icon:'👤', required:false },
-  { id:'galeria',     label:'Galería',      icon:'🖼', required:false },
-  { id:'videos',      label:'Vídeos',       icon:'🎥', required:false },
-  { id:'servicios',   label:'Servicios',    icon:'💼', required:false },
-  { id:'proceso',     label:'Proceso',      icon:'⚡', required:false },
-  { id:'testimonios', label:'Testimonios',  icon:'💬', required:false },
-  { id:'contacto',    label:'Contacto',     icon:'✉',  required:true  },
-];
 
 // Comprobar si una sección está oculta (boolean o string)
 function isSectionHidden(stored, id){
@@ -2968,10 +2973,7 @@ async function populateFolderSelector(selectId){
 }
 
 // ── GALERÍA CON LOAD-MORE + SEARCH + FILTROS DE CARPETA ────────────────────────────
-let _allGalleryPhotos  = [];
-let _galleryPage       = 0;
-let _gallerySearch     = '';
-const GALLERY_PAGE_SIZE = 15;
+
 
 function getFilteredPhotos(){
   return _allGalleryPhotos.filter(p => {
