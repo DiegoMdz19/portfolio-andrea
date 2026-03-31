@@ -1,4 +1,465 @@
 ---
-import IndexEs from '../index.astro';
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Hero from '../../components/Hero.astro';
+import Footer from '../../components/Footer.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 ---
-<IndexEs />
+<Layout title="Andrea López — Photography & Drone Video" lang={lang}>
+<div id="loader">
+  <canvas id="loaderCanvas" style="position:absolute;inset:0;pointer-events:none;z-index:0;"></canvas>
+
+  <!-- Marcos esquinas -->
+  <div class="loader-corner loader-corner--tl"></div>
+  <div class="loader-corner loader-corner--tr"></div>
+  <div class="loader-corner loader-corner--bl"></div>
+  <div class="loader-corner loader-corner--br"></div>
+
+  <!-- Textos laterales -->
+  <div class="loader-year">{t('loader.tags')}</div>
+  <div class="loader-left-text">{t('loader.location')}</div>
+
+  <!-- Contenido central -->
+  <p class="loader-eyebrow" style="position:relative;z-index:1;">{t('loader.eyebrow')}</p>
+
+  <div class="loader-svg-wrap" style="position:relative;z-index:1;">
+    <svg width="140" height="94" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+      <path class="loader-path-al" d="M8,68 L28,12 L48,68 M14,48 L42,48"/>
+      <path class="loader-path-al" d="M62,12 L62,68 L96,68" style="stroke-dasharray:140;stroke-dashoffset:140;animation-delay:.9s"/>
+      <circle class="loader-path-dot" cx="104" cy="65" r="2.5"/>
+    </svg>
+  </div>
+
+  <p class="loader-name" style="position:relative;z-index:1;">{t('loader.name')} <em>{t('loader.lastname')}</em></p>
+  <p class="loader-sub" style="position:relative;z-index:1;">{t('loader.sub')}</p>
+
+  <div class="loader-bar-wrap" style="position:relative;z-index:1;"><div class="loader-bar"></div></div>
+  <p class="loader-pct" id="loaderPct" style="position:relative;z-index:1;">0%</p>
+
+  <button class="loader-enter" id="loaderEnterBtn" style="position:relative;z-index:1;">{t('loader.btn')}</button>
+
+  <p class="loader-firma">andrealopezfoto.es</p>
+</div>
+
+<Navbar />
+
+<!-- MENÚ MÓVIL -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#sobre"       class="mobile-link">{t('nav.sobre')}</a>
+  <a href="#galeria"     class="mobile-link">{t('nav.galeria')}</a>
+  <a href="#videos"      class="mobile-link">{t('nav.videos')}</a>
+  <a href="#servicios"   class="mobile-link">{t('nav.servicios')}</a>
+  <a href="#proceso"     class="mobile-link">{t('nav.proceso')}</a>
+  <a href="#testimonios" class="mobile-link">{t('nav.testimonios')}</a>
+  <a href="#contacto"    class="mobile-link">{t('nav.contacto')}</a>
+  <a href={`https://instagram.com/${t('social.instagram')}`} target="_blank" class="mobile-menu-social">{t('social.instagram')}</a>
+</div>
+
+<Hero />
+
+<!-- ABOUT -->
+<section id="sobre">
+  <div class="sobre-img-col reveal">
+    <div class="sobre-carousel" id="sobreCarousel">
+      <div class="sobre-carousel-track" id="sobreTrack">
+        <div class="sobre-carousel-slide active"><img src="/fotos/retrato.jpeg" alt="Andrea López"></div>
+      </div>
+      <button class="sobre-carousel-btn sobre-prev" id="sobrePrev" aria-label="Previous">&#8592;</button>
+      <button class="sobre-carousel-btn sobre-next" id="sobreNext" aria-label="Next">&#8594;</button>
+      <div class="sobre-carousel-dots" id="sobreDots"></div>
+    </div>
+    <div class="sobre-accent-box"></div>
+  </div>
+  <div class="sobre-text-col">
+    <div class="section-label reveal">{t('sobre.label')}</div>
+    <h2 class="sobre-heading reveal reveal-delay-1">{t('sobre.heading1')}<br><em>{t('sobre.heading2')}</em></h2>
+    <p class="sobre-body reveal reveal-delay-2">{t('sobre.p1')}</p>
+    <p class="sobre-body reveal reveal-delay-2">{t('sobre.p2')}</p>
+    <a href={`https://instagram.com/${t('social.instagram')}`} target="_blank" class="social-link reveal reveal-delay-3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>{t('social.instagram')}</a>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="galeria">
+  <div class="section-label reveal">{t('galeria.label')}</div>
+  <div class="gallery-header">
+    <h2 class="gallery-title reveal reveal-delay-1">{t('galeria.heading1')}<br><em>{t('galeria.heading2')}</em></h2>
+    <div class="gallery-controls reveal reveal-delay-2">
+      <ul class="gallery-filter" id="galleryFilter">
+        <li><button class="active" data-filter="all">{t('galeria.filterAll')}</button></li>
+      </ul>
+      <div class="gallery-search-wrap">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="gallerySearch" placeholder={t('galeria.search')} oninput="onGallerySearch(this.value)" autocomplete="off">
+      </div>
+    </div>
+  </div>
+  <div class="gallery-grid" id="galleryGrid" data-t-empty={t('galeria.noPhotos')} data-t-loading={t('galeria.loading')}></div>
+  <div class="gallery-footer" id="galleryFooter" style="display:none;">
+    <span id="galleryCounter" class="gallery-counter" data-t-showing={t('galeria.showing')}></span>
+    <button class="gallery-load-more" id="galleryLoadMore" onclick="loadMorePhotos()">{t('galeria.loadMore')}</button>
+  </div>
+</section>
+
+<!-- VIDEOS -->
+<section id="videos">
+  <div class="section-label reveal">{t('nav.videos')}</div>
+  <h2 class="video-heading reveal reveal-delay-1">{t('videos.heading1')}<br><em>{t('videos.heading2')}</em></h2>
+  <div class="video-grid">
+    <div id="video-empty-msg" style="display:none;grid-column:1/-1;text-align:center;padding:40px;color:rgba(200,184,154,.4);font-size:.7rem;">
+      {t('galeria.noPhotos')}
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="servicios">
+  <div class="section-label reveal">{t('nav.servicios')}</div>
+  <h2 class="video-heading reveal reveal-delay-1">{t('servicios.heading1')}<br><em>{t('servicios.heading2')}</em></h2>
+  <div class="servicios-grid">
+    <div class="servicio-card reveal">
+      <div class="servicio-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="28" height="28"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+      <h3 class="servicio-nombre">{t('servicios.s1.n')}</h3>
+      <p class="servicio-desc">{t('servicios.s1.d')}</p>
+      <div class="servicio-precio"><span class="servicio-desde">{t('servicios.desde')}</span>{t('servicios.s1.p')}</div>
+    </div>
+    <div class="servicio-card reveal reveal-delay-1">
+      <div class="servicio-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="28" height="28"><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="7" y2="7"/><line x1="17" y1="7" x2="21" y2="3"/><line x1="7" y1="17" x2="3" y2="21"/><line x1="17" y1="17" x2="21" y2="21"/></svg></div>
+      <h3 class="servicio-nombre">{t('servicios.s2.n')}</h3>
+      <p class="servicio-desc">{t('servicios.s2.d')}</p>
+      <div class="servicio-precio"><span class="servicio-desde">{t('servicios.desde')}</span>{t('servicios.s2.p')}</div>
+    </div>
+    <div class="servicio-card reveal reveal-delay-2">
+      <div class="servicio-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="28" height="28"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 2v20"/><path d="M17 2v20"/><path d="M2 12h5"/><path d="M17 12h5"/></svg></div>
+      <h3 class="servicio-nombre">{t('servicios.s3.n')}</h3>
+      <p class="servicio-desc">{t('servicios.s3.d')}</p>
+      <div class="servicio-precio"><span class="servicio-desde">{t('servicios.desde')}</span>{t('servicios.s3.p')}</div>
+    </div>
+    <div class="servicio-card reveal">
+      <div class="servicio-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="28" height="28"><circle cx="12" cy="12" r="5"/><path d="M12 7V3"/><path d="M7.05 9.95 4.22 7.22"/><path d="M5 12H1"/><path d="M7.05 14.05 4.22 16.78"/><path d="M12 17v4"/><path d="M16.95 14.05l2.83 2.73"/><path d="M19 12h4"/><path d="M16.95 9.95l2.83-2.73"/></svg></div>
+      <h3 class="servicio-nombre">{t('servicios.s4.n')}</h3>
+      <p class="servicio-desc">{t('servicios.s4.d')}</p>
+      <div class="servicio-precio"><span class="servicio-desde">{t('servicios.desde')}</span>{t('servicios.s4.p')}</div>
+    </div>
+    <div class="servicio-card reveal reveal-delay-1">
+      <div class="servicio-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="28" height="28"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <h3 class="servicio-nombre">{t('servicios.s5.n')}</h3>
+      <p class="servicio-desc">{t('servicios.s5.d')}</p>
+      <div class="servicio-precio"><span class="servicio-desde">{t('servicios.desde')}</span>{t('servicios.s5.p')}</div>
+    </div>
+    <div class="servicio-card reveal reveal-delay-2">
+      <div class="servicio-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="28" height="28"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      <h3 class="servicio-nombre">{t('servicios.s6.n')}</h3>
+      <p class="servicio-desc">{t('servicios.s6.d')}</p>
+      <div class="servicio-precio"><a href="#contacto" style="color:var(--warm);text-decoration:none;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;">{t('servicios.btn')}</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="proceso">
+  <div class="section-label reveal" style="color:rgba(200,184,154,.55);">{t('proceso.label')}</div>
+  <h2 class="video-heading reveal reveal-delay-1" style="color:#f0ece4;">{t('proceso.heading1')}<br><em style="color:rgba(200,184,154,.7);">{t('proceso.heading2')}</em></h2>
+  <div class="proceso-steps">
+    <div class="proceso-step reveal"><div class="proceso-num">01</div><h3 class="proceso-titulo">{t('proceso.p1.n')}</h3><p class="proceso-desc">{t('proceso.p1.d')}</p></div>
+    <div class="proceso-step reveal reveal-delay-1"><div class="proceso-num">02</div><h3 class="proceso-titulo">{t('proceso.p2.n')}</h3><p class="proceso-desc">{t('proceso.p2.d')}</p></div>
+    <div class="proceso-step reveal reveal-delay-2"><div class="proceso-num">03</div><h3 class="proceso-titulo">{t('proceso.p3.n')}</h3><p class="proceso-desc">{t('proceso.p3.d')}</p></div>
+    <div class="proceso-step reveal reveal-delay-2"><div class="proceso-num">04</div><h3 class="proceso-titulo">{t('proceso.p4.n')}</h3><p class="proceso-desc">{t('proceso.p4.d')}</p></div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonios">
+  <div class="section-label reveal" style="color:rgba(200,184,154,.55);">{t('testimonio.label')}</div>
+  <h2 class="video-heading reveal reveal-delay-1" style="color:#f0ece4;">{t('testimonio.heading1')}<br><em style="color:rgba(200,184,154,.7);">{t('testimonio.heading2')}</em></h2>
+  <div class="testimonios-grid">
+    <div class="testimonio-card reveal">
+      <span class="testimonio-comilla">"</span>
+      <p class="testimonio-texto">{t('testimonio.t1.texto')}</p>
+      <div class="testimonio-autor">{t('testimonio.t1.autor')}</div>
+      <div class="testimonio-proyecto">{t('testimonio.t1.proyecto')}</div>
+    </div>
+    <div class="testimonio-card reveal reveal-delay-1">
+      <span class="testimonio-comilla">"</span>
+      <p class="testimonio-texto">{t('testimonio.t2.texto')}</p>
+      <div class="testimonio-autor">{t('testimonio.t2.autor')}</div>
+      <div class="testimonio-proyecto">{t('testimonio.t2.proyecto')}</div>
+    </div>
+    <div class="testimonio-card reveal reveal-delay-2">
+      <span class="testimonio-comilla">"</span>
+      <p class="testimonio-texto">{t('testimonio.t3.texto')}</p>
+      <div class="testimonio-autor">{t('testimonio.t3.autor')}</div>
+      <div class="testimonio-proyecto">{t('testimonio.t3.proyecto')}</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contacto">
+  <div class="contacto-inner">
+    <div class="contacto-info">
+      <div class="section-label reveal" style="color:rgba(200,184,154,.55);">{t('contacto.label')}</div>
+      <h2 class="contacto-heading reveal reveal-delay-1">{t('contacto.heading1')}<br><em>{t('contacto.heading2')}</em></h2>
+      <div class="contacto-info-item reveal reveal-delay-2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>{t('contacto.zona')}</span>
+      </div>
+      <div class="contacto-info-item reveal reveal-delay-2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        <a href={`https://instagram.com/${t('social.instagram')}`} target="_blank" id="footer-instagram">@<span id="footer-instagram-handle">{t('social.instagram')}</span></a>
+      </div>
+      <div class="contacto-info-item reveal reveal-delay-3">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11.8a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.5a16 16 0 0 0 5.93 5.93l.95-.95a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <a href="https://wa.me/" id="footer-whatsapp" target="_blank">WhatsApp — <span id="footer-whatsapp-handle"></span></a>
+      </div>
+    </div>
+    <div class="contacto-form-wrap">
+      <form class="contacto-form" onsubmit="handleSubmit(event)">
+        <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+        <div class="form-row">
+          <div class="form-group">
+            <label>{t('contacto.form.name')}</label>
+            <input type="text" name="from_name" required placeholder={t('contacto.form.namePh')}>
+          </div>
+          <div class="form-group">
+            <label>{t('contacto.form.email')}</label>
+            <input type="email" name="reply_to" required placeholder={t('contacto.form.emailPh')}>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>{t('contacto.form.project')}</label>
+          <input type="text" name="proyecto" placeholder={t('contacto.form.projectPh')}>
+        </div>
+        <div class="form-group">
+          <label>{t('contacto.form.msg')}</label>
+          <textarea name="message" rows="5" required placeholder={t('contacto.form.msgPh')}></textarea>
+        </div>
+        <button type="submit" class="btn-submit" data-t-sending={t('contacto.form.sending')}>{t('contacto.form.send')}</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<Footer />
+
+<!-- MODALES -->
+<div id="cookie-banner">
+  <p>{t('cookies.msg')} <a href="#" onclick="openPrivacy(event)">{t('cookies.policy')}</a></p>
+  <div class="cookie-btns">
+    <button onclick="rejectCookies()">{t('cookies.reject')}</button>
+    <button onclick="acceptCookies()" class="cookie-accept">{t('cookies.accept')}</button>
+  </div>
+</div>
+
+<div id="privacy-modal">
+  <button class="privacy-close" onclick="closePrivacy()">✕</button>
+  <div class="privacy-wrap">
+    <h2>{t('privacy.title')}</h2>
+    <p>{t('privacy.update')}. {t('privacy.responsible')}: Andrea López.</p>
+    <h3>1. {t('privacy.s1')}</h3><p>{t('privacy.p1')}</p>
+    <h3>2. {t('privacy.s2')}</h3><p>{t('privacy.p2')}</p>
+    <h3>3. {t('privacy.s3')}</h3><p>{t('privacy.p3')}</p>
+    <h3>4. {t('privacy.s4')}</h3><p>{t('privacy.p4')}</p>
+    <h3>5. {t('privacy.s5')}</h3><p>{t('privacy.p5')}</p>
+  </div>
+</div>
+
+<div id="folder-qr-modal" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(4,3,2,.94);align-items:center;justify-content:center;opacity:0;transition:opacity .25s;">
+  <div style="background:#111;border:1px solid rgba(200,184,154,.15);padding:40px;border-radius:4px;max-width:380px;width:90%;text-align:center;">
+    <p style="font-size:.5rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(200,184,154,.5);margin-bottom:16px;">ALBUM QR</p>
+    <h3 id="qr-folder-name" style="font-size:.9rem;color:#f0ece4;margin-bottom:24px;font-weight:300;"></h3>
+    <img id="qr-img" src="" alt="QR" style="width:200px;height:200px;border-radius:4px;margin-bottom:20px;">
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <input id="qr-url" type="text" readonly style="flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(200,184,154,.15);color:#c8b89a;padding:8px;font-size:.6rem;border-radius:2px;">
+      <button id="qr-copy-btn" onclick="copyQrUrl()" style="background:rgba(200,184,154,.1);border:1px solid rgba(200,184,154,.2);color:#c8b89a;padding:8px 14px;font-size:.55rem;letter-spacing:.1em;cursor:pointer;border-radius:2px;">Copiar</button>
+    </div>
+    <a id="qr-dl-btn" href="#" download="qr.png" style="display:inline-block;margin-right:8px;font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(200,184,154,.6);text-decoration:none;border:1px solid rgba(200,184,154,.2);padding:7px 16px;border-radius:2px;">⬇ Descargar QR</a>
+    <button onclick="closeFolderQR()" style="font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(200,184,154,.6);background:none;border:1px solid rgba(200,184,154,.2);padding:7px 16px;cursor:pointer;border-radius:2px;">Cerrar</button>
+  </div>
+</div>
+
+<!-- LIGHTBOX FOTOS -->
+<div id="lightbox" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(4,3,2,.96);flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity .4s;">
+  <div style="position:absolute;top:20px;left:50%;transform:translateX(-50%);display:flex;gap:16px;align-items:center;z-index:10;">
+    <span id="lightboxCounter" style="font-size:.55rem;letter-spacing:.2em;color:rgba(200,184,154,.5);"></span>
+    <button id="slideshowBtn" style="background:none;border:1px solid rgba(200,184,154,.2);color:rgba(200,184,154,.6);padding:5px 14px;font-size:.5rem;letter-spacing:.15em;cursor:pointer;border-radius:2px;">▶ Slideshow</button>
+    <div id="slideshowProgress" style="width:80px;height:1px;background:rgba(200,184,154,.15);border-radius:1px;overflow:hidden;"><div style="height:100%;background:rgba(200,184,154,.5);width:0%;"></div></div>
+    <button id="lightboxExifBtn" onclick="toggleExifPanel()" style="background:none;border:1px solid rgba(200,184,154,.2);color:rgba(200,184,154,.6);padding:5px 10px;font-size:.5rem;letter-spacing:.1em;cursor:pointer;border-radius:2px;">EXIF</button>
+  </div>
+  <div id="lightboxExifPanel" style="position:absolute;top:60px;right:20px;width:180px;background:rgba(10,9,8,.92);border:1px solid rgba(200,184,154,.12);padding:16px;border-radius:3px;display:none;z-index:11;"></div>
+  <button id="lightboxClose" style="position:absolute;top:20px;right:20px;background:none;border:none;color:rgba(200,184,154,.6);font-size:1.2rem;cursor:pointer;z-index:10;">✕</button>
+  <div style="overflow:hidden;width:100vw;flex:1;display:flex;align-items:center;">
+    <div id="lightboxTrack" style="display:flex;transition:transform .55s cubic-bezier(.86,0,.07,1);will-change:transform;"></div>
+  </div>
+  <div id="thumbStrip" style="display:flex;gap:6px;padding:12px 20px;overflow-x:auto;max-width:100vw;"></div>
+  <button id="lightboxPrev" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(200,184,154,.6);font-size:1.8rem;cursor:pointer;z-index:10;">&#8592;</button>
+  <button id="lightboxNext" style="position:absolute;right:20px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(200,184,154,.6);font-size:1.8rem;cursor:pointer;z-index:10;">&#8594;</button>
+  <div id="lightboxWatermark" style="position:absolute;bottom:80px;right:24px;font-size:.48rem;letter-spacing:.2em;color:rgba(200,184,154,.25);pointer-events:none;">© Andrea López</div>
+</div>
+
+<!-- LIGHTBOX VIDEOS -->
+<div id="video-lightbox" style="display:none;position:fixed;inset:0;z-index:9100;background:rgba(2,2,1,.98);flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity .4s;">
+  <span id="vlbCounter" style="position:absolute;top:20px;left:50%;transform:translateX(-50%);font-size:.55rem;letter-spacing:.2em;color:rgba(200,184,154,.4);"></span>
+  <button id="vlbClose" style="position:absolute;top:20px;right:20px;background:none;border:none;color:rgba(200,184,154,.6);font-size:1.2rem;cursor:pointer;">✕</button>
+  <div style="overflow:hidden;width:100vw;flex:1;display:flex;align-items:center;">
+    <div id="vlbTrack" style="display:flex;transition:transform .55s cubic-bezier(.86,0,.07,1);will-change:transform;"></div>
+  </div>
+  <div id="vlbThumbStrip" style="display:flex;gap:6px;padding:12px 20px;overflow-x:auto;max-width:100vw;"></div>
+  <button id="vlbPrev" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(200,184,154,.6);font-size:1.8rem;cursor:pointer;">&#8592;</button>
+  <button id="vlbNext" style="position:absolute;right:20px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(200,184,154,.6);font-size:1.8rem;cursor:pointer;">&#8594;</button>
+</div>
+
+<!-- MODAL PERSONALIZADO -->
+<div id="custom-modal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(4,3,2,.85);align-items:center;justify-content:center;opacity:0;transition:opacity .26s;">
+  <div style="background:#111;border:1px solid rgba(200,184,154,.18);padding:36px 32px;border-radius:4px;max-width:380px;width:90%;text-align:center;">
+    <div id="modal-icon" style="font-size:2rem;margin-bottom:12px;"></div>
+    <h3 id="modal-title" style="font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:#f0ece4;margin-bottom:10px;font-weight:300;"></h3>
+    <p id="modal-msg" style="font-size:.68rem;color:rgba(200,184,154,.7);line-height:1.7;margin-bottom:24px;"></p>
+    <div id="modal-btns" style="display:flex;gap:10px;justify-content:center;"></div>
+  </div>
+</div>
+
+<!-- ALBUM VIEW -->
+<div id="album-view" style="display:none;position:fixed;inset:0;z-index:8000;background:#0a0908;overflow-y:auto;">
+  <div style="max-width:1200px;margin:0 auto;padding:40px 24px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:48px;flex-wrap:wrap;gap:16px;">
+      <div>
+        <p style="font-size:.5rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(200,184,154,.4);margin-bottom:8px;">ALBUM PRIVADO</p>
+        <h1 id="album-title-text" style="font-size:clamp(1.4rem,4vw,2.2rem);font-weight:300;color:#f0ece4;font-family:'Cormorant Garamond',serif;font-style:italic;"></h1>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <button id="albumDownloadBtn" onclick="downloadAlbumZip()" style="display:none;align-items:center;gap:8px;background:rgba(200,184,154,.08);border:1px solid rgba(200,184,154,.2);color:#c8b89a;padding:10px 20px;font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border-radius:2px;">⬇ Download all</button>
+        <button onclick="closeAlbumView()" style="background:none;border:1px solid rgba(200,184,154,.2);color:rgba(200,184,154,.5);padding:10px 20px;font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border-radius:2px;">✕ Close</button>
+      </div>
+    </div>
+    <div id="album-zip-progress" style="display:none;align-items:center;gap:12px;margin-bottom:24px;padding:12px 16px;background:rgba(200,184,154,.05);border-radius:2px;">
+      <div style="flex:1;height:2px;background:rgba(200,184,154,.1);border-radius:1px;overflow:hidden;"><div id="albumZipFill" style="height:100%;background:#c8b89a;width:0%;transition:width .3s;"></div></div>
+      <span id="albumZipText" style="font-size:.55rem;color:rgba(200,184,154,.6);white-space:nowrap;"></span>
+    </div>
+    <div id="album-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;"></div>
+    <p id="album-empty" style="display:none;text-align:center;color:rgba(200,184,154,.3);font-size:.75rem;padding:80px 0;">No photos yet in this album</p>
+  </div>
+</div>
+
+<!-- WhatsApp Popup -->
+<div id="whatsappPopup" style="position:fixed;bottom:90px;right:24px;z-index:500;background:#1a1814;border:1px solid rgba(200,184,154,.15);border-radius:8px;padding:16px 20px;max-width:260px;box-shadow:0 8px 32px rgba(0,0,0,.4);display:none;">
+  <button onclick="closeWaPopup()" style="position:absolute;top:8px;right:10px;background:none;border:none;color:rgba(200,184,154,.4);cursor:pointer;font-size:.8rem;">✕</button>
+  <p style="font-size:.62rem;color:rgba(200,184,154,.7);line-height:1.6;margin-bottom:12px;">{t('wa.msg')}</p>
+  <a id="whatsappPopupLink" href="https://wa.me/" target="_blank" style="display:block;text-align:center;background:rgba(200,184,154,.1);border:1px solid rgba(200,184,154,.2);color:#c8b89a;padding:8px;font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;text-decoration:none;border-radius:2px;">{t('wa.btn')}</a>
+</div>
+
+<!-- ADMIN OVERLAY -->
+<div id="admin-overlay" data-lenis-prevent>
+  <div id="admin-login">
+    <div class="admin-login-header">
+      <div class="admin-login-logo">AL</div>
+      <h2 class="admin-login-title">Panel de Control</h2>
+      <p class="admin-login-sub">Andrea López Fotografía</p>
+    </div>
+    <div class="admin-login-form">
+      <div class="admin-input-wrap">
+        <input type="password" id="admin-pass" placeholder="Contraseña" onkeydown="if(event.key==='Enter')checkPass()" autocomplete="current-password">
+        <button onclick="checkPass()" class="admin-login-btn">→</button>
+      </div>
+      <p id="admin-error" class="admin-error-msg" style="display:none;">Contraseña incorrecta</p>
+    </div>
+  </div>
+  <div id="admin-panel" style="display:none;">
+    <div class="admin-header">
+      <div class="admin-header-brand">
+        <span class="admin-brand-logo">AL</span>
+        <div>
+          <div class="admin-brand-name">Andrea López</div>
+          <div class="admin-brand-sub">Panel de Administración</div>
+        </div>
+      </div>
+      <div class="admin-header-actions">
+        <button onclick="exportConfig()" class="admin-action-btn" title="Exportar configuración">⬇</button>
+        <label class="admin-action-btn" title="Importar configuración" style="cursor:pointer;">⬆<input type="file" accept=".json" onchange="importConfig(event)" style="display:none;"></label>
+        <button onclick="closeAdmin()" class="admin-close-btn">✕</button>
+      </div>
+    </div>
+    <div class="admin-tabs">
+      <div class="admin-tabs-track">
+        <button class="admin-tab active" id="tab-secciones" onclick="switchTab('tab-content-secciones',this);switchAdminTab(this)">Secciones</button>
+        <button class="admin-tab" id="tab-config" onclick="switchTab('tab-content-config',this);switchAdminTab(this)">Configuración</button>
+        <button class="admin-tab" id="tab-tools" onclick="switchTab('tab-content-tools',this);switchAdminTab(this)">Herramientas</button>
+        <button class="admin-tab" id="tab-stats" onclick="switchTab('tab-content-stats',this);switchAdminTab(this)">Estadísticas</button>
+      </div>
+      <div class="admin-tabs-indicator"></div>
+    </div>
+    <div class="admin-body">
+      <div id="tab-content-secciones" class="admin-tab-content active">
+        <div class="admin-sections-layout"><div id="sec-sidebar" class="sec-sidebar"></div><div id="sec-content" class="sec-content"></div></div>
+      </div>
+      <div id="tab-content-config" class="admin-tab-content" style="display:none;">
+        <div style="display:flex;gap:0;height:100%;">
+          <div class="admin-config-sidebar">
+            <button class="sec-menu-btn active" onclick="switchConfig('cfg-textos',this)">✏️ Textos</button>
+            <button class="sec-menu-btn" onclick="switchConfig('cfg-contacto',this)">📞 Contacto</button>
+            <button class="sec-menu-btn" onclick="switchConfig('cfg-avanzado',this)">⚙️ Avanzado</button>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:28px;">
+            <div id="cfg-textos">
+              <p class="admin-section-title">Editar Textos</p>
+              <div class="admin-field-group"><label class="admin-label">Tagline Hero</label><textarea id="txt-tagline" class="admin-input" rows="2"></textarea></div>
+              <div class="admin-field-group"><label class="admin-label">Eyebrow (subtítulo)</label><input type="text" id="txt-eyebrow" class="admin-input"></div>
+              <div class="admin-field-group"><label class="admin-label">Sobre mí — Párrafo 1</label><textarea id="txt-sobre1" class="admin-input" rows="3"></textarea></div>
+              <div class="admin-field-group"><label class="admin-label">Sobre mí — Párrafo 2</label><textarea id="txt-sobre2" class="admin-input" rows="3"></textarea></div>
+              <div class="admin-field-group"><label class="admin-label">Disponibilidad</label><input type="text" id="txt-disponibilidad" class="admin-input"></div>
+              <button onclick="saveTextos()" class="admin-btn" style="margin-top:8px;">Guardar cambios ✓</button>
+              <button onclick="resetTextos()" class="admin-btn" style="margin-top:8px;opacity:.5;">Restaurar por defecto</button>
+            </div>
+            <div id="cfg-contacto" style="display:none;">
+              <p class="admin-section-title">Datos de Contacto</p>
+              <div class="admin-field-group"><label class="admin-label">Email de recepción (donde llegarán los formularios)</label><input type="email" id="txt-email-recepcion" class="admin-input" placeholder="diegomdz19@hotmail.com"></div>
+              <div class="admin-divider"></div>
+              <div class="admin-field-group"><label class="admin-label">Instagram (sin @)</label><input type="text" id="txt-instagram" class="admin-input" placeholder="andrealopz___"></div>
+              <div class="admin-field-group"><label class="admin-label">WhatsApp (con prefijo país, ej: 34612345678)</label><input type="text" id="txt-whatsapp" class="admin-input" placeholder="34612345678"></div>
+              <div class="admin-field-group"><label class="admin-label">Email público</label><input type="email" id="txt-email" class="admin-input"></div>
+              <div class="admin-field-group"><label class="admin-label">Teléfono</label><input type="tel" id="txt-telefono" class="admin-input"></div>
+              <div class="admin-field-group"><label class="admin-label">Zona / Disponibilidad</label><input type="text" id="txt-zona" class="admin-input"></div>
+              <div class="admin-field-group"><label class="admin-label">Marca de agua lightbox</label><input type="text" id="txt-watermark" class="admin-input" placeholder="© Andrea López"></div>
+              <div class="admin-divider"></div>
+              <div class="admin-field-group"><label class="admin-label">Nueva contraseña (dejar vacío para no cambiar)</label><input type="password" id="txt-newpass" class="admin-input" autocomplete="new-password"></div>
+              <div class="admin-field-group"><label class="admin-label">Repetir nueva contraseña</label><input type="password" id="txt-newpass2" class="admin-input"></div>
+              <button onclick="saveContacto()" class="admin-btn" style="margin-top:8px;">Guardar ✓</button>
+              <p id="contacto-msg" class="admin-success-msg" style="display:none;"></p>
+            </div>
+            <div id="cfg-avanzado" style="display:none;">
+              <p class="admin-section-title">Configuración Avanzada</p>
+              <div class="admin-field-group"><label class="admin-label">Auto-borrar fotos no permanentes después de (días)</label><input type="number" id="txt-autodelete" class="admin-input" value="365" min="0"></div>
+              <button onclick="saveAvanzado()" class="admin-btn" style="margin-top:8px;">Guardar ✓</button>
+              <button onclick="manualCleanExpired()" class="admin-btn" style="margin-top:8px;opacity:.7;">Limpiar ahora</button>
+              <p id="avanzado-msg" class="admin-success-msg" style="display:none;"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="tab-content-tools" class="admin-tab-content" style="display:none;">
+        <div style="display:flex;gap:0;height:100%;">
+          <div class="admin-config-sidebar">
+            <button class="sec-menu-btn active" onclick="switchConfig('tool-titulos',this)">🏷 Títulos</button>
+            <button class="sec-menu-btn" onclick="switchConfig('tool-galeria',this)">🖼 Galería</button>
+            <button class="sec-menu-btn" onclick="switchConfig('tool-videos-admin',this)">🎬 Vídeos</button>
+            <button class="sec-menu-btn" onclick="switchConfig('tool-carpetas',this)">📁 Carpetas</button>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:28px;">
+            <div id="tool-titulos"><p class="admin-section-title">Títulos y Descripciones</p><div id="admin-fotos-list"></div><div style="margin-top:28px;"><p class="admin-section-title" style="margin-bottom:16px;">Vídeos</p><div id="admin-videos-list"></div></div><button onclick="saveMultimedia()" class="admin-btn" style="margin-top:16px;">Guardar cambios ✓</button><div style="margin-top:8px;"><input type="text" id="multimedia-search" oninput="filtrarMultimedia(this.value)" placeholder="Buscar…" class="admin-input" style="max-width:300px;"></div></div>
+            <div id="tool-galeria" style="display:none;"><p class="admin-section-title">Subir Foto</p><div class="drop-zone" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)"><p>Arrastra aquí o</p><label class="admin-btn" style="cursor:pointer;">Seleccionar archivo<input type="file" id="fileInput2" accept="image/*" style="display:none;"></label></div><div id="newPhotoFields" style="display:none;margin-top:20px;"><img id="previewImg" src="" alt="preview" style="max-width:200px;border-radius:2px;margin-bottom:12px;display:block;"><div class="admin-field-group"><label class="admin-label">Título</label><input type="text" id="newTitulo" class="admin-input" placeholder="Sin título"></div><label class="admin-label" style="margin-bottom:6px;display:block;">Carpeta</label><select id="newFolder" class="admin-input"><option value="">Sin carpeta</option></select></div><div id="upload-status"></div><button onclick="addPhoto()" class="admin-btn" style="margin-top:12px;">Añadir foto ✓</button><div class="admin-divider"></div><p class="admin-section-title">Galería actual</p><div id="adminGallery" class="admin-gallery-grid"></div><p id="noPhotosMsg" style="display:none;text-align:center;color:rgba(200,184,154,.3);font-size:.7rem;padding:40px 0;">No hay fotos aún</p></div>
+            <div id="tool-videos-admin" style="display:none;"><p class="admin-section-title">Subir Vídeo</p><div class="drop-zone" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleVideoDrop(event)"><p>Arrastra aquí o</p><label class="admin-btn" style="cursor:pointer;">Seleccionar vídeo<input type="file" id="vidInput" accept="video/*" style="display:none;" onchange="handleVideoFile(this.files[0])"></label></div><p id="vid-upload-status" style="display:none;font-size:.6rem;color:rgba(200,184,154,.6);margin-top:8px;"></p><img id="vid-cloudinary-preview" style="display:none;max-width:200px;border-radius:2px;margin-top:10px;" alt="preview"><div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;"><div class="admin-field-group"><label class="admin-label">Título (ES)</label><input type="text" id="vid-new-titulo" class="admin-input" placeholder="Sin título"></div><div class="admin-field-group"><label class="admin-label">Descripción (ES)</label><input type="text" id="vid-new-desc" class="admin-input" placeholder="Sin descripción"></div><div class="admin-field-group"><label class="admin-label">Categoría</label><input type="text" id="vid-cat" class="admin-input" placeholder="Dron, Boda, etc."></div><div class="admin-field-group"><label class="admin-label">Carpeta / Álbum</label><select id="vid-new-folder" class="admin-input"><option value="">Sin carpeta</option></select></div></div><button onclick="addVideoAdmin()" class="admin-btn" style="margin-top:12px;">Añadir vídeo ✓</button><div class="admin-divider"></div><p class="admin-section-title">Vídeos actuales</p><div id="admin-video-list"></div></div>
+            <div id="tool-carpetas" style="display:none;"><p class="admin-section-title">Carpetas / Álbumes</p><div style="display:flex;gap:8px;margin-bottom:20px;"><input type="text" id="new-folder-name" class="admin-input" placeholder="Nombre de la carpeta…" style="flex:1;"><button onclick="createFolder()" class="admin-btn">Crear ✓</button></div><div id="tool-carpetas-list"></div></div>
+          </div>
+        </div>
+      </div>
+      <div id="tab-content-stats" class="admin-tab-content" style="display:none;">
+        <div style="padding:28px;"><p class="admin-section-title">Estadísticas del Portfolio</p><div id="admin-stats-wrap" class="admin-stats-grid"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</Layout>
