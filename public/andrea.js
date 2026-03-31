@@ -2252,14 +2252,51 @@ function askAdminPass(){ openAdmin(); }
 function closeAdmin() {
   auth.signOut().catch(() => {});
   const overlay = document.getElementById('admin-overlay');
+  if(!overlay) return;
   overlay.style.opacity = '0';
   setTimeout(() => {
     document.body.removeAttribute('data-admin');
     overlay.style.opacity = '';
     overlay.style.display = 'none';
+    overlay.classList.remove('open');
     document.body.style.overflow = '';
     if(window.lenis) window.lenis.start();
   }, 300);
+}
+
+function openPrivacy(e){
+  if(e) e.preventDefault();
+  const el = document.getElementById('privacy-section');
+  if(!el) return;
+  el.style.display = 'flex';
+  el.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if(window.lenis) window.lenis.stop();
+}
+function closePrivacy(){
+  const el = document.getElementById('privacy-section');
+  if(!el) return;
+  el.style.display = 'none';
+  el.classList.remove('open');
+  document.body.style.overflow = '';
+  if(window.lenis) window.lenis.start();
+}
+function openQR(e){
+  if(e) e.preventDefault();
+  const el = document.getElementById('qr-modal');
+  if(!el) return;
+  el.style.display = 'flex';
+  el.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if(window.lenis) window.lenis.stop();
+}
+function closeQR(){
+  const el = document.getElementById('qr-modal');
+  if(!el) return;
+  el.style.display = 'none';
+  el.classList.remove('open');
+  document.body.style.overflow = '';
+  if(window.lenis) window.lenis.start();
 }
 
 async function checkPass(){
