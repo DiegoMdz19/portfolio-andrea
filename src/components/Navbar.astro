@@ -18,9 +18,9 @@ const t = useTranslations(lang);
   </ul>
   <div class="nav-actions">
     <div style="font-size: 0.65rem; display: flex; gap: 8px; color: var(--mid);">
-      <a href="/" style={`text-decoration:none; color: ${lang === 'es' ? 'var(--ink)' : 'inherit'}; font-weight: ${lang === 'es' ? 400 : 300};`}>ES</a>
+      <a href="/" data-astro-reload style={`text-decoration:none; color: ${lang === 'es' ? 'var(--ink)' : 'inherit'}; font-weight: ${lang === 'es' ? 400 : 300};`}>ES</a>
       <span>|</span>
-      <a href="/en" style={`text-decoration:none; color: ${lang === 'en' ? 'var(--ink)' : 'inherit'}; font-weight: ${lang === 'en' ? 400 : 300};`}>EN</a>
+      <a href="/en" data-astro-reload style={`text-decoration:none; color: ${lang === 'en' ? 'var(--ink)' : 'inherit'}; font-weight: ${lang === 'en' ? 400 : 300};`}>EN</a>
     </div>
     <button class="theme-btn" id="themeBtn" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro">
       <span class="icon-light">☀</span>

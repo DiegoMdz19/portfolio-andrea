@@ -133,37 +133,33 @@ let _tapTimer = null;
 function initAdminTriggers(){
   const logo = document.querySelector('.nav-logo');
   if(logo){
-    let lastTapTime = 0;
-    
+    let lastHandledAt = 0;
     const handleAction = (e) => {
       const now = Date.now();
-      // Anti-bounce y doble fuego (touch + click)
-      if(now - lastTapTime < 200) return;
-      lastTapTime = now;
+      if(now - lastHandledAt < 150) return; // Debounce
+      lastHandledAt = now;
 
+      if(e) e.preventDefault(); // Siempre prevenimos para controlar nosotros
+      
       _tapCount++;
       clearTimeout(_tapTimer);
 
-      // Si detectamos intención de admin (más de 1 tap), bloqueamos el link
-      if(_tapCount >= 2) {
-        if(e) e.preventDefault();
-      }
-
-      _tapTimer = setTimeout(() => {
-        if(_tapCount >= 3) {
-          if(e) e.preventDefault();
-          askAdminPass();
-        } else if(_tapCount === 1) {
-          // El navegador seguirá el href naturalmente si no prevenimos default
-          // o podemos forzarlo si detectamos que e.preventDefault() se llamó arriba
-        }
+      if(_tapCount >= 3) {
+        askAdminPass();
         _tapCount = 0;
-      }, 400);
+      } else {
+        _tapTimer = setTimeout(() => {
+          if(_tapCount === 1) {
+            const href = logo.getAttribute('href');
+            if(href && href !== '#') window.location.href = href;
+          }
+          _tapCount = 0;
+        }, 400);
+      }
     };
 
-    // Usar click para desktop y touchend para móvil (más rápido)
     logo.onclick = handleAction;
-    logo.addEventListener('touchend', handleAction, { passive: false });
+    logo.ontouchend = handleAction;
   }
 }
 
