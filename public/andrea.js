@@ -347,6 +347,10 @@ let trailFrameId = null;
 document.addEventListener('mousemove', e => { 
   mx = e.clientX; 
   my = e.clientY; 
+  if(cursor){
+    cursor.style.setProperty('--cx', mx + 'px');
+    cursor.style.setProperty('--cy', my + 'px');
+  }
   trail.push({ x: e.clientX, y: e.clientY, life: 1 });
   if(trail.length > MAX_TRAIL) trail.shift();
 });
@@ -380,8 +384,9 @@ function drawTrail(){
 }
 
 function anim(){
-  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
-  if(cursor){ cursor.style.setProperty('--cx', mx + 'px'); cursor.style.setProperty('--cy', my + 'px'); }
+  rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
+  // El dot se actualiza en mousemove para latencia cero.
+  // El ring y el label siguen con suavizado.
   if(ring)  { ring.style.setProperty('--cx', rx + 'px'); ring.style.setProperty('--cy', ry + 'px'); }
   if(label) { label.style.setProperty('--cx', rx + 'px'); label.style.setProperty('--cy', ry + 'px'); }
   animFrameId = requestAnimationFrame(anim);
@@ -1272,8 +1277,6 @@ async function addVideoAdmin(){
   const src    = pendingVideoUrl || document.getElementById('vid-src')?.value.trim();
   const titulo = document.getElementById('vid-new-titulo').value.trim();
   const desc   = document.getElementById('vid-new-desc').value.trim();
-  const cat    = document.getElementById('vid-cat').value.trim() || 'Dron';
-  const subcat = document.getElementById('vid-subcat').value.trim();
   if(!src){ showToast('Sube un vídeo primero.', { title:'Vídeo requerido', icon:'🎬' }); return; }
 
   try {
@@ -1281,7 +1284,6 @@ async function addVideoAdmin(){
       src,
       titulo,
       desc,
-      cat: cat + (subcat ? ' · ' + subcat : ''),
       created: Date.now()
     });
 
@@ -1289,7 +1291,7 @@ async function addVideoAdmin(){
 
     // Limpiar
     pendingVideoUrl = null;
-    ['vid-src','vid-new-titulo','vid-new-desc','vid-cat','vid-subcat'].forEach(id => {
+    ['vid-src','vid-new-titulo','vid-new-desc'].forEach(id => {
       const el = document.getElementById(id);
       if(el) el.value = '';
     });
@@ -1351,7 +1353,6 @@ async function renderPublicVideos(){
           <div class="play-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
         </div>
         <div class="video-info">
-          <span class="video-category">${esc(v.cat) || 'Dron'}</span>
           <h3 class="video-title">${esc(title)}</h3>
           <p class="video-desc">${esc(desc)}</p>
         </div>`;
@@ -1572,11 +1573,7 @@ const SECTION_CONTENT = {
       <div><label class="admin-label">Título</label><input id="vid-new-titulo" type="text" class="admin-input" placeholder="Título"></div>
       <div><label class="admin-label">Descripción</label><input id="vid-new-desc" type="text" class="admin-input" placeholder="Descripción breve"></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;margin-bottom:20px;">
-      <div><label class="admin-label">Categoría</label><input id="vid-cat" type="text" class="admin-input" placeholder="Dron · Cinematográfico"></div>
-      <div><label class="admin-label">Subcategoría</label><input id="vid-subcat" type="text" class="admin-input" placeholder="Costa, Ciudad..."></div>
-      <div style="display:flex;align-items:flex-end;"><button onclick="addVideoAdmin()" class="admin-btn">Añadir ✓</button></div>
-    </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:20px;"><button onclick="addVideoAdmin()" class="admin-btn">Añadir ✓</button></div>
     <div id="admin-video-list" style="display:flex;flex-direction:column;gap:8px;"></div>`,
 
   servicios: () => `

@@ -546,10 +546,8 @@ const t = useTranslations(lang);
               <div><label class="admin-label">Título</label><input id="vid-new-titulo" type="text" class="admin-input" placeholder="Título"></div>
               <div><label class="admin-label">Descripción</label><input id="vid-new-desc" type="text" class="admin-input" placeholder="Descripción breve"></div>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:14px;margin-bottom:24px;">
-              <div><label class="admin-label">Categoría</label><input id="vid-cat" type="text" class="admin-input" placeholder="Dron · Cinematográfico"></div>
-              <div><label class="admin-label">Subcategoría</label><input id="vid-subcat" type="text" class="admin-input" placeholder="Costa, Ciudad..."></div>
-              <div style="display:flex;align-items:flex-end;"><button onclick="addVideoAdmin()" class="admin-btn">Añadir ✓</button></div>
+            <div style="display:flex;justify-content:flex-end;margin-bottom:24px;">
+              <button onclick="addVideoAdmin()" class="btn-submit" style="padding:12px 32px;">Añadir ✓</button>
             </div>
             <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:16px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Vídeos actuales</p>
             <div id="admin-video-list" style="display:flex;flex-direction:column;gap:10px;"></div>
