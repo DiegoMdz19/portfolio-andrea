@@ -77,6 +77,9 @@ document.addEventListener('astro:page-load', () => {
   // Re-capturar elementos globales que cambian con la página
   initGlobalElements();
   
+  // Aplicar visibilidad de secciones (ADMIN)
+  if(typeof applySectionVisibility === 'function') applySectionVisibility();
+  
   // Reinicializar TODO lo necesario tras navegación
   loadConfigFromFirebase();
   initMagneticElements();
@@ -98,13 +101,23 @@ document.addEventListener('astro:page-load', () => {
   initAdminTriggers();
   
   // Re-observar todo (reveals, secciones, lazy loading)
-  if(typeof revealObs !== 'undefined'){
-    document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
-  }
-  if(typeof sectionObsStrong !== 'undefined'){
-    document.querySelectorAll('#sobre, #galeria, #videos, #servicios, #proceso, #testimonios, #contacto').forEach(sec => sectionObsStrong.observe(sec));
-  }
-  
+  setTimeout(() => {
+    if(typeof revealObs !== 'undefined'){
+      document.querySelectorAll('.reveal').forEach(el => {
+        revealObs.unobserve(el);
+        revealObs.observe(el);
+      });
+    }
+    if(typeof sectionObsStrong !== 'undefined'){
+      document.querySelectorAll('#sobre, #galeria, #videos, #servicios, #proceso, #testimonios, #contacto').forEach(sec => {
+        sectionObsStrong.unobserve(sec);
+        sectionObsStrong.observe(sec);
+      });
+    }
+    // Forzar evento de scroll para elementos visibles en pantalla
+    window.dispatchEvent(new Event('scroll'));
+  }, 200);
+
   // Reiniciar estado de vídeos y otros elementos dinámicos
   initVideoObserver();
   initLazyLoading();
@@ -120,23 +133,37 @@ let _tapTimer = null;
 function initAdminTriggers(){
   const logo = document.querySelector('.nav-logo');
   if(logo){
-    const handleTap = (e) => {
-      if(e) e.preventDefault(); // Evitar recarga/navegación al hacer tapping rápido
+    let lastTapTime = 0;
+    
+    const handleAction = (e) => {
+      const now = Date.now();
+      // Anti-bounce y doble fuego (touch + click)
+      if(now - lastTapTime < 200) return;
+      lastTapTime = now;
+
       _tapCount++;
       clearTimeout(_tapTimer);
+
+      // Si detectamos intención de admin (más de 1 tap), bloqueamos el link
+      if(_tapCount >= 2) {
+        if(e) e.preventDefault();
+      }
+
       _tapTimer = setTimeout(() => {
         if(_tapCount >= 3) {
+          if(e) e.preventDefault();
           askAdminPass();
         } else if(_tapCount === 1) {
-          // Si solo fue 1 click normal, navegar al home si es un link
-          const href = logo.getAttribute('href');
-          if(href && href !== '#') window.location.href = href;
+          // El navegador seguirá el href naturalmente si no prevenimos default
+          // o podemos forzarlo si detectamos que e.preventDefault() se llamó arriba
         }
         _tapCount = 0;
       }, 400);
     };
-    logo.onclick = handleTap;
-    logo.ontouchend = handleTap;
+
+    // Usar click para desktop y touchend para móvil (más rápido)
+    logo.onclick = handleAction;
+    logo.addEventListener('touchend', handleAction, { passive: false });
   }
 }
 
