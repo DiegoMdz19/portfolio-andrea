@@ -375,9 +375,9 @@ function drawTrail(){
 
 function anim(){
   rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
-  if(cursor){ cursor.style.left = mx + 'px'; cursor.style.top = my + 'px'; }
-  if(ring)  { ring.style.left   = rx + 'px'; ring.style.top   = ry + 'px'; }
-  if(label) { label.style.left  = rx + 'px'; label.style.top  = ry + 'px'; }
+  if(cursor){ cursor.style.setProperty('--cx', mx + 'px'); cursor.style.setProperty('--cy', my + 'px'); }
+  if(ring)  { ring.style.setProperty('--cx', rx + 'px'); ring.style.setProperty('--cy', ry + 'px'); }
+  if(label) { label.style.setProperty('--cx', rx + 'px'); label.style.setProperty('--cy', ry + 'px'); }
   animFrameId = requestAnimationFrame(anim);
 }
 
