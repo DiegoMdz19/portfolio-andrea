@@ -95,7 +95,23 @@ document.addEventListener('astro:page-load', () => {
 
   // Vincular eventos de navegación y UI
   bindUIEvents();
-  initAdminTriggers(); // 👈 NUEVO: Manejar 3 clics en logo y atajos de teclado
+  initAdminTriggers();
+  
+  // Re-observar todo (reveals, secciones, lazy loading)
+  if(typeof revealObs !== 'undefined'){
+    document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+  }
+  if(typeof sectionObsStrong !== 'undefined'){
+    document.querySelectorAll('#sobre, #galeria, #videos, #servicios, #proceso, #testimonios, #contacto').forEach(sec => sectionObsStrong.observe(sec));
+  }
+  
+  // Reiniciar estado de vídeos y otros elementos dinámicos
+  initVideoObserver();
+  initLazyLoading();
+  
+  // Reiniciar porcentaje si el loader vuelve a salir
+  const pctText = document.getElementById('loaderPct');
+  if(pctText) pctText.textContent = '0%';
 });
 
 let _tapCount = 0;
@@ -1421,9 +1437,11 @@ async function renderPublicVideos(){
       card.dataset.desc  = desc;
       card.innerHTML = `
         <div class="video-thumb" style="background:#000;">
-          <video muted loop playsinline preload="metadata" class="video-auto-preview" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.8;"
+          <video muted loop playsinline preload="auto" class="video-auto-preview" 
+            poster="${v.src.includes('cloudinary.com') ? v.src.replace('/upload/', '/upload/so_0,f_jpg,q_auto/') : fixPath(v.src.replace(/\.[^.]+$/, '.jpg'))}"
+            style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.8;"
             onmouseenter="this.play()" onmouseleave="this.pause()">
-            <source src="${fixPath(v.src)}" type="video/mp4">
+            <source src="${fixPath(v.src)}#t=0.001" type="video/mp4">
           </video>
           <div class="play-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
         </div>
