@@ -74,6 +74,9 @@ function initMagneticElements(){
 
 // ── ASTRO TRANSITIONS RE-INIT ──
 document.addEventListener('astro:page-load', () => {
+  // Re-capturar elementos globales que cambian con la página
+  initGlobalElements();
+  
   // Reinicializar TODO lo necesario tras navegación
   loadConfigFromFirebase();
   initMagneticElements();
@@ -89,7 +92,83 @@ document.addEventListener('astro:page-load', () => {
   if(window.lenis && typeof window.lenis.scrollTo === 'function') {
       window.lenis.scrollTo(0, { immediate: true });
   }
+
+  // Vincular eventos de navegación y UI
+  bindUIEvents();
 });
+
+function initGlobalElements(){
+  // Estas variables ahora se actualizan en cada carga de página
+  cursor = document.getElementById('cursor');
+  ring   = document.getElementById('cursorRing');
+  label  = document.getElementById('cursorLabel');
+  trailCanvas = document.getElementById('trail-canvas');
+  if(trailCanvas){ tc = trailCanvas.getContext('2d'); resizeCanvas(); }
+}
+
+function bindUIEvents(){
+  const themeBtn = document.getElementById('themeBtn');
+  if(themeBtn){
+    // Usamos onclick o removeEventListener para evitar duplicados si el script persistiera erróneamente
+    themeBtn.onclick = () => {
+      const t = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('alr_theme', t);
+    };
+  }
+
+  const hamburger  = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  if(hamburger && mobileMenu){
+    hamburger.onclick = () => {
+      hamburger.classList.toggle('open');
+      mobileMenu.classList.toggle('open');
+      document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : '';
+    };
+    
+    document.querySelectorAll('.mobile-link').forEach(a => {
+      a.onclick = () => {
+        hamburger.classList.remove('open');
+        mobileMenu.classList.remove('open');
+        document.body.style.overflow = '';
+      };
+    });
+  }
+
+  // Cursor events
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => setCursorHover(true));
+    el.addEventListener('mouseleave', () => setCursorHover(false));
+  });
+  document.querySelectorAll('.gallery-item').forEach(el => {
+    el.addEventListener('mouseenter', () => setCursorView(window.t('lightbox.view') || 'Ver'));
+    el.addEventListener('mouseleave', () => setCursorView(null));
+  });
+  document.querySelectorAll('.video-card').forEach(el => {
+    el.addEventListener('mouseenter', () => setCursorView('Play'));
+    el.addEventListener('mouseleave', () => setCursorView(null));
+  });
+
+  // Dark sections cursor
+  const darkSections = document.querySelectorAll('#hero, #galeria, #contacto, #loader');
+  darkSections.forEach(s => {
+    s.onmouseenter = () => { if(cursor) cursor.classList.add('on-dark'); if(ring) ring.classList.add('on-dark'); };
+    s.onmouseleave = () => { if(cursor) cursor.classList.remove('on-dark'); if(ring) ring.classList.remove('on-dark'); };
+  });
+
+  // Smooth scroll links
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.onclick = e => {
+      const id = a.getAttribute('href');
+      if(id === '#') return;
+      const target = document.querySelector(id);
+      if(!target) return;
+      e.preventDefault();
+      const offset = target.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top: offset, behavior: 'smooth' });
+    };
+  });
+}
 
 
 
@@ -321,15 +400,9 @@ function hideLoader(){
   if(window._stopLoaderParticles) window._stopLoaderParticles();
 }
 
-// ── TEMA CLARO / OSCURO
-const themeBtn = document.getElementById('themeBtn');
+// Inicialización de tema (sin listeners globales atascados)
 const savedTheme = localStorage.getItem('alr_theme') || 'light';
 document.documentElement.setAttribute('data-theme', savedTheme);
-themeBtn.addEventListener('click', () => {
-  const t = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-  document.documentElement.setAttribute('data-theme', t);
-  localStorage.setItem('alr_theme', t);
-});
 
 // ── CURSOR ───────────────────────────────────────────────────────────────────
 let cursor = null;
@@ -408,65 +481,7 @@ function setCursorView(text){
   }
 }
 
-document.addEventListener('astro:page-load', () => {
-  // Re-capturar elementos del Layout (aunque ya existan, por seguridad si Astro hiciera algo raro)
-  cursor = document.getElementById('cursor');
-  ring   = document.getElementById('cursorRing');
-  label  = document.getElementById('cursorLabel');
-  trailCanvas = document.getElementById('trail-canvas');
-  if(trailCanvas){ tc = trailCanvas.getContext('2d'); resizeCanvas(); }
-
-  // Iniciar bucles si no están ya en marcha
-  if(!animFrameId) anim();
-  if(!trailFrameId) drawTrail();
-
-  // Resetear clases por defecto para el loader (siempre fondo oscuro al inicio)
-  if(cursor){ cursor.classList.add('on-dark'); cursor.classList.remove('hover','view'); }
-  if(ring)  { ring.classList.add('on-dark'); ring.classList.remove('hover','view'); }
-
-  // Vincular eventos a la NUEVA página cargada
-  document.querySelectorAll('a, button').forEach(el => {
-    el.addEventListener('mouseenter', () => setCursorHover(true));
-    el.addEventListener('mouseleave', () => setCursorHover(false));
-  });
-  document.querySelectorAll('.gallery-item').forEach(el => {
-    el.addEventListener('mouseenter', () => setCursorView('Ver'));
-    el.addEventListener('mouseleave', () => setCursorView(null));
-  });
-  document.querySelectorAll('.video-card').forEach(el => {
-    el.addEventListener('mouseenter', () => setCursorView('Play'));
-    el.addEventListener('mouseleave', () => setCursorView(null));
-  });
-  
-  // Secciones con fondo oscuro
-  const darkSections = document.querySelectorAll('#hero, #galeria, #contacto, #loader');
-  darkSections.forEach(s => {
-    s.addEventListener('mouseenter', () => { if(cursor) cursor.classList.add('on-dark'); if(ring) ring.classList.add('on-dark'); });
-    s.addEventListener('mouseleave', () => { if(cursor) cursor.classList.remove('on-dark'); if(ring) ring.classList.remove('on-dark'); });
-  });
-
-  // ── HAMBURGUESA MÓVIL ────────────────────────────────────────────────────────
-  const hamburger  = document.getElementById('hamburger');
-  const mobileMenu = document.getElementById('mobileMenu');
-  if(hamburger && mobileMenu){
-    // Limpiar eventos por si acaso clonando
-    const newHam = hamburger.cloneNode(true);
-    hamburger.replaceWith(newHam);
-    newHam.addEventListener('click', () => {
-      newHam.classList.toggle('open');
-      mobileMenu.classList.toggle('open');
-      document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : '';
-    });
-    
-    document.querySelectorAll('.mobile-link').forEach(a => {
-      a.addEventListener('click', () => {
-        newHam.classList.remove('open');
-        mobileMenu.classList.remove('open');
-        document.body.style.overflow = '';
-      });
-    });
-  }
-});
+// El bloque astro:page-load anterior ya maneja la captura de estos elementos y vinculación de eventos.
 
 // ── NAVBAR SCROLL ─────────────────────────────────────────────────────────
 window.addEventListener('scroll', () => {
@@ -523,18 +538,7 @@ document.querySelectorAll('#sobre, #galeria, #videos, #contacto').forEach(sec =>
   sectionObs.observe(sec);
 });
 
-// Links de nav con scroll suave y offset para la navbar
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener('click', e => {
-    const id = a.getAttribute('href');
-    if(id === '#') return;
-    const target = document.querySelector(id);
-    if(!target) return;
-    e.preventDefault();
-    const offset = target.getBoundingClientRect().top + window.scrollY - 80;
-    window.scrollTo({ top: offset, behavior: 'smooth' });
-  });
-});
+// Manejado en bindUIEvents() dentro de astro:page-load
 
 // ── MULTIMEDIA — TÍTULOS Y DESCRIPCIONES ─────────────────────────────────────
 function filtrarMultimedia(q){

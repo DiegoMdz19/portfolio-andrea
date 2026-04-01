@@ -1546,3 +1546,104 @@ svg.liquid-filter {
   font-size:10px;padding:6px;border-radius:2px;outline:none;width:100%;
 }
 .apc-exif-fields input:focus{border-color:var(--warm);}
+
+/* ── ADMIN RESPONSIVE ── */
+@media(max-width: 768px) {
+  #admin-overlay {
+    padding: 0;
+  }
+  .admin-wrap {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    padding: 80px 16px 40px !important;
+    margin: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+  }
+  
+  #admin-stats-wrap {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    margin-bottom: 24px !important;
+  }
+
+  .admin-tabs {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 8px !important;
+    padding-bottom: 4px !important;
+    scrollbar-width: none;
+  }
+  .admin-tabs::-webkit-scrollbar { display: none; }
+  
+  .admin-tab {
+    flex-shrink: 0 !important;
+    padding: 12px 14px !important;
+    font-size: 0.62rem !important;
+    white-space: nowrap !important;
+  }
+
+  /* Forzar 1 sola columna en grids de admin, incluyendo estilos inline */
+  .admin-wrap div[style*="display:grid"],
+  .admin-wrap div[style*="display: grid"],
+  .admin-grid, 
+  .admin-photo-grid,
+  .apc-content div[style*="display:grid"],
+  #admin-config,
+  #admin-secciones,
+  #admin-multimedia,
+  #admin-stats-wrap {
+    grid-template-columns: 1fr !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+  
+  /* Sidebar stacking (Pestañas internas de Secciones/Configuración) */
+  #sec-sidebar, 
+  .admin-sidebar, 
+  #admin-config > div:first-child,
+  #admin-secciones > div:first-child,
+  #admin-multimedia > div:first-child {
+     width: 100% !important;
+     max-width: 100% !important;
+     border-right: none !important;
+     padding-right: 0 !important;
+     margin-bottom: 20px !important;
+     flex-direction: row !important;
+     display: flex !important;
+     overflow-x: auto !important;
+     gap: 10px !important;
+     padding-bottom: 12px !important;
+     border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+  }
+  
+  #sec-sidebar > div,
+  #admin-config > div:first-child > button,
+  .sec-menu-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .admin-heading {
+    font-size: 1.4rem !important;
+  }
+  .admin-sub {
+    font-size: 0.58rem !important;
+    margin-bottom: 24px !important;
+  }
+  
+  .admin-btn {
+    width: 100%;
+    text-align: center;
+    padding: 14px !important;
+  }
+  
+  /* Ajuste de inputs para evitar zoom en iOS y mejorar legibilidad */
+  .admin-input, .apc-field input, .apc-field select, textarea.admin-input {
+    font-size: 16px !important; 
+    padding: 12px !important;
+  }
+}
