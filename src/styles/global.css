@@ -175,6 +175,7 @@ html,body,*,*::before,*::after{
   width:160px;height:1px;
   background:rgba(245,242,237,.05);
   overflow:hidden;margin-top:28px;position:relative;z-index:1;
+  opacity:0;animation:fadeUp .5s 1.3s forwards; /* Sincronizar con el porcentaje */
 }
 .loader-bar{
   height:100%;width:0%;

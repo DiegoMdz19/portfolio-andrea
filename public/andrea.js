@@ -104,11 +104,18 @@ let _tapTimer = null;
 function initAdminTriggers(){
   const logo = document.querySelector('.nav-logo');
   if(logo){
-    const handleTap = () => {
+    const handleTap = (e) => {
+      if(e) e.preventDefault(); // Evitar recarga/navegación al hacer tapping rápido
       _tapCount++;
       clearTimeout(_tapTimer);
       _tapTimer = setTimeout(() => {
-        if(_tapCount >= 3) askAdminPass();
+        if(_tapCount >= 3) {
+          askAdminPass();
+        } else if(_tapCount === 1) {
+          // Si solo fue 1 click normal, navegar al home si es un link
+          const href = logo.getAttribute('href');
+          if(href && href !== '#') window.location.href = href;
+        }
         _tapCount = 0;
       }, 400);
     };
@@ -193,6 +200,7 @@ function bindUIEvents(){
   initLazyLoading();
   initGalleryItemMove();
   initTestimoniosCarousel();
+  initVideoObserver();
   
   // Sobre Carousel Navigation
   const sPrev = document.getElementById('sobrePrev');
@@ -1413,8 +1421,8 @@ async function renderPublicVideos(){
       card.dataset.desc  = desc;
       card.innerHTML = `
         <div class="video-thumb" style="background:#000;">
-          <video muted loop playsinline preload="metadata" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.8;"
-            onmouseenter="this.play()" onmouseleave="this.pause()" ontouchstart="this.play()" ontouchend="this.pause()">
+          <video muted loop playsinline preload="metadata" class="video-auto-preview" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.8;"
+            onmouseenter="this.play()" onmouseleave="this.pause()">
             <source src="${fixPath(v.src)}" type="video/mp4">
           </video>
           <div class="play-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
@@ -1440,6 +1448,7 @@ async function renderPublicVideos(){
     if(typeof revealObs !== 'undefined'){
       grid.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
     }
+    initVideoObserver();
   } catch(e) {
     console.error('Error cargando vídeos públicos:', e);
   }
@@ -3309,6 +3318,27 @@ function initLazyLoading(){
     const src = img.getAttribute('src');
     if(src && !img.dataset.src){ img.dataset.src=src; img.removeAttribute('src'); lazyObs.observe(img); }
   });
+}
+
+// ── VIDEO AUTO-PLAY OBSERVER ────────────────────────────────────────────────
+function initVideoObserver(){
+  const videos = document.querySelectorAll('video.video-auto-preview');
+  if(!videos.length) return;
+  
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const v = entry.target;
+      if(entry.isIntersecting){
+        v.play().catch(()=>{});
+        v.style.opacity = '1';
+      } else {
+        v.pause();
+        v.style.opacity = '0.8';
+      }
+    });
+  }, { threshold: 0.5 }); // Juega cuando el 50% es visible
+
+  videos.forEach(v => obs.observe(v));
 }
 
 // ── SONIDO AMBIENTE MEJORADO CON REVERB ──────────────────────────────────────
