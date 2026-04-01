@@ -437,7 +437,7 @@ html,body,*,*::before,*::after{
 .gallery-item:hover .gallery-item-overlay{opacity:1;}
 .gallery-item-label{font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:#f0ece4;font-weight:300;}
 @media(max-width:900px){.gallery-grid{columns:2;}}
-@media(max-width:480px){.gallery-grid{columns:1;}}
+@media(max-width:480px){.gallery-grid{columns:2;column-gap:2px;}.gallery-item{margin-bottom:2px;}}
 
 /* ── LIGHTBOX ── */
 .lightbox{
