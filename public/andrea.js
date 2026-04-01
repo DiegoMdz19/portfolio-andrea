@@ -764,19 +764,7 @@ if(savedPass) window._adminPass = savedPass;
 
 // activeFilter ya está definido globalmente arriba
 
-function applyFilter(filter){
-  activeFilter = filter;
-  document.querySelectorAll('.gallery-filter button').forEach(b => {
-    b.classList.toggle('active', b.dataset.filter === filter);
-  });
-  document.querySelectorAll('.gallery-item').forEach(item => {
-    const match = filter === 'all' || item.dataset.cat === filter;
-    item.style.opacity   = match ? '1' : '0.15';
-    item.style.transform = match ? '' : 'scale(0.96)';
-    item.style.transition = 'opacity .4s, transform .4s';
-    item.style.pointerEvents = match ? '' : 'none';
-  });
-}
+// applyFilter implementado más abajo con soporte de carpetas
 document.querySelectorAll('.gallery-filter button').forEach(btn => {
   btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
 });
@@ -1177,7 +1165,7 @@ document.getElementById('privacy-modal').addEventListener('click', e => {
   if(e.target === e.currentTarget) closePrivacy();
 });
 
-function showAlert(text, options = {}){
+function showToast(text, options = {}){
   const msg = document.createElement('div');
   msg.className = 'custom-alert';
   msg.innerHTML = `<span>${options.icon || '✨'}</span> ${text}`;
@@ -1213,9 +1201,9 @@ function importConfig(e){
       if(cfg.textos) { localStorage.setItem('alr_textos', JSON.stringify(cfg.textos)); applyTextos(loadTextos()); saveConfigToFirebase('textos', cfg.textos); }
       if(cfg.contacto) { localStorage.setItem('alr_contacto', JSON.stringify(cfg.contacto)); applyContacto(cfg.contacto); saveConfigToFirebase('contacto', cfg.contacto); }
       if(cfg.multimedia) { localStorage.setItem('alr_multimedia', JSON.stringify(cfg.multimedia)); applyMultimedia(); saveConfigToFirebase('multimedia', cfg.multimedia); }
-      showAlert('Configuración importada ✓', { icon:'✅' });
+      showToast('Configuración importada ✓', { icon:'✅' });
     } catch(err) {
-      showAlert('Error al importar.', { icon:'✗' });
+      showToast('Error al importar.', { icon:'✗' });
     }
   };
   reader.readAsText(file);
@@ -1280,7 +1268,7 @@ async function addVideoAdmin(){
   const desc   = document.getElementById('vid-new-desc').value.trim();
   const cat    = document.getElementById('vid-cat').value.trim() || 'Dron';
   const subcat = document.getElementById('vid-subcat').value.trim();
-  if(!src){ showAlert('Sube un vídeo primero.', { title:'Vídeo requerido', icon:'🎬' }); return; }
+  if(!src){ showToast('Sube un vídeo primero.', { title:'Vídeo requerido', icon:'🎬' }); return; }
 
   try {
     await db.collection('videos').add({
@@ -1291,7 +1279,7 @@ async function addVideoAdmin(){
       created: Date.now()
     });
 
-    showAlert('Vídeo añadido correctamente.', { title:'¡Hecho!', icon:'🎬' });
+    showToast('Vídeo añadido correctamente.', { title:'¡Hecho!', icon:'🎬' });
 
     // Limpiar
     pendingVideoUrl = null;
@@ -1307,7 +1295,7 @@ async function addVideoAdmin(){
     loadVideoAdmin();
     renderPublicVideos();
   } catch(e) {
-    showAlert('Error al añadir el vídeo.', { title:'Error', icon:'✗' });
+    showToast('Error al añadir el vídeo.', { title:'Error', icon:'✗' });
     console.error(e);
   }
 }
@@ -1319,7 +1307,7 @@ function removeVideo(docId){
       loadVideoAdmin();
       renderPublicVideos();
     } catch(e) {
-      showAlert('Error al eliminar el vídeo.', { title:'Error', icon:'✗' });
+      showToast('Error al eliminar el vídeo.', { title:'Error', icon:'✗' });
       console.error(e);
     }
   }, { title:'Eliminar vídeo', icon:'🎬' });
@@ -1804,7 +1792,7 @@ function deleteSobrePhoto(docId){
       await db.collection('sobre_photos').doc(docId).delete();
       renderAdminSobrePhotos();
       renderSobreCarousel();
-    } catch(e){ showAlert('Error al eliminar.', {title:'Error',icon:'✗'}); }
+    } catch(e){ showToast('Error al eliminar.', {title:'Error',icon:'✗'}); }
   }, { title:'Eliminar foto', icon:'🗑' });
 }
 
@@ -1820,7 +1808,7 @@ function loadHeroForm(){
 function saveHeroConfig(){
   const type = document.getElementById('hero-type')?.value || 'video';
   const src  = document.getElementById('hero-src')?.value.trim() || '';
-  if(!src){ showAlert('Indica la URL del vídeo o imagen.', {title:'Falta URL', icon:'📎'}); return; }
+  if(!src){ showToast('Indica la URL del vídeo o imagen.', {title:'Falta URL', icon:'📎'}); return; }
   const cfg = { type, src };
   localStorage.setItem('alr_hero', JSON.stringify(cfg));
   applyHeroMedia(cfg);
@@ -2441,7 +2429,7 @@ function handleFiles(files){
 // ── GUARDAR FOTO (con soporte de carpetas) ──────────────────────────────
 async function addPhoto(){
   if(!pendingFileUrl){
-    showAlert('La imagen aún se está subiendo. Espera un momento.', { title:'Espera', icon:'⏳' });
+    showToast('La imagen aún se está subiendo. Espera un momento.', { title:'Espera', icon:'⏳' });
     return;
   }
   const folderId = document.getElementById('newFolder')?.value || null;
@@ -2454,7 +2442,7 @@ async function addPhoto(){
       exif:        pendingExif || null,
       created:     Date.now()
     });
-    showAlert('Foto añadida correctamente.', { title:'¡Hecho!', icon:'🔥' });
+    showToast('Foto añadida correctamente.', { title:'¡Hecho!', icon:'🔥' });
     pendingFile    = null;
     pendingFileUrl = null;
     const preview   = document.getElementById('previewImg');  if(preview) preview.src = '';
@@ -2466,7 +2454,7 @@ async function addPhoto(){
     renderPublicGallery();
     loadPublicFolderFilters(); // Render new public filters
   } catch(e) {
-    showAlert('Error al guardar la foto.', { title:'Error', icon:'✗' });
+    showToast('Error al guardar la foto.', { title:'Error', icon:'✗' });
     console.error(e);
   }
 }
@@ -2574,10 +2562,10 @@ async function assignPhotoToFolder(photoId, folderId){
     renderPublicGallery();
     loadPublicFolderFilters();
     // Feedback visual pequeño para confirmar que se ha guardado
-    showAlert('Carpeta actualizada', { title:'Info', icon:'📁', timeout: 1000 });
+    showToast('Carpeta actualizada', { title:'Info', icon:'📁', timeout: 1000 });
   } catch(e){
     console.error('Error asignando carpeta:', e);
-    showAlert('Error al asignar carpeta.', { title:'Error', icon:'✗' });
+    showToast('Error al asignar carpeta.', { title:'Error', icon:'✗' });
   }
 }
 
@@ -2597,7 +2585,7 @@ function deletePhoto(docId){
       renderAdminGallery();
       renderPublicGallery();
     } catch(e) {
-      showAlert('Error al eliminar la foto.', { title:'Error', icon:'✗' });
+      showToast('Error al eliminar la foto.', { title:'Error', icon:'✗' });
       console.error(e);
     }
   }, { title:'Eliminar foto', icon:'🗑' });
@@ -2615,14 +2603,7 @@ loadConfigFromFirebase();
 // ──────────────────────────────────────────────────────────────────────────────
 
 // ── CARPETAS ───────────────────────────────────────────────────────────
-function closeFolderQR(){
-  const m = document.getElementById('folder-qr-modal');
-  if(!m) return;
-  m.style.opacity = '0';
-  setTimeout(() => {
-    m.style.display = 'none';
-  }, 250);
-}
+// deduplicated closeFolderQR
 
 // _foldersCache ya está definido globalmente arriba
 
@@ -2644,7 +2625,7 @@ function invalidateFoldersCache(){ _foldersCache = null; }
 async function createFolder(){
   const input = document.getElementById('new-folder-name');
   const name  = input?.value.trim();
-  if(!name){ showAlert('Pon un nombre a la carpeta.', {title:'Nombre requerido', icon:'📁'}); return; }
+  if(!name){ showToast('Pon un nombre a la carpeta.', {title:'Nombre requerido', icon:'📁'}); return; }
   try{
     await db.collection('folders').add({ name, token: genToken(), isPublic: false, allowDownload: false, created: Date.now() });
     invalidateFoldersCache();
@@ -2653,7 +2634,7 @@ async function createFolder(){
     await loadPublicFolderFilters();
   } catch(e){
     console.error('Error creando carpeta:', e);
-    showAlert('Error al crear la carpeta. Asegúrate de estar conectado y haber iniciado sesión en el panel.', {title:'Error', icon:'✗'});
+    showToast('Error al crear la carpeta. Asegúrate de estar conectado y haber iniciado sesión en el panel.', {title:'Error', icon:'✗'});
   }
 }
 
@@ -2779,7 +2760,7 @@ function copyQrUrl(){
   navigator.clipboard.writeText(val).then(() => {
     const btn = document.getElementById('qr-copy-btn');
     if(btn){ btn.textContent = '✓ Copiado'; setTimeout(() => btn.textContent = 'Copiar', 2000); }
-  }).catch(() => showAlert('No se pudo copiar. Copia manualmente el enlace.', {title:'Copiar', icon:'🔗'}));
+  }).catch(() => showToast('No se pudo copiar. Copia manualmente el enlace.', {title:'Copiar', icon:'🔗'}));
 }
 
 let _loadingFolderFilters = false;
@@ -2998,7 +2979,7 @@ async function toggleFavorite(photoId, btn) {
     btn.classList.toggle('active');
     svg.setAttribute('fill', isActive ? '#c87a6a' : 'none');
     svg.setAttribute('stroke', isActive ? '#c87a6a' : 'currentColor');
-    showAlert(window.t('error.fav') || 'Error de conexión o permisos al guardar favorito.', {title: 'Error', icon: '✗'});
+    showToast(window.t('error.fav') || 'Error de conexión o permisos al guardar favorito.', {title: 'Error', icon: '✗'});
   }
 }
 
@@ -4095,10 +4076,10 @@ async function autoTranslateTitle(photoId, btn){
       }
     }
 
-    showAlert('Traducción aplicada ✨', { icon:'✅', timeout: 1500 });
+    showToast('Traducción aplicada ✨', { icon:'✅', timeout: 1500 });
   } catch(e){
     console.error('Error traduciendo:', e);
-    showAlert('Error al traducir', { title:'Error', icon:'✗' });
+    showToast('Error al traducir', { title:'Error', icon:'✗' });
   } finally {
     btn.classList.remove('loading');
     btn.textContent = oldTxt;
@@ -4160,11 +4141,11 @@ async function autoTranslateVideo(videoId, btn){
 
     if(Object.keys(updates).length > 0){
       await db.collection('videos').doc(videoId).update(updates);
-      showAlert('Traducción de vídeo lista ✨', { icon:'✅', timeout: 1500 });
+      showToast('Traducción de vídeo lista ✨', { icon:'✅', timeout: 1500 });
     }
   } catch(e){
     console.error(e);
-    showAlert('Error al traducir vídeo', { title:'Error', icon:'✗' });
+    showToast('Error al traducir vídeo', { title:'Error', icon:'✗' });
   } finally {
     btn.style.opacity = '1';
     btn.textContent = '✨';
