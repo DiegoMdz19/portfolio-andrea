@@ -103,6 +103,12 @@ function esc(s){
   return d.innerHTML;
 }
 
+function fixPath(p){
+  if(!p) return '';
+  if(p.startsWith('http') || p.startsWith('/') || p.startsWith('data:')) return p;
+  return '/' + p;
+}
+
 // ── SHA-256 (Web Crypto API) ──────────────────────────────────────────────────
 async function sha256(text){
   const data = new TextEncoder().encode(text);
@@ -1340,7 +1346,7 @@ async function renderPublicVideos(){
         <div class="video-thumb" style="background:#000;">
           <video muted loop playsinline preload="metadata" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.8;"
             onmouseenter="this.play()" onmouseleave="this.pause()" ontouchstart="this.play()" ontouchend="this.pause()">
-            <source src="${esc(v.src)}" type="video/mp4">
+            <source src="${fixPath(v.src)}" type="video/mp4">
           </video>
           <div class="play-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
         </div>
@@ -1677,7 +1683,7 @@ async function renderSobreCarousel(){
     snap.forEach(doc => photos.push({ id:doc.id, ...doc.data() }));
 
     // Fallback: si no hay fotos, usar la imagen por defecto
-    if(!photos.length) photos.push({ src:'fotos/retrato.jpeg', fallback:true });
+    if(!photos.length) photos.push({ src:'/fotos/retrato.jpeg', fallback:true });
 
     _sobreCount = photos.length;
     _sobreIdx = 0;
@@ -1686,7 +1692,7 @@ async function renderSobreCarousel(){
     photos.forEach(p => {
       const slide = document.createElement('div');
       slide.className = 'sobre-carousel-slide';
-      slide.innerHTML = `<img src="${esc(p.src)}" alt="Andrea López">`;
+      slide.innerHTML = `<img src="${fixPath(p.src)}" alt="Andrea López">`;
       track.appendChild(slide);
     });
 
@@ -1779,7 +1785,7 @@ async function renderAdminSobrePhotos(){
       const div = document.createElement('div');
       div.style.cssText = 'position:relative;aspect-ratio:4/5;overflow:hidden;border:1px solid rgba(245,242,237,.08);border-radius:2px;';
       div.innerHTML = `
-        <img src="${esc(p.src)}" style="width:100%;height:100%;object-fit:cover;">
+        <img src="${fixPath(p.src)}" style="width:100%;height:100%;object-fit:cover;">
         <button onclick="deleteSobrePhoto('${doc.id}')" style="position:absolute;top:4px;right:4px;background:rgba(180,60,40,.7);border:none;color:#fff;width:20px;height:20px;font-size:.55rem;cursor:pointer;border-radius:2px;">✕</button>`;
       grid.appendChild(div);
     });
@@ -1802,7 +1808,7 @@ function loadHeroForm(){
   const typeEl = document.getElementById('hero-type');
   const srcEl  = document.getElementById('hero-src');
   if(typeEl) typeEl.value = cfg.type || 'video';
-  if(srcEl)  srcEl.value  = cfg.src  || 'videos/hero-prueba.mp4';
+  if(srcEl)  srcEl.value  = cfg.src  || '/videos/hero-prueba.mp4';
 }
 
 function saveHeroConfig(){
@@ -3043,8 +3049,8 @@ async function openAlbumView(token){
     const optSrc = (p.src && p.src.includes('cloudinary.com') && p.src.includes('/upload/')) ? p.src.replace('/upload/', '/upload/w_800,f_auto,q_auto/') : p.src;
     div.innerHTML = `
       <picture>
-        <source srcset="${esc(optSrc)}" type="image/webp">
-        <img src="${esc(p.src)}" alt="${esc(p.titulo||'')}" loading="lazy" class="gl-image" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
+        <source srcset="${fixPath(optSrc)}" type="image/webp">
+        <img src="${fixPath(p.src)}" alt="${esc(p.titulo||'')}" loading="lazy" class="gl-image" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
       </picture>
       <div class="gallery-item-overlay" style="display:flex; justify-content:space-between; align-items:flex-end;">
         <span class="gallery-item-label">${esc(p.titulo||'')}</span>
