@@ -95,7 +95,27 @@ document.addEventListener('astro:page-load', () => {
 
   // Vincular eventos de navegación y UI
   bindUIEvents();
+  initAdminTriggers(); // 👈 NUEVO: Manejar 3 clics en logo y atajos de teclado
 });
+
+let _tapCount = 0;
+let _tapTimer = null;
+
+function initAdminTriggers(){
+  const logo = document.querySelector('.nav-logo');
+  if(logo){
+    const handleTap = () => {
+      _tapCount++;
+      clearTimeout(_tapTimer);
+      _tapTimer = setTimeout(() => {
+        if(_tapCount >= 3) askAdminPass();
+        _tapCount = 0;
+      }, 400);
+    };
+    logo.onclick = handleTap;
+    logo.ontouchend = handleTap;
+  }
+}
 
 function initGlobalElements(){
   // Estas variables ahora se actualizan en cada carga de página
@@ -109,7 +129,6 @@ function initGlobalElements(){
 function bindUIEvents(){
   const themeBtn = document.getElementById('themeBtn');
   if(themeBtn){
-    // Usamos onclick o removeEventListener para evitar duplicados si el script persistiera erróneamente
     themeBtn.onclick = () => {
       const t = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
       document.documentElement.setAttribute('data-theme', t);
@@ -168,6 +187,51 @@ function bindUIEvents(){
       window.scrollTo({ top: offset, behavior: 'smooth' });
     };
   });
+
+  // ── NUEVAS INICIALIZACIONES (RE-BIND EN CADA CARGA) ──
+  initFormValidation();
+  initLazyLoading();
+  initGalleryItemMove();
+  initTestimoniosCarousel();
+  
+  // Sobre Carousel Navigation
+  const sPrev = document.getElementById('sobrePrev');
+  const sNext = document.getElementById('sobreNext');
+  if(sPrev) sPrev.onclick = () => goSobre(_sobreIdx - 1);
+  if(sNext) sNext.onclick = () => goSobre(_sobreIdx + 1);
+
+  // Swipe support sobre
+  let sx = 0;
+  const car = document.getElementById('sobreCarousel');
+  if(car){
+    car.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, {passive:true});
+    car.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - sx;
+      if(Math.abs(dx) > 40) dx < 0 ? goSobre(_sobreIdx+1) : goSobre(_sobreIdx-1);
+    });
+  }
+
+  // Folder QR Modal Close
+  const qrModal = document.getElementById('folder-qr-modal');
+  if(qrModal) {
+    qrModal.onclick = e => { if(e.target.id === 'folder-qr-modal') closeFolderQR(); };
+  }
+
+  // Custom Modal Close
+  const customModal = document.getElementById('custom-modal');
+  if(customModal) {
+    customModal.onclick = e => { if(e.target.id === 'custom-modal') closeModal(); };
+  }
+
+  // Slideshow Btn
+  const ssBtn = document.getElementById('slideshowBtn');
+  if(ssBtn) {
+    ssBtn.onclick = () => { slideshowActive ? stopSlideshow() : startSlideshow(); };
+  }
+
+  // Admin tab indicator initial position
+  const activeTab = document.querySelector('.admin-tab.active');
+  if(activeTab) moveTabIndicator(activeTab);
 }
 
 
@@ -239,12 +303,7 @@ function closeModal(){
   m.classList.remove('open');
   setTimeout(() => m.style.display = 'none', 260);
 }
-// Cerrar con clic en fondo
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('custom-modal')?.addEventListener('click', e => {
-    if(e.target.id === 'custom-modal') closeModal();
-  });
-});
+// Cerrar con clic en fondo (manejado en bindUIEvents o init cada carga)
 
 // Reemplaza confirm() nativo
 function showConfirm(msg, onOk, { title='¿Estás segura?', icon='🗑', okLabel='Eliminar', okCls='danger' } = {}){
@@ -328,7 +387,11 @@ document.addEventListener('astro:page-load', () => {
         return; 
       }
       const t = Math.min(elapsed / duration, 1);
-      pct.textContent = Math.floor((1 - Math.pow(1-t,3)) * 100) + '%';
+      const val = Math.floor((1 - Math.pow(1-t,3)) * 100);
+      pct.textContent = val + '%';
+      const bar = document.querySelector('.loader-bar');
+      if(bar) bar.style.width = val + '%';
+      
       if(t < 1) {
         window._loaderPctAnim = requestAnimationFrame(tickPct);
       } else {
@@ -1733,22 +1796,7 @@ function goSobre(idx, instant){
   });
 }
 
-// Navigation
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('sobrePrev')?.addEventListener('click', () => goSobre(_sobreIdx - 1));
-  document.getElementById('sobreNext')?.addEventListener('click', () => goSobre(_sobreIdx + 1));
-
-  // Swipe support
-  let sx = 0;
-  const car = document.getElementById('sobreCarousel');
-  if(car){
-    car.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, {passive:true});
-    car.addEventListener('touchend', e => {
-      const dx = e.changedTouches[0].clientX - sx;
-      if(Math.abs(dx) > 40) dx < 0 ? goSobre(_sobreIdx+1) : goSobre(_sobreIdx-1);
-    });
-  }
-});
+// Manejado en bindUIEvents
 
 // ── SOBRE PHOTOS ADMIN (Firestore CRUD) ─────────────────────────────────────
 function handleSobreDrop(e){
@@ -2133,14 +2181,18 @@ function renderTestimonios(data){
   setTimeout(() => observeNewElements(document.querySelector('.testimonios-grid')), 50);
 }
 
-// Aplicar testimonios guardados al cargar
-(function(){ const d = loadTestimonios(); if(localStorage.getItem('alr_testimonios')) renderTestimonios(d); })();
+function initTestimoniosCarousel(){
+  const d = loadTestimonios();
+  if(localStorage.getItem('alr_testimonios')) renderTestimonios(d);
+}
+// Aplicar testimonios guardados al cargar inicial
+initTestimoniosCarousel();
 
 // ── ADMIN FINAL (SIMPLIFICADO) ───────────────────────────────────────────────
 const ADMIN_HASH = '074c1cbd817a1e4a5754d93409a9a6fb340f457fd933d4602114149c311adea6';
 const adminSeq = 'andrea';
 let adminBuffer = '';
-let _tapCount = 0, _tapTimer = null;
+// Variables globales ya declaradas arriba
 
 function openAdmin(){
   document.body.setAttribute('data-admin', 'true');
@@ -2205,27 +2257,7 @@ async function checkPass(){
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const logo = document.querySelector('.nav-logo');
-
-  if(!logo) return;
-
-  function handleTap() {
-    _tapCount++;
-    clearTimeout(_tapTimer);
-
-    _tapTimer = setTimeout(() => {
-      if(_tapCount >= 3) askAdminPass();
-      _tapCount = 0;
-    }, 400);
-  }
-
-  // 👉 Móvil
-  logo.addEventListener('touchend', handleTap);
-
-  // 👉 PC
-  logo.addEventListener('click', handleTap);
-});
+// Manejado en initAdminTriggers() llamado desde astro:page-load
 
 document.addEventListener('keydown', e => {
   const tag = document.activeElement.tagName;
@@ -2282,11 +2314,7 @@ function switchTab(id, el) {
   if(id === 'tab-stats')     loadStats();
 }
 
-// Inicializar indicador al abrir el panel
-document.addEventListener('DOMContentLoaded', () => {
-  const active = document.querySelector('.admin-tab.active');
-  if(active) moveTabIndicator(active);
-});
+// Inicializado en moveTabIndicator al abrir o en bindUIEvents
 
 // Sonido sutil al cambiar tab
 function playTabSound() {
@@ -2755,11 +2783,7 @@ function closeFolderQR(){
   m.style.opacity = '0';
   setTimeout(() => { m.style.display = 'none'; m.style.opacity = ''; }, 280);
 }
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('folder-qr-modal')?.addEventListener('click', e => {
-    if(e.target.id === 'folder-qr-modal') closeFolderQR();
-  });
-});
+// Manejado en bindUIEvents
 
 function copyQrUrl(){
   const val = document.getElementById('qr-url')?.value;
@@ -3246,7 +3270,8 @@ localStorage.removeItem('alr_filter');
 applyFilter('all');
 
 // ── VALIDACIÓN FORMULARIO EN TIEMPO REAL ─────────────────────────────────────
-(function(){
+// Manejado en bindUIEvents: initFormValidation();
+function initFormValidation(){
   const form = document.querySelector('.contacto-form');
   if(!form) return;
   function showError(inp, msg){
@@ -3265,10 +3290,11 @@ applyFilter('all');
     });
     inp.addEventListener('input', () => { if(inp.value.trim()) clear(inp); });
   });
-})();
+}
 
 // ── LAZY LOADING IMÁGENES ─────────────────────────────────────────────────────
-(function(){
+// Manejado en bindUIEvents: initLazyLoading();
+function initLazyLoading(){
   const lazyObs = new IntersectionObserver((entries, obs) => {
     entries.forEach(entry => {
       if(!entry.isIntersecting) return;
@@ -3283,7 +3309,7 @@ applyFilter('all');
     const src = img.getAttribute('src');
     if(src && !img.dataset.src){ img.dataset.src=src; img.removeAttribute('src'); lazyObs.observe(img); }
   });
-})();
+}
 
 // ── SONIDO AMBIENTE MEJORADO CON REVERB ──────────────────────────────────────
 function initAmbient(){
@@ -3601,7 +3627,8 @@ function playFocusBeep(){
     });
   });
 })();
-document.addEventListener('DOMContentLoaded', () => {
+// Manejado en bindUIEvents: initGalleryItemMove();
+function initGalleryItemMove(){
   document.querySelectorAll('.gallery-item').forEach(item => {
     item.addEventListener('mousemove', e => {
       const rect = item.getBoundingClientRect();
@@ -3615,7 +3642,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if(img) img.style.transform = '';
     });
   });
-});
+}
 
 function updateExifDisplay(item){
   const panel = document.getElementById('lightboxExifPanel');
@@ -3795,9 +3822,7 @@ function stopSlideshow(){
   if(prog){ prog.style.transition = 'none'; prog.style.width = '0%'; }
 }
 
-document.getElementById('slideshowBtn')?.addEventListener('click', () => {
-  slideshowActive ? stopSlideshow() : startSlideshow();
-});
+// Manejado en bindUIEvents
 
 // Parar slideshow al cerrar
 // [stopSlideshow integrado en closeLightbox]
