@@ -1212,7 +1212,7 @@ async function renderAdminGallery(){
       div.draggable = true;
       div.innerHTML = `
         <div class="apc-image" style="background:#000;">
-          <img src="${esc(p.src.includes('cloudinary.com') ? p.src.replace('/upload/','/upload/w_400,q_auto,f_auto/') : p.src)}" alt="${esc(p.titulo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
+          <img src="${esc(optimizeImageUrl(p.src, 400))}" alt="${esc(p.titulo)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
           <div class="apc-actions">
             <button onclick="deletePhoto('${doc.id}')" class="apc-del" title="Eliminar">✕</button>
             <div class="apc-likes">❤️ ${p.likes?.length || 0}</div>

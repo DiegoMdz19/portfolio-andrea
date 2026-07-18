@@ -346,6 +346,21 @@ function fixPath(p){
   return '/' + p;
 }
 
+// Redimensiona/optimiza una imagen al vuelo — Cloudinary (legado) o Bunny Optimizer.
+// Si Bunny Optimizer no está activado en la Pull Zone, los parámetros se ignoran
+// sin más y se sirve la imagen original (no rompe nada).
+function optimizeImageUrl(src, width, quality){
+  if(!src) return src;
+  if(src.includes('cloudinary.com') && src.includes('/upload/')){
+    return src.replace('/upload/', `/upload/w_${width},f_auto,q_${quality || 'auto'}/`);
+  }
+  if(src.includes('.b-cdn.net')){
+    const sep = src.includes('?') ? '&' : '?';
+    return `${src}${sep}width=${width}&quality=${quality || 85}`;
+  }
+  return src;
+}
+
 // ── INDICADOR DE TABS (posición inicial, se usa también antes de iniciar sesión) ──
 function moveTabIndicator(el) {
   const indicator = document.querySelector('.admin-tabs-indicator');
@@ -1604,9 +1619,11 @@ function renderGalleryPage(){
     if(p.src && p.src.includes('cloudinary.com')){
       const blurSrc = p.src.replace('/upload/', '/upload/e_blur:2000,w_40,f_auto,q_auto:low/');
       div.style.backgroundImage = `url(${blurSrc})`;
+    } else if(p.src && p.src.includes('.b-cdn.net')){
+      div.style.backgroundImage = `url(${optimizeImageUrl(p.src, 40, 30)})`;
     }
 
-    const optSrc = (p.src && p.src.includes('cloudinary.com') && p.src.includes('/upload/')) ? p.src.replace('/upload/', '/upload/w_1000,f_auto,q_auto/') : p.src;
+    const optSrc = optimizeImageUrl(p.src, 1000);
 
     div.innerHTML = `
       <img src="${esc(optSrc)}" alt="${esc(title)}" loading="lazy" class="gl-image" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
@@ -1782,7 +1799,7 @@ async function openAlbumView(token){
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
         </svg>
       </button>`;
-    const optSrc = (p.src && p.src.includes('cloudinary.com') && p.src.includes('/upload/')) ? p.src.replace('/upload/', '/upload/w_800,f_auto,q_auto/') : p.src;
+    const optSrc = optimizeImageUrl(p.src, 800);
     div.innerHTML = `
       <picture>
         <source srcset="${fixPath(optSrc)}" type="image/webp">
