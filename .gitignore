@@ -16,9 +16,18 @@ pnpm-debug.log*
 # environment variables
 .env
 .env.production
+.env.*.local
+.env.local
 
 # macOS-specific files
 .DS_Store
 
 # jetbrains setting folder
 .idea/
+
+# test artifacts
+test-results/
+playwright-report/
+
+# Claude Code session config (local)
+.claude/

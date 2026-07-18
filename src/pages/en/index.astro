@@ -9,7 +9,7 @@ import { getLangFromUrl, useTranslations } from '../../i18n/utils';
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 ---
-<Layout title="Andrea López — Fotografía & Vídeo con Dron" lang={lang}>
+<Layout title="Andrea López — Photography & Drone Video" lang={lang}>
 <div id="loader">
   <canvas id="loaderCanvas" style="position:absolute;inset:0;pointer-events:none;z-index:0;"></canvas>
 
@@ -433,18 +433,31 @@ const t = useTranslations(lang);
             <button class="sec-menu-btn" onclick="switchConfig('cfg-avanzado',this)">Avanzado</button>
           </div>
           <div id="cfg-textos" style="flex:1;min-width:0;">
-            <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:20px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Hero</p>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+            <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:20px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Hero (ES)</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px;">
               <div><label class="admin-label">Tagline principal</label><textarea id="txt-tagline" class="admin-input" rows="3" placeholder="Capturo lo que el ojo no alcanza..."></textarea></div>
               <div><label class="admin-label">Eyebrow (bajo el nombre)</label><input id="txt-eyebrow" type="text" class="admin-input" placeholder="Fotografía · Vídeo · Dron"></div>
             </div>
-            <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:20px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Sobre mí</p>
+            <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:20px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Hero (EN)</p>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+              <div><label class="admin-label">Tagline principal (EN)</label><textarea id="txt-tagline-en" class="admin-input" rows="3" placeholder="I capture what the eye alone..."></textarea></div>
+              <div><label class="admin-label">Eyebrow (EN)</label><input id="txt-eyebrow-en" type="text" class="admin-input" placeholder="Photography · Video · Drone"></div>
+            </div>
+            <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:20px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Sobre mí (ES)</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px;">
               <div><label class="admin-label">Párrafo 1</label><textarea id="txt-sobre1" class="admin-input" rows="4" placeholder="Soy Andrea López..."></textarea></div>
               <div><label class="admin-label">Párrafo 2</label><textarea id="txt-sobre2" class="admin-input" rows="4" placeholder="Cada proyecto..."></textarea></div>
             </div>
+            <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:20px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Sobre mí (EN)</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+              <div><label class="admin-label">Párrafo 1 (EN)</label><textarea id="txt-sobre1-en" class="admin-input" rows="4" placeholder="I am Andrea López..."></textarea></div>
+              <div><label class="admin-label">Párrafo 2 (EN)</label><textarea id="txt-sobre2-en" class="admin-input" rows="4" placeholder="Each project..."></textarea></div>
+            </div>
             <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:20px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Footer</p>
-            <div style="margin-bottom:24px;"><label class="admin-label">Texto de disponibilidad</label><input id="txt-disponibilidad" type="text" class="admin-input" placeholder="Disponible para proyectos · España"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+              <div><label class="admin-label">Texto de disponibilidad (ES)</label><input id="txt-disponibilidad" type="text" class="admin-input" placeholder="Disponible para proyectos · España"></div>
+              <div><label class="admin-label">Texto de disponibilidad (EN)</label><input id="txt-disponibilidad-en" type="text" class="admin-input" placeholder="Available for projects · Spain"></div>
+            </div>
             <hr class="admin-divider">
             <div style="display:flex;gap:12px;">
               <button onclick="saveTextos()" class="admin-btn">Guardar cambios ✓</button>
@@ -470,8 +483,9 @@ const t = useTranslations(lang);
             </div>
             <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);margin-bottom:20px;display:flex;align-items:center;gap:14px;"><span style="display:block;width:22px;height:1px;background:var(--warm);"></span>Contraseña del panel</p>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;">
-              <div><label class="admin-label">Nueva contraseña</label><input id="txt-newpass" type="password" class="admin-input" placeholder="Nueva contraseña"></div>
-              <div><label class="admin-label">Confirmar</label><input id="txt-newpass2" type="password" class="admin-input" placeholder="Repite la contraseña"></div>
+              <div style="grid-column:span 2;"><label class="admin-label">Contraseña actual</label><input id="txt-currentpass" type="password" class="admin-input" placeholder="Necesaria para cambiar la contraseña" autocomplete="current-password"></div>
+              <div><label class="admin-label">Nueva contraseña</label><input id="txt-newpass" type="password" class="admin-input" placeholder="Nueva contraseña" autocomplete="new-password"></div>
+              <div><label class="admin-label">Confirmar</label><input id="txt-newpass2" type="password" class="admin-input" placeholder="Repite la contraseña" autocomplete="new-password"></div>
             </div>
             <hr class="admin-divider">
             <button onclick="saveContacto()" class="admin-btn">Guardar cambios ✓</button>

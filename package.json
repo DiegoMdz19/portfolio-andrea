@@ -9,12 +9,23 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1090.0",
+    "@aws-sdk/s3-request-presigner": "^3.1090.0",
     "@studio-freight/lenis": "^1.0.42",
     "astro": "^6.1.1",
     "gsap": "^3.14.2",
+    "jose": "^6.2.3",
     "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "dotenv": "^17.4.2",
+    "jsdom": "^29.1.1",
+    "vitest": "^4.1.10"
   }
 }
