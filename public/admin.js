@@ -461,7 +461,10 @@ async function addVideoAdmin(){
 function removeVideo(docId){
   showConfirm('Este vídeo se eliminará de forma permanente.', async () => {
     try {
+      const doc = await db.collection('videos').doc(docId).get();
+      const src = doc.data()?.src;
       await db.collection('videos').doc(docId).delete();
+      if(src) await deleteFromBunny('video', src);
       loadVideoAdmin();
       renderPublicVideos();
     } catch(e) {
@@ -692,7 +695,10 @@ async function renderAdminSobrePhotos(){
 function deleteSobrePhoto(docId){
   showConfirm('Esta foto se eliminará del carrusel.', async () => {
     try {
+      const doc = await db.collection('sobre_photos').doc(docId).get();
+      const src = doc.data()?.src;
       await db.collection('sobre_photos').doc(docId).delete();
+      if(src) await deleteFromBunny('photo', src);
       renderAdminSobrePhotos();
       renderSobreCarousel();
     } catch(e){ showToast('Error al eliminar.', {title:'Error',icon:'✗'}); }
@@ -1018,6 +1024,24 @@ function uploadToBunny(file, onProgress){
   return file.type.startsWith('video/') ? uploadToBunnyVideo(file, onProgress) : uploadToBunnyPhoto(file, onProgress);
 }
 
+// Borra el archivo real en Bunny (Storage o Stream) al borrar una foto/vídeo
+// desde el panel — sin esto, borrar en el panel solo quitaba la referencia en
+// Firestore y el archivo se quedaba huérfano en Bunny para siempre.
+// Si la URL sigue siendo de Cloudinary (no migrada), no hace nada.
+async function deleteFromBunny(kind, url){
+  try {
+    const token = await getAdminIdToken();
+    const res = await fetch('/api/bunny-delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ kind, url }),
+    });
+    if(!res.ok) console.warn('No se pudo borrar el archivo en Bunny:', await res.text());
+  } catch(e) {
+    console.warn('Error borrando archivo en Bunny:', e);
+  }
+}
+
 // ── SUBIDA Y GESTIÓN DE VÍDEOS ────────────────────────────────────────────────
 function handleVideoDrop(e){
   e.preventDefault();
@@ -1276,7 +1300,10 @@ async function setPhotoPermanent(photoId, isPermanent){
 function deletePhoto(docId){
   showConfirm('Esta foto se eliminará de forma permanente.', async () => {
     try {
+      const doc = await db.collection("photos").doc(docId).get();
+      const src = doc.data()?.src;
       await db.collection("photos").doc(docId).delete();
+      if(src) await deleteFromBunny('photo', src);
       renderAdminGallery();
       renderPublicGallery();
     } catch(e) {
