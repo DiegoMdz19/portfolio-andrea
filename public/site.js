@@ -361,6 +361,21 @@ function optimizeImageUrl(src, width, quality){
   return src;
 }
 
+// Fuerza la descarga del archivo en vez de abrirlo en el navegador.
+// Cloudinary: fl_attachment. Bunny: query param leído por una Edge Rule
+// "Force Download" configurada en la Pull Zone (ver documentación).
+function forceDownloadUrl(src){
+  if(!src) return src;
+  if(src.includes('cloudinary.com') && src.includes('/upload/')){
+    return src.replace('/upload/', '/upload/fl_attachment/');
+  }
+  if(src.includes('.b-cdn.net')){
+    const sep = src.includes('?') ? '&' : '?';
+    return `${src}${sep}download=1`;
+  }
+  return src;
+}
+
 // ── INDICADOR DE TABS (posición inicial, se usa también antes de iniciar sesión) ──
 function moveTabIndicator(el) {
   const indicator = document.querySelector('.admin-tabs-indicator');
@@ -1790,7 +1805,7 @@ async function openAlbumView(token){
     const div = document.createElement('div');
     div.className = 'gallery-item album-item';
     const dlHtml = _albumFolder.allowDownload
-      ? `<a href="${esc(p.src.replace('/upload/', '/upload/fl_attachment/'))}" download class="album-photo-dl" onclick="event.stopPropagation()" title="Descargar" style="text-decoration:none; color:#f0ece4; font-size:1.1rem; background:rgba(0,0,0,.5); border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);">⬇</a>`
+      ? `<a href="${esc(forceDownloadUrl(p.src))}" download class="album-photo-dl" onclick="event.stopPropagation()" title="Descargar" style="text-decoration:none; color:#f0ece4; font-size:1.1rem; background:rgba(0,0,0,.5); border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);">⬇</a>`
       : '';
     const clientId = getClientId();
     const isLiked = Array.isArray(p.likes) && p.likes.includes(clientId);
